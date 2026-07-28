@@ -1,0 +1,51 @@
+# ── Secrets / credentials ─────────────────────────────────────────────────────
+.env
+.env.local
+*.key
+*.pem
+
+# ── Python ────────────────────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.venv/
+venv/
+ENV/
+env/
+.Python
+build/
+dist/
+*.egg-info/
+.eggs/
+pip-wheel-metadata/
+.mypy_cache/
+.ruff_cache/
+.pytest_cache/
+htmlcov/
+.coverage
+coverage.xml
+
+# ── Node (frontend) ───────────────────────────────────────────────────────────
+node_modules/
+.next/
+.vercel/
+.env.local
+
+# ── IDEs ─────────────────────────────────────────────────────────────────────
+.idea/
+.vscode/settings.json
+*.swp
+*.swo
+.DS_Store
+
+# ── Docker ────────────────────────────────────────────────────────────────────
+# (keep docker-compose.yml, but ignore local override)
+docker-compose.override.yml
+
+# ── Generated files ───────────────────────────────────────────────────────────
+*.pdf
+*.docx
+*.pptx
+# (only generated exports — keep template files)
+backend/templates/*.pdf

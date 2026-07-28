@@ -1,0 +1,85 @@
+version: "3.9"
+
+# ── Local development stack ───────────────────────────────────────────────────
+# docker compose up  →  starts API + worker + local Postgres + Redis
+
+services:
+  # ── FastAPI backend ──────────────────────────────────────────────────────
+  api:
+    build:
+      context: .
+      target: app
+    ports:
+      - "8000:8000"
+    environment:
+      DATABASE_URL: postgresql+asyncpg://postgres:postgres@postgres:5432/startup_os
+      DATABASE_URL_SYNC: postgresql+psycopg2://postgres:postgres@postgres:5432/startup_os
+      UPSTASH_REDIS_REST_URL: ""        # leave blank — uses local Redis below
+      SECRET_KEY: local-dev-secret-key-change-in-prod
+      ENVIRONMENT: development
+      GROQ_API_KEY: ${GROQ_API_KEY}
+      TAVILY_API_KEY: ${TAVILY_API_KEY}
+      SUPABASE_URL: ${SUPABASE_URL}
+      SUPABASE_SERVICE_ROLE_KEY: ${SUPABASE_SERVICE_ROLE_KEY}
+    env_file:
+      - .env
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - .:/app
+    command: uvicorn api.main:app --host 0.0.0.0 --port 8000 --reload
+
+  # ── arq worker ───────────────────────────────────────────────────────────
+  worker:
+    build:
+      context: .
+      target: worker
+    environment:
+      DATABASE_URL: postgresql+asyncpg://postgres:postgres@postgres:5432/startup_os
+      DATABASE_URL_SYNC: postgresql+psycopg2://postgres:postgres@postgres:5432/startup_os
+      REDIS_URL: redis://redis:6379
+      ENVIRONMENT: development
+      GROQ_API_KEY: ${GROQ_API_KEY}
+      TAVILY_API_KEY: ${TAVILY_API_KEY}
+    env_file:
+      - .env
+    depends_on:
+      - postgres
+      - redis
+    volumes:
+      - .:/app
+    command: arq workers.tasks.WorkerSettings
+
+  # ── PostgreSQL (local dev only) ───────────────────────────────────────────
+  postgres:
+    image: pgvector/pgvector:pg16
+    environment:
+      POSTGRES_DB: startup_os
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  # ── Redis (local dev only) ────────────────────────────────────────────────
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+volumes:
+  postgres_data:

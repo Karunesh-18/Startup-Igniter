@@ -1,0 +1,45 @@
+# Fly.io deployment configuration for the Startup OS backend
+# Docs: https://fly.io/docs/reference/configuration/
+
+app = "startup-os-api"
+primary_region = "bom"  # Mumbai — closest to India
+
+[build]
+dockerfile = "Dockerfile"
+target = "app"
+
+[env]
+ENVIRONMENT = "production"
+PORT = "8000"
+
+[http_service]
+internal_port = 8000
+force_https = true
+auto_stop_machines = true     # saves money on free tier
+auto_start_machines = true
+min_machines_running = 0      # cold start acceptable for v1
+processes = ["app"]
+
+[[vm]]
+cpu_kind = "shared"
+cpus = 1
+memory_mb = 512
+
+# Health check
+[[services.http_checks]]
+interval = "15s"
+timeout = "5s"
+grace_period = "10s"
+method = "GET"
+path = "/health"
+protocol = "http"
+tls_skip_verify = false
+
+# ── arq worker process ────────────────────────────────────────────────────────
+# Deploy as a second Fly.io app or a different process group:
+#
+# [processes]
+# app = "uvicorn api.main:app --host 0.0.0.0 --port 8000"
+# worker = "arq workers.tasks.WorkerSettings"
+#
+# See: https://fly.io/docs/app-guides/multiple-processes/
