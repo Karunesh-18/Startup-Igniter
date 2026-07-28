@@ -98,8 +98,10 @@ class LLMFactory:
         Returns:
             CrewAI LLM instance or LLMConfig object.
         """
-        # Resolve API Key
-        groq_api_key = api_key or os.getenv("GROQ_API_KEY")
+        # Resolve API Key from settings or environment
+        from ai.config import get_ai_settings
+        settings = get_ai_settings()
+        groq_api_key = api_key or settings.groq_api_key or os.getenv("GROQ_API_KEY")
         if not groq_api_key and not mock_mode:
             raise MissingAPIKeyError(
                 key_name="GROQ_API_KEY",

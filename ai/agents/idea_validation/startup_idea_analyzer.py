@@ -3,9 +3,11 @@
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
+from ai.schemas.idea_validation import StartupIdeaAnalysis
 from ai.shared.constants import ModelTier
 from ai.shared.llm_provider import LLMFactory
 from ai.shared.logger import ai_logger
+from ai.shared.parser import parse_and_validate_json
 
 # Optional CrewAI import check with type safety
 try:
@@ -26,11 +28,26 @@ def load_agent_prompt(filename: str = "startup_idea.md") -> str:
     )
     if prompt_path.is_file():
         return prompt_path.read_text(encoding="utf-8")
-    ai_logger.warning(f"Prompt file '{filename}' not found at {prompt_path}. Using default fallback prompt.")
+    ai_logger.warning(
+        f"Prompt file '{filename}' not found at {prompt_path}. Using default fallback prompt."
+    )
     return (
         "You are a Senior Startup Architect & Feasibility Lead. "
-        "Analyze the core concepts, operational pillars, technical feasibility, and key assumptions of raw startup proposals."
+        "Analyze the core concepts, operational pillars, technical feasibility, and key assumptions of raw startup proposals. "
+        "Return pure JSON only."
     )
+
+
+def validate_agent_output(raw_output: str) -> StartupIdeaAnalysis:
+    """Safely parse and validate raw string LLM response into StartupIdeaAnalysis Pydantic model.
+
+    Args:
+        raw_output: Raw text output received from LLM or Crew execution.
+
+    Returns:
+        Validated StartupIdeaAnalysis object.
+    """
+    return parse_and_validate_json(raw_output, StartupIdeaAnalysis)
 
 
 def get_startup_idea_analyzer_agent(
@@ -93,4 +110,6 @@ def get_startup_idea_analyzer_agent(
         "llm": llm,
         "tools": agent_tools,
         "mock_mode": mock_mode,
+        "schema_class": StartupIdeaAnalysis,
+        "validate_output": validate_agent_output,
     }
