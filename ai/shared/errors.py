@@ -64,3 +64,15 @@ class BudgetExceededError(StartupOSAIError):
         self.phase = phase
         self.limit = limit
         self.used = used
+
+
+class JSONParsingError(StartupOSAIError):
+    """Raised when raw LLM response text cannot be parsed as valid JSON."""
+
+    pass
+
+
+class OutputValidationError(StartupOSAIError):
+    """Raised when parsed JSON fails Pydantic schema validation."""
+
+    pass
