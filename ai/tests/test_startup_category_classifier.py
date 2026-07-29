@@ -1,4 +1,4 @@
-"""Reusable single-agent test for Problem Statement Analyzer Agent with Pydantic validation."""
+"""Reusable single-agent test for Startup Category Classifier Agent with Pydantic validation."""
 
 import json
 import os
@@ -8,12 +8,12 @@ import unittest
 from typing import Any, Dict, Tuple
 import httpx
 
-from ai.agents.idea_validation.problem_statement_analyzer import (
-    get_problem_statement_analyzer_agent,
+from ai.agents.idea_validation.startup_category_classifier import (
+    get_startup_category_classifier_agent,
     validate_agent_output,
 )
 from ai.config import get_ai_settings
-from ai.schemas.problem_statement import ProblemStatementAnalysis
+from ai.schemas.startup_category import StartupCategoryClassification
 from ai.shared.logger import ai_logger
 
 # Set stdout encoding to UTF-8 on Windows if supported
@@ -54,10 +54,10 @@ def execute_live_groq_agent_call(
         else getattr(agent, "backstory", "")
     )
     user_prompt = (
-        f"Analyze the problem statement for the following startup proposal: '{idea_text}'.\n\n"
-        "Return pure JSON matching the ProblemStatementAnalysis schema with fields: "
-        "problem_statement, affected_users, root_causes, existing_solutions, solution_gaps, "
-        "problem_severity, urgency_score, confidence_score."
+        f"Classify the following startup proposal: '{idea_text}'.\n\n"
+        "Return pure JSON matching the StartupCategoryClassification schema with fields: "
+        "primary_category, secondary_categories, industry, technology_domains, business_model, "
+        "revenue_model, startup_stage, target_market, confidence_score, reasoning."
     )
 
     url = "https://api.groq.com/openai/v1/chat/completions"
@@ -66,13 +66,13 @@ def execute_live_groq_agent_call(
         "Content-Type": "application/json",
     }
     payload = {
-        "model": settings.groq_model_heavy,
+        "model": settings.groq_model_fast,
         "messages": [
             {"role": "system", "content": system_prompt},
             {"role": "user", "content": user_prompt},
         ],
         "temperature": 0.1,
-        "max_tokens": 2048,
+        "max_tokens": 1024,
         "response_format": {"type": "json_object"},
     }
 
@@ -98,8 +98,8 @@ def run_single_agent_test(
     agent_factory_fn: Any,
     idea_text: str = SAMPLE_STARTUP_IDEA,
     mock_mode: bool = False,
-) -> Tuple[Dict[str, Any], ProblemStatementAnalysis]:
-    """Reusable runner for testing ProblemStatementAnalyzer agent with Pydantic validation.
+) -> Tuple[Dict[str, Any], StartupCategoryClassification]:
+    """Reusable runner for testing StartupCategoryClassifier agent with Pydantic validation.
 
     Args:
         agent_factory_fn: Agent factory function.
@@ -119,7 +119,7 @@ def run_single_agent_test(
         "errors": None,
     }
 
-    validated_model: ProblemStatementAnalysis
+    validated_model: StartupCategoryClassification
 
     try:
         # Step 1: Import & Instantiate Agent
@@ -138,11 +138,11 @@ def run_single_agent_test(
         print(f"[INPUT PROPOSAL] '{idea_text}'\n")
 
         task_description = (
-            f"Deconstruct the problem statement for startup proposal: '{idea_text}'. "
-            "Return pure JSON matching the ProblemStatementAnalysis schema."
+            f"Classify startup proposal: '{idea_text}'. "
+            "Return pure JSON matching the StartupCategoryClassification schema."
         )
         expected_output = (
-            "Valid JSON string matching ProblemStatementAnalysis Pydantic schema."
+            "Valid JSON string matching StartupCategoryClassification Pydantic schema."
         )
 
         # Step 2: Execute Agent via CrewAI or Live Groq LLM
@@ -162,30 +162,21 @@ def run_single_agent_test(
             kickoff_result = crew.kickoff()
             raw_response_text = str(kickoff_result)
         elif not mock_mode:
-            print("[RUNNING] Executing Live Groq LLM call (llama-3.3-70b-versatile)...")
+            print("[RUNNING] Executing Live Groq LLM call (llama-3.1-8b-instant)...")
             raw_response_text = execute_live_groq_agent_call(agent, idea_text)
         else:
             print("[RUNNING] Executing Agent task reasoning (mock simulation)...")
             raw_response_text = json.dumps({
-                "problem_statement": "Doctors face high diagnostic workloads leading to delayed disease detection and human error.",
-                "affected_users": ["General Practitioners", "Radiologists", "Hospital Patients"],
-                "root_causes": [
-                    "High patient-to-doctor ratio",
-                    "Manual visual review of complex diagnostic images",
-                    "Lack of automated preliminary triage tools"
-                ],
-                "existing_solutions": [
-                    "Manual double-checking by senior consultants",
-                    "Basic non-AI image viewer software"
-                ],
-                "solution_gaps": [
-                    "High diagnostic latency",
-                    "Fatigue-induced diagnostic errors",
-                    "Limited access to specialist expertise in rural areas"
-                ],
-                "problem_severity": "high",
-                "urgency_score": 88,
-                "confidence_score": 0.92
+                "primary_category": "HealthTech",
+                "secondary_categories": ["AI", "SaaS", "B2B"],
+                "industry": "Healthcare & Life Sciences",
+                "technology_domains": ["Computer Vision", "Deep Learning", "Medical Image Processing"],
+                "business_model": "B2B",
+                "revenue_model": "Subscription",
+                "startup_stage": "Idea",
+                "target_market": "Hospitals, Diagnostic Labs, and Private Clinics",
+                "confidence_score": 95,
+                "reasoning": "The proposal focuses on medical image processing and diagnostic AI software for doctors, falling under HealthTech and B2B SaaS."
             })
 
         report["raw_response"] = raw_response_text
@@ -217,43 +208,41 @@ def run_single_agent_test(
     return report, validated_model
 
 
-class TestProblemStatementAnalyzerSingleAgent(unittest.TestCase):
-    """Unittest test case wrapper for ProblemStatementAnalyzer single-agent test."""
+class TestStartupCategoryClassifierSingleAgent(unittest.TestCase):
+    """Unittest test case wrapper for StartupCategoryClassifier single-agent test."""
 
-    def test_problem_statement_analyzer_live_pydantic_execution(self):
-        """Verify agent executes against live Groq LLM and returns validated ProblemStatementAnalysis model."""
+    def test_startup_category_classifier_live_pydantic_execution(self):
+        """Verify agent executes against live Groq LLM and returns validated StartupCategoryClassification model."""
         report, model = run_single_agent_test(
-            agent_factory_fn=get_problem_statement_analyzer_agent,
+            agent_factory_fn=get_startup_category_classifier_agent,
             idea_text=SAMPLE_STARTUP_IDEA,
             mock_mode=False,  # LIVE GROQ LLM CALL
         )
 
         # Verification Checklist Requirements
         self.assertEqual(report["status"], "SUCCESS")
-        self.assertIsInstance(model, ProblemStatementAnalysis)
+        self.assertIsInstance(model, StartupCategoryClassification)
 
-        # Assert problem_statement is non-empty
-        self.assertTrue(len(model.problem_statement.strip()) > 0)
+        # ✓ primary_category is not empty
+        self.assertTrue(len(model.primary_category.strip()) > 0)
 
-        # Assert affected_users is non-empty
-        self.assertTrue(len(model.affected_users) >= 1)
+        # ✓ business_model is not empty
+        self.assertTrue(len(model.business_model.strip()) > 0)
 
-        # Assert root_causes is non-empty
-        self.assertTrue(len(model.root_causes) >= 1)
+        # ✓ revenue_model is not empty
+        self.assertTrue(len(model.revenue_model.strip()) > 0)
 
-        # Assert solution_gaps is non-empty
-        self.assertTrue(len(model.solution_gaps) >= 1)
+        # ✓ startup_stage is not empty
+        self.assertTrue(len(model.startup_stage.strip()) > 0)
 
-        # Assert problem_severity is valid
-        self.assertIn(model.problem_severity.lower(), {"low", "medium", "high", "critical"})
+        # ✓ confidence_score is between 0 and 100
+        self.assertGreaterEqual(model.confidence_score, 0)
+        self.assertLessEqual(model.confidence_score, 100)
 
-        # Assert urgency_score is between 0 and 100
-        self.assertGreaterEqual(model.urgency_score, 0)
-        self.assertLessEqual(model.urgency_score, 100)
-
-        # Assert confidence_score is between 0.0 and 1.0
-        self.assertGreaterEqual(model.confidence_score, 0.0)
-        self.assertLessEqual(model.confidence_score, 1.0)
+        # Additional field checks
+        self.assertTrue(len(model.industry.strip()) > 0)
+        self.assertTrue(len(model.target_market.strip()) > 0)
+        self.assertTrue(len(model.reasoning.strip()) > 0)
 
 
 if __name__ == "__main__":

@@ -76,11 +76,22 @@ def execute_live_groq_agent_call(
         "response_format": {"type": "json_object"},
     }
 
-    with httpx.Client(timeout=timeout) as client:
-        res = client.post(url, headers=headers, json=payload)
-        res.raise_for_status()
-        data = res.json()
-        return data["choices"][0]["message"]["content"]
+    httpx_timeout = httpx.Timeout(timeout, connect=15.0)
+    for attempt in range(5):
+        try:
+            with httpx.Client(timeout=httpx_timeout) as client:
+                res = client.post(url, headers=headers, json=payload)
+                if res.status_code == 429 or res.status_code >= 500:
+                    time.sleep(2.0 ** attempt)
+                    continue
+                res.raise_for_status()
+                data = res.json()
+                return data["choices"][0]["message"]["content"]
+        except (httpx.RequestError, httpx.HTTPStatusError) as exc:
+            if attempt == 4:
+                raise
+            time.sleep(2.0 ** attempt)
+    return ""
 
 
 def run_single_agent_test(

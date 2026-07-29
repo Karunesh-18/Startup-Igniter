@@ -1,4 +1,4 @@
-"""Reusable single-agent test for Problem Statement Analyzer Agent with Pydantic validation."""
+"""Reusable single-agent test for Value Proposition Analyzer Agent with Pydantic validation."""
 
 import json
 import os
@@ -8,12 +8,12 @@ import unittest
 from typing import Any, Dict, Tuple
 import httpx
 
-from ai.agents.idea_validation.problem_statement_analyzer import (
-    get_problem_statement_analyzer_agent,
+from ai.agents.idea_validation.value_proposition_analyzer import (
+    get_value_proposition_analyzer_agent,
     validate_agent_output,
 )
 from ai.config import get_ai_settings
-from ai.schemas.problem_statement import ProblemStatementAnalysis
+from ai.schemas.value_proposition import ValuePropositionAnalysis
 from ai.shared.logger import ai_logger
 
 # Set stdout encoding to UTF-8 on Windows if supported
@@ -54,10 +54,10 @@ def execute_live_groq_agent_call(
         else getattr(agent, "backstory", "")
     )
     user_prompt = (
-        f"Analyze the problem statement for the following startup proposal: '{idea_text}'.\n\n"
-        "Return pure JSON matching the ProblemStatementAnalysis schema with fields: "
-        "problem_statement, affected_users, root_causes, existing_solutions, solution_gaps, "
-        "problem_severity, urgency_score, confidence_score."
+        f"Evaluate the value proposition for the following startup proposal: '{idea_text}'.\n\n"
+        "Return pure JSON matching the ValuePropositionAnalysis schema with fields: "
+        "core_value_proposition, unique_selling_proposition, functional_benefits, emotional_benefits, "
+        "customer_outcomes, differentiators, value_clarity_score, customer_value_score, confidence_score."
     )
 
     url = "https://api.groq.com/openai/v1/chat/completions"
@@ -98,8 +98,8 @@ def run_single_agent_test(
     agent_factory_fn: Any,
     idea_text: str = SAMPLE_STARTUP_IDEA,
     mock_mode: bool = False,
-) -> Tuple[Dict[str, Any], ProblemStatementAnalysis]:
-    """Reusable runner for testing ProblemStatementAnalyzer agent with Pydantic validation.
+) -> Tuple[Dict[str, Any], ValuePropositionAnalysis]:
+    """Reusable runner for testing ValuePropositionAnalyzer agent with Pydantic validation.
 
     Args:
         agent_factory_fn: Agent factory function.
@@ -119,7 +119,7 @@ def run_single_agent_test(
         "errors": None,
     }
 
-    validated_model: ProblemStatementAnalysis
+    validated_model: ValuePropositionAnalysis
 
     try:
         # Step 1: Import & Instantiate Agent
@@ -138,11 +138,11 @@ def run_single_agent_test(
         print(f"[INPUT PROPOSAL] '{idea_text}'\n")
 
         task_description = (
-            f"Deconstruct the problem statement for startup proposal: '{idea_text}'. "
-            "Return pure JSON matching the ProblemStatementAnalysis schema."
+            f"Evaluate the value proposition for startup proposal: '{idea_text}'. "
+            "Return pure JSON matching the ValuePropositionAnalysis schema."
         )
         expected_output = (
-            "Valid JSON string matching ProblemStatementAnalysis Pydantic schema."
+            "Valid JSON string matching ValuePropositionAnalysis Pydantic schema."
         )
 
         # Step 2: Execute Agent via CrewAI or Live Groq LLM
@@ -167,25 +167,30 @@ def run_single_agent_test(
         else:
             print("[RUNNING] Executing Agent task reasoning (mock simulation)...")
             raw_response_text = json.dumps({
-                "problem_statement": "Doctors face high diagnostic workloads leading to delayed disease detection and human error.",
-                "affected_users": ["General Practitioners", "Radiologists", "Hospital Patients"],
-                "root_causes": [
-                    "High patient-to-doctor ratio",
-                    "Manual visual review of complex diagnostic images",
-                    "Lack of automated preliminary triage tools"
+                "core_value_proposition": "Empowering doctors with real-time AI image analysis for rapid, accurate early disease detection.",
+                "unique_selling_proposition": "Ultra-fast clinical-grade disease detection integrated directly into diagnostic workflows.",
+                "functional_benefits": [
+                    "Accelerated image diagnostic turnaround time",
+                    "Automated preliminary anomaly detection and highlighting",
+                    "Seamless electronic health record integration"
                 ],
-                "existing_solutions": [
-                    "Manual double-checking by senior consultants",
-                    "Basic non-AI image viewer software"
+                "emotional_benefits": [
+                    "Increased confidence in diagnostic accuracy",
+                    "Reduced stress and anxiety regarding oversight or misdiagnosis",
+                    "Greater peace of mind for patients and physicians"
                 ],
-                "solution_gaps": [
-                    "High diagnostic latency",
-                    "Fatigue-induced diagnostic errors",
-                    "Limited access to specialist expertise in rural areas"
+                "customer_outcomes": [
+                    "50% reduction in image analysis time per patient",
+                    "Increased early disease detection rate",
+                    "Lower hospital diagnostic error liabilities"
                 ],
-                "problem_severity": "high",
-                "urgency_score": 88,
-                "confidence_score": 0.92
+                "differentiators": [
+                    "High-accuracy multi-disease deep learning architecture",
+                    "Real-time edge processing capability"
+                ],
+                "value_clarity_score": 90,
+                "customer_value_score": 92,
+                "confidence_score": 90
             })
 
         report["raw_response"] = raw_response_text
@@ -217,43 +222,44 @@ def run_single_agent_test(
     return report, validated_model
 
 
-class TestProblemStatementAnalyzerSingleAgent(unittest.TestCase):
-    """Unittest test case wrapper for ProblemStatementAnalyzer single-agent test."""
+class TestValuePropositionAnalyzerSingleAgent(unittest.TestCase):
+    """Unittest test case wrapper for ValuePropositionAnalyzer single-agent test."""
 
-    def test_problem_statement_analyzer_live_pydantic_execution(self):
-        """Verify agent executes against live Groq LLM and returns validated ProblemStatementAnalysis model."""
+    def test_value_proposition_analyzer_live_pydantic_execution(self):
+        """Verify agent executes against live Groq LLM and returns validated ValuePropositionAnalysis model."""
         report, model = run_single_agent_test(
-            agent_factory_fn=get_problem_statement_analyzer_agent,
+            agent_factory_fn=get_value_proposition_analyzer_agent,
             idea_text=SAMPLE_STARTUP_IDEA,
             mock_mode=False,  # LIVE GROQ LLM CALL
         )
 
         # Verification Checklist Requirements
         self.assertEqual(report["status"], "SUCCESS")
-        self.assertIsInstance(model, ProblemStatementAnalysis)
+        self.assertIsInstance(model, ValuePropositionAnalysis)
 
-        # Assert problem_statement is non-empty
-        self.assertTrue(len(model.problem_statement.strip()) > 0)
+        # ✓ core_value_proposition is not empty
+        self.assertTrue(len(model.core_value_proposition.strip()) > 0)
 
-        # Assert affected_users is non-empty
-        self.assertTrue(len(model.affected_users) >= 1)
+        # ✓ unique_selling_proposition is not empty
+        self.assertTrue(len(model.unique_selling_proposition.strip()) > 0)
 
-        # Assert root_causes is non-empty
-        self.assertTrue(len(model.root_causes) >= 1)
+        # ✓ functional_benefits is not empty
+        self.assertTrue(len(model.functional_benefits) >= 1)
 
-        # Assert solution_gaps is non-empty
-        self.assertTrue(len(model.solution_gaps) >= 1)
+        # ✓ customer_outcomes is not empty
+        self.assertTrue(len(model.customer_outcomes) >= 1)
 
-        # Assert problem_severity is valid
-        self.assertIn(model.problem_severity.lower(), {"low", "medium", "high", "critical"})
+        # ✓ value_clarity_score is between 0 and 100
+        self.assertGreaterEqual(model.value_clarity_score, 0)
+        self.assertLessEqual(model.value_clarity_score, 100)
 
-        # Assert urgency_score is between 0 and 100
-        self.assertGreaterEqual(model.urgency_score, 0)
-        self.assertLessEqual(model.urgency_score, 100)
+        # ✓ customer_value_score is between 0 and 100
+        self.assertGreaterEqual(model.customer_value_score, 0)
+        self.assertLessEqual(model.customer_value_score, 100)
 
-        # Assert confidence_score is between 0.0 and 1.0
-        self.assertGreaterEqual(model.confidence_score, 0.0)
-        self.assertLessEqual(model.confidence_score, 1.0)
+        # ✓ confidence_score is between 0 and 100
+        self.assertGreaterEqual(model.confidence_score, 0)
+        self.assertLessEqual(model.confidence_score, 100)
 
 
 if __name__ == "__main__":

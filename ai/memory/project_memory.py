@@ -134,7 +134,7 @@ class ProjectMemoryManager:
                 e for e in self._mock_db[project_id] if e.key != key
             ]
             self._mock_db[project_id].append(entry)
-            ai_logger.info(f"[MOCK MEMORY] Saved '{key}' for project '{project_id}' in phase '{source_phase}'")
+            ai_logger.info(f"[LOCAL MEMORY] Saved '{key}' for project '{project_id}' in phase '{source_phase}'")
             return entry
 
         # Production path: Supabase DB insertion (handled when DB connection is active)

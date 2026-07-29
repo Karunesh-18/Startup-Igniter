@@ -1,9 +1,9 @@
-"""Startup Idea Analyzer Agent for Idea Validation Phase."""
+"""Startup Category Classifier Agent for Idea Validation Phase."""
 
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
-from ai.schemas.idea_validation import StartupIdeaAnalysis
+from ai.schemas.startup_category import StartupCategoryClassification
 from ai.shared.constants import ModelTier
 from ai.shared.llm_provider import LLMFactory
 from ai.shared.logger import ai_logger
@@ -18,7 +18,7 @@ except ImportError:
     CrewAIAgent = None
 
 
-def load_agent_prompt(filename: str = "startup_idea.md") -> str:
+def load_agent_prompt(filename: str = "startup_category_classifier.md") -> str:
     """Load agent prompt instructions from prompts directory."""
     prompt_path = (
         Path(__file__).resolve().parent.parent.parent
@@ -32,35 +32,36 @@ def load_agent_prompt(filename: str = "startup_idea.md") -> str:
         f"Prompt file '{filename}' not found at {prompt_path}. Using default fallback prompt."
     )
     return (
-        "You are a Senior Startup Architect & Feasibility Lead. "
-        "Analyze the core concepts, operational pillars, technical feasibility, and key assumptions of raw startup proposals. "
+        "You are a Startup Taxonomy & Categorization Lead. "
+        "Classify startup proposals into primary/secondary categories, industry verticals, tech domains, "
+        "business model, revenue model, startup stage, target market, confidence score, and reasoning. "
         "Return pure JSON only."
     )
 
 
-def validate_agent_output(raw_output: str) -> StartupIdeaAnalysis:
-    """Safely parse and validate raw string LLM response into StartupIdeaAnalysis Pydantic model.
+def validate_agent_output(raw_output: str) -> StartupCategoryClassification:
+    """Safely parse and validate raw string LLM response into StartupCategoryClassification Pydantic model.
 
     Args:
         raw_output: Raw text output received from LLM or Crew execution.
 
     Returns:
-        Validated StartupIdeaAnalysis object.
+        Validated StartupCategoryClassification object.
     """
-    return validate_output(raw_output, StartupIdeaAnalysis)
+    return validate_output(raw_output, StartupCategoryClassification)
 
 
-def get_startup_idea_analyzer_agent(
-    model_tier: ModelTier = ModelTier.HEAVY,
-    temperature: float = 0.2,
+def get_startup_category_classifier_agent(
+    model_tier: ModelTier = ModelTier.FAST,
+    temperature: float = 0.1,
     api_key: Optional[str] = None,
     mock_mode: bool = False,
     tools: Optional[List[Any]] = None,
 ) -> Any:
-    """Returns a configured CrewAI Agent instance for Startup Idea Analysis.
+    """Returns a configured CrewAI Agent instance for Startup Category Classification.
 
     Args:
-        model_tier: Execution model tier (default: HEAVY for deep analysis).
+        model_tier: Execution model tier (default: FAST for rapid taxonomy classification).
         temperature: LLM sampling temperature.
         api_key: Optional explicit Groq API key.
         mock_mode: If True, operates in test mode without live LLM network calls.
@@ -70,7 +71,7 @@ def get_startup_idea_analyzer_agent(
         Configured CrewAI Agent instance (or dictionary agent container in fallback mode).
     """
     ai_logger.info(
-        f"Initializing StartupIdeaAnalyzerAgent: tier={model_tier}, temp={temperature}, mock={mock_mode}"
+        f"Initializing StartupCategoryClassifierAgent: tier={model_tier}, temp={temperature}, mock={mock_mode}"
     )
 
     llm = LLMFactory.get_llm(
@@ -80,13 +81,13 @@ def get_startup_idea_analyzer_agent(
         mock_mode=mock_mode,
     )
 
-    prompt_text = load_agent_prompt("startup_idea.md")
+    prompt_text = load_agent_prompt("startup_category_classifier.md")
     agent_tools = tools or []
 
-    role = "Senior Startup Architect & Feasibility Lead"
+    role = "Startup Category & Taxonomy Lead"
     goal = (
-        "Conduct a holistic initial assessment of raw startup ideas, "
-        "extracting core concepts, operational complexity, technical feasibility, and key assumptions."
+        "Classify raw startup proposals into primary/secondary categories, industry verticals, "
+        "tech domains, business models, revenue models, startup stages, target markets, confidence scores, and reasoning."
     )
     backstory = prompt_text
 
@@ -103,13 +104,13 @@ def get_startup_idea_analyzer_agent(
 
     # Reusable fallback agent dictionary for offline & unit testing
     return {
-        "agent_name": "startup_idea_analyzer",
+        "agent_name": "startup_category_classifier",
         "role": role,
         "goal": goal,
         "backstory": backstory,
         "llm": llm,
         "tools": agent_tools,
         "mock_mode": mock_mode,
-        "schema_class": StartupIdeaAnalysis,
+        "schema_class": StartupCategoryClassification,
         "validate_output": validate_agent_output,
     }

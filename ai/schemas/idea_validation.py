@@ -3,6 +3,12 @@
 from typing import List, Optional
 from pydantic import BaseModel, Field, field_validator
 
+from ai.schemas.customer_identifier import CustomerIdentification
+from ai.schemas.innovation_score import InnovationScoreAnalysis
+from ai.schemas.problem_statement import ProblemStatementAnalysis
+from ai.schemas.startup_category import StartupCategoryClassification
+from ai.schemas.value_proposition import ValuePropositionAnalysis
+
 
 class StartupIdeaAnalysis(BaseModel):
     """Structured Pydantic schema for Startup Idea Analyzer output."""
@@ -62,3 +68,22 @@ class StartupIdeaAnalysis(BaseModel):
         if not cleaned:
             raise ValueError("operational_pillars must contain at least one valid pillar item.")
         return cleaned
+
+
+class IdeaValidationResult(BaseModel):
+    """Combined structured Pydantic schema for full Idea Validation Crew results."""
+
+    project_id: str = Field(..., description="Unique project identifier.")
+    idea_text: str = Field(..., description="Original raw startup proposal text.")
+    idea_analysis: StartupIdeaAnalysis
+    problem_analysis: ProblemStatementAnalysis
+    customer_identification: CustomerIdentification
+    value_proposition: ValuePropositionAnalysis
+    category_classification: StartupCategoryClassification
+    innovation_scoring: InnovationScoreAnalysis
+    overall_validation_score: float = Field(
+        ...,
+        ge=0.0,
+        le=100.0,
+        description="Weighted composite validation score from 0.0 to 100.0.",
+    )

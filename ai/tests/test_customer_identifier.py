@@ -1,4 +1,4 @@
-"""Reusable single-agent test for Problem Statement Analyzer Agent with Pydantic validation."""
+"""Reusable single-agent test for Customer Identifier Agent with Pydantic validation."""
 
 import json
 import os
@@ -8,12 +8,12 @@ import unittest
 from typing import Any, Dict, Tuple
 import httpx
 
-from ai.agents.idea_validation.problem_statement_analyzer import (
-    get_problem_statement_analyzer_agent,
+from ai.agents.idea_validation.customer_identifier import (
+    get_customer_identifier_agent,
     validate_agent_output,
 )
 from ai.config import get_ai_settings
-from ai.schemas.problem_statement import ProblemStatementAnalysis
+from ai.schemas.customer_identifier import CustomerIdentification
 from ai.shared.logger import ai_logger
 
 # Set stdout encoding to UTF-8 on Windows if supported
@@ -54,10 +54,11 @@ def execute_live_groq_agent_call(
         else getattr(agent, "backstory", "")
     )
     user_prompt = (
-        f"Analyze the problem statement for the following startup proposal: '{idea_text}'.\n\n"
-        "Return pure JSON matching the ProblemStatementAnalysis schema with fields: "
-        "problem_statement, affected_users, root_causes, existing_solutions, solution_gaps, "
-        "problem_severity, urgency_score, confidence_score."
+        f"Identify the target customers and personas for the following startup proposal: '{idea_text}'.\n\n"
+        "Return pure JSON matching the CustomerIdentification schema with fields: "
+        "primary_customers, secondary_customers, end_users, decision_makers, customer_segments, "
+        "demographics, geographic_markets, industries, pain_points, customer_needs, motivations, "
+        "adoption_barriers, willingness_to_pay, confidence_score."
     )
 
     url = "https://api.groq.com/openai/v1/chat/completions"
@@ -98,8 +99,8 @@ def run_single_agent_test(
     agent_factory_fn: Any,
     idea_text: str = SAMPLE_STARTUP_IDEA,
     mock_mode: bool = False,
-) -> Tuple[Dict[str, Any], ProblemStatementAnalysis]:
-    """Reusable runner for testing ProblemStatementAnalyzer agent with Pydantic validation.
+) -> Tuple[Dict[str, Any], CustomerIdentification]:
+    """Reusable runner for testing CustomerIdentifier agent with Pydantic validation.
 
     Args:
         agent_factory_fn: Agent factory function.
@@ -119,7 +120,7 @@ def run_single_agent_test(
         "errors": None,
     }
 
-    validated_model: ProblemStatementAnalysis
+    validated_model: CustomerIdentification
 
     try:
         # Step 1: Import & Instantiate Agent
@@ -138,11 +139,11 @@ def run_single_agent_test(
         print(f"[INPUT PROPOSAL] '{idea_text}'\n")
 
         task_description = (
-            f"Deconstruct the problem statement for startup proposal: '{idea_text}'. "
-            "Return pure JSON matching the ProblemStatementAnalysis schema."
+            f"Identify target customers and personas for startup proposal: '{idea_text}'. "
+            "Return pure JSON matching the CustomerIdentification schema."
         )
         expected_output = (
-            "Valid JSON string matching ProblemStatementAnalysis Pydantic schema."
+            "Valid JSON string matching CustomerIdentification Pydantic schema."
         )
 
         # Step 2: Execute Agent via CrewAI or Live Groq LLM
@@ -167,25 +168,36 @@ def run_single_agent_test(
         else:
             print("[RUNNING] Executing Agent task reasoning (mock simulation)...")
             raw_response_text = json.dumps({
-                "problem_statement": "Doctors face high diagnostic workloads leading to delayed disease detection and human error.",
-                "affected_users": ["General Practitioners", "Radiologists", "Hospital Patients"],
-                "root_causes": [
-                    "High patient-to-doctor ratio",
-                    "Manual visual review of complex diagnostic images",
-                    "Lack of automated preliminary triage tools"
+                "primary_customers": ["Hospitals & Medical Centers", "Private Diagnostic Clinics"],
+                "secondary_customers": ["Telemedicine Platforms", "Health Insurance Networks"],
+                "end_users": ["Radiologists", "Pathologists", "General Practitioners"],
+                "decision_makers": ["Chief Medical Officers (CMO)", "Chief Information Officers (CIO)", "Clinical Department Heads"],
+                "customer_segments": ["B2B Enterprise Healthcare", "B2B Mid-Market Diagnostic Clinics"],
+                "demographics": ["Licensed Medical Practitioners aged 25-65", "Tech-forward Healthcare Providers"],
+                "geographic_markets": ["North America", "Europe", "Tier 1 & 2 Asian Metro Hospitals"],
+                "industries": ["Healthcare", "HealthTech", "Medical Diagnostics"],
+                "pain_points": [
+                    "High diagnostic workload & fatigue",
+                    "Long turnaround times for diagnostic reports",
+                    "Risk of diagnostic oversight/misdiagnosis"
                 ],
-                "existing_solutions": [
-                    "Manual double-checking by senior consultants",
-                    "Basic non-AI image viewer software"
+                "customer_needs": [
+                    "Rapid, accurate diagnostic decision support",
+                    "Seamless integration with existing Hospital Information Systems (HIS/EHR)",
+                    "HIPAA & Regulatory compliant data processing"
                 ],
-                "solution_gaps": [
-                    "High diagnostic latency",
-                    "Fatigue-induced diagnostic errors",
-                    "Limited access to specialist expertise in rural areas"
+                "motivations": [
+                    "Improving patient diagnostic accuracy",
+                    "Reducing diagnostic processing time per patient",
+                    "Lowering hospital liability risks"
                 ],
-                "problem_severity": "high",
-                "urgency_score": 88,
-                "confidence_score": 0.92
+                "adoption_barriers": [
+                    "Stringent medical device regulatory approvals (FDA/CE)",
+                    "Data privacy & security concerns",
+                    "Skepticism or resistance to AI recommendation tools"
+                ],
+                "willingness_to_pay": "high",
+                "confidence_score": 90
             })
 
         report["raw_response"] = raw_response_text
@@ -217,43 +229,40 @@ def run_single_agent_test(
     return report, validated_model
 
 
-class TestProblemStatementAnalyzerSingleAgent(unittest.TestCase):
-    """Unittest test case wrapper for ProblemStatementAnalyzer single-agent test."""
+class TestCustomerIdentifierSingleAgent(unittest.TestCase):
+    """Unittest test case wrapper for CustomerIdentifier single-agent test."""
 
-    def test_problem_statement_analyzer_live_pydantic_execution(self):
-        """Verify agent executes against live Groq LLM and returns validated ProblemStatementAnalysis model."""
+    def test_customer_identifier_live_pydantic_execution(self):
+        """Verify agent executes against live Groq LLM and returns validated CustomerIdentification model."""
         report, model = run_single_agent_test(
-            agent_factory_fn=get_problem_statement_analyzer_agent,
+            agent_factory_fn=get_customer_identifier_agent,
             idea_text=SAMPLE_STARTUP_IDEA,
             mock_mode=False,  # LIVE GROQ LLM CALL
         )
 
         # Verification Checklist Requirements
         self.assertEqual(report["status"], "SUCCESS")
-        self.assertIsInstance(model, ProblemStatementAnalysis)
+        self.assertIsInstance(model, CustomerIdentification)
 
-        # Assert problem_statement is non-empty
-        self.assertTrue(len(model.problem_statement.strip()) > 0)
+        # ✓ primary_customers is not empty
+        self.assertTrue(len(model.primary_customers) >= 1)
 
-        # Assert affected_users is non-empty
-        self.assertTrue(len(model.affected_users) >= 1)
+        # ✓ customer_segments is not empty
+        self.assertTrue(len(model.customer_segments) >= 1)
 
-        # Assert root_causes is non-empty
-        self.assertTrue(len(model.root_causes) >= 1)
+        # ✓ customer_needs is not empty
+        self.assertTrue(len(model.customer_needs) >= 1)
 
-        # Assert solution_gaps is non-empty
-        self.assertTrue(len(model.solution_gaps) >= 1)
+        # ✓ confidence_score is between 0 and 100
+        self.assertGreaterEqual(model.confidence_score, 0)
+        self.assertLessEqual(model.confidence_score, 100)
 
-        # Assert problem_severity is valid
-        self.assertIn(model.problem_severity.lower(), {"low", "medium", "high", "critical"})
-
-        # Assert urgency_score is between 0 and 100
-        self.assertGreaterEqual(model.urgency_score, 0)
-        self.assertLessEqual(model.urgency_score, 100)
-
-        # Assert confidence_score is between 0.0 and 1.0
-        self.assertGreaterEqual(model.confidence_score, 0.0)
-        self.assertLessEqual(model.confidence_score, 1.0)
+        # Additional field checks
+        self.assertIsInstance(model.secondary_customers, list)
+        self.assertIsInstance(model.end_users, list)
+        self.assertIsInstance(model.decision_makers, list)
+        self.assertIsInstance(model.pain_points, list)
+        self.assertTrue(len(model.willingness_to_pay.strip()) > 0)
 
 
 if __name__ == "__main__":

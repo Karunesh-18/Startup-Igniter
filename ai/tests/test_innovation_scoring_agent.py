@@ -1,4 +1,4 @@
-"""Reusable single-agent test for Problem Statement Analyzer Agent with Pydantic validation."""
+"""Reusable single-agent test for Innovation Scoring Agent with Pydantic validation."""
 
 import json
 import os
@@ -8,12 +8,12 @@ import unittest
 from typing import Any, Dict, Tuple
 import httpx
 
-from ai.agents.idea_validation.problem_statement_analyzer import (
-    get_problem_statement_analyzer_agent,
+from ai.agents.idea_validation.innovation_scoring_agent import (
+    get_innovation_scoring_agent,
     validate_agent_output,
 )
 from ai.config import get_ai_settings
-from ai.schemas.problem_statement import ProblemStatementAnalysis
+from ai.schemas.innovation_score import InnovationScoreAnalysis
 from ai.shared.logger import ai_logger
 
 # Set stdout encoding to UTF-8 on Windows if supported
@@ -54,10 +54,11 @@ def execute_live_groq_agent_call(
         else getattr(agent, "backstory", "")
     )
     user_prompt = (
-        f"Analyze the problem statement for the following startup proposal: '{idea_text}'.\n\n"
-        "Return pure JSON matching the ProblemStatementAnalysis schema with fields: "
-        "problem_statement, affected_users, root_causes, existing_solutions, solution_gaps, "
-        "problem_severity, urgency_score, confidence_score."
+        f"Evaluate the innovation level for the following startup proposal: '{idea_text}'.\n\n"
+        "Return pure JSON matching the InnovationScoreAnalysis schema with fields: "
+        "overall_innovation_score, innovation_level, novelty_score, technology_innovation_score, "
+        "business_model_innovation_score, problem_originality_score, differentiation_score, "
+        "strengths, improvement_opportunities, reasoning, confidence_score."
     )
 
     url = "https://api.groq.com/openai/v1/chat/completions"
@@ -98,8 +99,8 @@ def run_single_agent_test(
     agent_factory_fn: Any,
     idea_text: str = SAMPLE_STARTUP_IDEA,
     mock_mode: bool = False,
-) -> Tuple[Dict[str, Any], ProblemStatementAnalysis]:
-    """Reusable runner for testing ProblemStatementAnalyzer agent with Pydantic validation.
+) -> Tuple[Dict[str, Any], InnovationScoreAnalysis]:
+    """Reusable runner for testing InnovationScoringAgent with Pydantic validation.
 
     Args:
         agent_factory_fn: Agent factory function.
@@ -119,7 +120,7 @@ def run_single_agent_test(
         "errors": None,
     }
 
-    validated_model: ProblemStatementAnalysis
+    validated_model: InnovationScoreAnalysis
 
     try:
         # Step 1: Import & Instantiate Agent
@@ -138,11 +139,11 @@ def run_single_agent_test(
         print(f"[INPUT PROPOSAL] '{idea_text}'\n")
 
         task_description = (
-            f"Deconstruct the problem statement for startup proposal: '{idea_text}'. "
-            "Return pure JSON matching the ProblemStatementAnalysis schema."
+            f"Evaluate innovation level for startup proposal: '{idea_text}'. "
+            "Return pure JSON matching the InnovationScoreAnalysis schema."
         )
         expected_output = (
-            "Valid JSON string matching ProblemStatementAnalysis Pydantic schema."
+            "Valid JSON string matching InnovationScoreAnalysis Pydantic schema."
         )
 
         # Step 2: Execute Agent via CrewAI or Live Groq LLM
@@ -167,25 +168,23 @@ def run_single_agent_test(
         else:
             print("[RUNNING] Executing Agent task reasoning (mock simulation)...")
             raw_response_text = json.dumps({
-                "problem_statement": "Doctors face high diagnostic workloads leading to delayed disease detection and human error.",
-                "affected_users": ["General Practitioners", "Radiologists", "Hospital Patients"],
-                "root_causes": [
-                    "High patient-to-doctor ratio",
-                    "Manual visual review of complex diagnostic images",
-                    "Lack of automated preliminary triage tools"
+                "overall_innovation_score": 78,
+                "innovation_level": "High",
+                "novelty_score": 75,
+                "technology_innovation_score": 82,
+                "business_model_innovation_score": 68,
+                "problem_originality_score": 76,
+                "differentiation_score": 80,
+                "strengths": [
+                    "Application of computer vision deep learning to medical diagnostic triaging",
+                    "Real-time decision support for general practitioners"
                 ],
-                "existing_solutions": [
-                    "Manual double-checking by senior consultants",
-                    "Basic non-AI image viewer software"
+                "improvement_opportunities": [
+                    "Explore novel federated learning architectures for privacy-preserving model updates",
+                    "Develop outcome-based pricing models tied to diagnostic efficiency"
                 ],
-                "solution_gaps": [
-                    "High diagnostic latency",
-                    "Fatigue-induced diagnostic errors",
-                    "Limited access to specialist expertise in rural areas"
-                ],
-                "problem_severity": "high",
-                "urgency_score": 88,
-                "confidence_score": 0.92
+                "reasoning": "The application of state-of-the-art computer vision algorithms to assist clinical disease detection offers strong technological innovation and high differentiation, though the core problem is well-recognized in digital health.",
+                "confidence_score": 92
             })
 
         report["raw_response"] = raw_response_text
@@ -217,43 +216,50 @@ def run_single_agent_test(
     return report, validated_model
 
 
-class TestProblemStatementAnalyzerSingleAgent(unittest.TestCase):
-    """Unittest test case wrapper for ProblemStatementAnalyzer single-agent test."""
+class TestInnovationScoringAgentSingleAgent(unittest.TestCase):
+    """Unittest test case wrapper for InnovationScoringAgent single-agent test."""
 
-    def test_problem_statement_analyzer_live_pydantic_execution(self):
-        """Verify agent executes against live Groq LLM and returns validated ProblemStatementAnalysis model."""
+    def test_innovation_scoring_agent_live_pydantic_execution(self):
+        """Verify agent executes against live Groq LLM and returns validated InnovationScoreAnalysis model."""
         report, model = run_single_agent_test(
-            agent_factory_fn=get_problem_statement_analyzer_agent,
+            agent_factory_fn=get_innovation_scoring_agent,
             idea_text=SAMPLE_STARTUP_IDEA,
             mock_mode=False,  # LIVE GROQ LLM CALL
         )
 
         # Verification Checklist Requirements
         self.assertEqual(report["status"], "SUCCESS")
-        self.assertIsInstance(model, ProblemStatementAnalysis)
+        self.assertIsInstance(model, InnovationScoreAnalysis)
 
-        # Assert problem_statement is non-empty
-        self.assertTrue(len(model.problem_statement.strip()) > 0)
+        # ✓ overall_innovation_score is between 0 and 100
+        self.assertGreaterEqual(model.overall_innovation_score, 0)
+        self.assertLessEqual(model.overall_innovation_score, 100)
 
-        # Assert affected_users is non-empty
-        self.assertTrue(len(model.affected_users) >= 1)
+        # ✓ novelty_score is between 0 and 100
+        self.assertGreaterEqual(model.novelty_score, 0)
+        self.assertLessEqual(model.novelty_score, 100)
 
-        # Assert root_causes is non-empty
-        self.assertTrue(len(model.root_causes) >= 1)
+        # ✓ differentiation_score is between 0 and 100
+        self.assertGreaterEqual(model.differentiation_score, 0)
+        self.assertLessEqual(model.differentiation_score, 100)
 
-        # Assert solution_gaps is non-empty
-        self.assertTrue(len(model.solution_gaps) >= 1)
+        # ✓ strengths is not empty
+        self.assertTrue(len(model.strengths) >= 1)
 
-        # Assert problem_severity is valid
-        self.assertIn(model.problem_severity.lower(), {"low", "medium", "high", "critical"})
+        # ✓ reasoning is not empty
+        self.assertTrue(len(model.reasoning.strip()) > 0)
 
-        # Assert urgency_score is between 0 and 100
-        self.assertGreaterEqual(model.urgency_score, 0)
-        self.assertLessEqual(model.urgency_score, 100)
+        # ✓ confidence_score is between 0 and 100
+        self.assertGreaterEqual(model.confidence_score, 0)
+        self.assertLessEqual(model.confidence_score, 100)
 
-        # Assert confidence_score is between 0.0 and 1.0
-        self.assertGreaterEqual(model.confidence_score, 0.0)
-        self.assertLessEqual(model.confidence_score, 1.0)
+        # Additional score bounds checks
+        self.assertGreaterEqual(model.technology_innovation_score, 0)
+        self.assertLessEqual(model.technology_innovation_score, 100)
+        self.assertGreaterEqual(model.business_model_innovation_score, 0)
+        self.assertLessEqual(model.business_model_innovation_score, 100)
+        self.assertGreaterEqual(model.problem_originality_score, 0)
+        self.assertLessEqual(model.problem_originality_score, 100)
 
 
 if __name__ == "__main__":
