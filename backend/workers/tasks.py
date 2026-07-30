@@ -294,7 +294,7 @@ async def run_business_phase(ctx: dict, project_id: str) -> dict[str, Any]:
         await engine.log_phase_running(pid, "business", str(job_id))
 
         try:
-            business_output = await _placeholder_business_plan(project)
+            business_output = await _execute_business_crew(project)
 
             plan = BusinessPlan(
                 project_id=pid,
@@ -314,6 +314,222 @@ async def run_business_phase(ctx: dict, project_id: str) -> dict[str, Any]:
 
         except Exception as exc:
             await engine.log_phase_failed(pid, "business", str(exc))
+            await db.commit()
+            raise
+
+
+async def run_patent_phase(ctx: dict, project_id: str, db_session: Any = None) -> dict[str, Any]:
+    """Background job: execute Research & Patent Crew prior-art search."""
+    from contextlib import nullcontext
+    from db.database import get_session_factory
+    from db.models import Project
+    from sqlalchemy import select
+    from workflow.engine import WorkflowEngine
+    from ai.crews.research_patent.crew import get_research_patent_crew
+
+    logger.info("job_started", job="run_patent_phase", project_id=project_id)
+    pid = uuid.UUID(project_id)
+    cm = nullcontext(db_session) if db_session is not None else get_session_factory()()
+
+    async with cm as db:
+        result = await db.execute(select(Project).where(Project.id == pid))
+        project = result.scalar_one_or_none()
+        if not project:
+            return {"error": "project_not_found"}
+
+        engine = WorkflowEngine(db)
+        job_id = ctx.get("job_id", "unknown")
+        await engine.log_phase_running(pid, "patent", str(job_id))
+
+        try:
+            crew = get_research_patent_crew(mock_mode=True)
+            res = crew.run(project_id=str(project.id), idea_text=f"{project.name}: {project.description or ''}", mock_mode=True)
+            await _upsert_memory(db, pid, "patent_analysis", res.model_dump(), "patent")
+            await db.commit()
+            logger.info("job_completed", job="run_patent_phase", project_id=project_id)
+            return {"status": "completed", "patent_number": res.patent_number}
+        except Exception as exc:
+            await engine.log_phase_failed(pid, "patent", str(exc))
+            await db.commit()
+            raise
+
+
+async def run_legal_phase(ctx: dict, project_id: str, db_session: Any = None) -> dict[str, Any]:
+    """Background job: execute Legal & Compliance Crew checklist & contract drafting."""
+    from contextlib import nullcontext
+    from db.database import get_session_factory
+    from db.models import Project
+    from sqlalchemy import select
+    from workflow.engine import WorkflowEngine
+    from ai.crews.legal_compliance.crew import get_legal_compliance_crew
+
+    logger.info("job_started", job="run_legal_phase", project_id=project_id)
+    pid = uuid.UUID(project_id)
+    cm = nullcontext(db_session) if db_session is not None else get_session_factory()()
+
+    async with cm as db:
+        result = await db.execute(select(Project).where(Project.id == pid))
+        project = result.scalar_one_or_none()
+        if not project:
+            return {"error": "project_not_found"}
+
+        engine = WorkflowEngine(db)
+        job_id = ctx.get("job_id", "unknown")
+        await engine.log_phase_running(pid, "legal", str(job_id))
+
+        try:
+            crew = get_legal_compliance_crew(mock_mode=True)
+            res = crew.run(project_id=str(project.id), idea_text=f"{project.name}: {project.description or ''}", mock_mode=True)
+            await _upsert_memory(db, pid, "legal_compliance", res.model_dump(), "legal")
+            await db.commit()
+            logger.info("job_completed", job="run_legal_phase", project_id=project_id)
+            return {"status": "completed", "items_count": len(res.compliance_checklist)}
+        except Exception as exc:
+            await engine.log_phase_failed(pid, "legal", str(exc))
+            await db.commit()
+            raise
+
+
+async def run_product_phase(ctx: dict, project_id: str, db_session: Any = None) -> dict[str, Any]:
+    """Background job: execute Product Development Crew MVP feature roadmap & tech stack selection."""
+    from contextlib import nullcontext
+    from db.database import get_session_factory
+    from db.models import Project
+    from sqlalchemy import select
+    from workflow.engine import WorkflowEngine
+    from ai.crews.product_development.crew import get_product_development_crew
+
+    logger.info("job_started", job="run_product_phase", project_id=project_id)
+    pid = uuid.UUID(project_id)
+    cm = nullcontext(db_session) if db_session is not None else get_session_factory()()
+
+    async with cm as db:
+        result = await db.execute(select(Project).where(Project.id == pid))
+        project = result.scalar_one_or_none()
+        if not project:
+            return {"error": "project_not_found"}
+
+        engine = WorkflowEngine(db)
+        job_id = ctx.get("job_id", "unknown")
+        await engine.log_phase_running(pid, "product", str(job_id))
+
+        try:
+            crew = get_product_development_crew(mock_mode=True)
+            res = crew.run(project_id=str(project.id), idea_text=f"{project.name}: {project.description or ''}", mock_mode=True)
+            await _upsert_memory(db, pid, "product_development", res.model_dump(), "product")
+            await db.commit()
+            logger.info("job_completed", job="run_product_phase", project_id=project_id)
+            return {"status": "completed", "features_count": len(res.mvp_features)}
+        except Exception as exc:
+            await engine.log_phase_failed(pid, "product", str(exc))
+            await db.commit()
+            raise
+
+
+async def run_branding_phase(ctx: dict, project_id: str, db_session: Any = None) -> dict[str, Any]:
+    """Background job: execute Branding & Marketing Crew GTM campaign strategy."""
+    from contextlib import nullcontext
+    from db.database import get_session_factory
+    from db.models import Project
+    from sqlalchemy import select
+    from workflow.engine import WorkflowEngine
+    from ai.crews.branding_marketing.crew import get_branding_marketing_crew
+
+    logger.info("job_started", job="run_branding_phase", project_id=project_id)
+    pid = uuid.UUID(project_id)
+    cm = nullcontext(db_session) if db_session is not None else get_session_factory()()
+
+    async with cm as db:
+        result = await db.execute(select(Project).where(Project.id == pid))
+        project = result.scalar_one_or_none()
+        if not project:
+            return {"error": "project_not_found"}
+
+        engine = WorkflowEngine(db)
+        job_id = ctx.get("job_id", "unknown")
+        await engine.log_phase_running(pid, "branding", str(job_id))
+
+        try:
+            crew = get_branding_marketing_crew(mock_mode=True)
+            res = crew.run(project_id=str(project.id), idea_text=f"{project.name}: {project.description or ''}", mock_mode=True)
+            await _upsert_memory(db, pid, "branding_marketing", res.model_dump(), "branding")
+            await db.commit()
+            logger.info("job_completed", job="run_branding_phase", project_id=project_id)
+            return {"status": "completed", "tagline": res.tagline}
+        except Exception as exc:
+            await engine.log_phase_failed(pid, "branding", str(exc))
+            await db.commit()
+            raise
+
+
+async def run_growth_phase(ctx: dict, project_id: str, db_session: Any = None) -> dict[str, Any]:
+    """Background job: execute Growth & Scaling Crew retention & referral playbook."""
+    from contextlib import nullcontext
+    from db.database import get_session_factory
+    from db.models import Project
+    from sqlalchemy import select
+    from workflow.engine import WorkflowEngine
+    from ai.crews.growth_scaling.crew import get_growth_scaling_crew
+
+    logger.info("job_started", job="run_growth_phase", project_id=project_id)
+    pid = uuid.UUID(project_id)
+    cm = nullcontext(db_session) if db_session is not None else get_session_factory()()
+
+    async with cm as db:
+        result = await db.execute(select(Project).where(Project.id == pid))
+        project = result.scalar_one_or_none()
+        if not project:
+            return {"error": "project_not_found"}
+
+        engine = WorkflowEngine(db)
+        job_id = ctx.get("job_id", "unknown")
+        await engine.log_phase_running(pid, "growth", str(job_id))
+
+        try:
+            crew = get_growth_scaling_crew(mock_mode=True)
+            res = crew.run(project_id=str(project.id), idea_text=f"{project.name}: {project.description or ''}", mock_mode=True)
+            await _upsert_memory(db, pid, "growth_scaling", res.model_dump(), "growth")
+            await db.commit()
+            logger.info("job_completed", job="run_growth_phase", project_id=project_id)
+            return {"status": "completed", "viral_loop": res.viral_loop_mechanic}
+        except Exception as exc:
+            await engine.log_phase_failed(pid, "growth", str(exc))
+            await db.commit()
+            raise
+
+
+async def run_funding_phase(ctx: dict, project_id: str, db_session: Any = None) -> dict[str, Any]:
+    """Background job: execute Funding & Investor Readiness Crew valuation & pitch deck roadmap."""
+    from contextlib import nullcontext
+    from db.database import get_session_factory
+    from db.models import Project
+    from sqlalchemy import select
+    from workflow.engine import WorkflowEngine
+    from ai.crews.funding.crew import get_funding_crew
+
+    logger.info("job_started", job="run_funding_phase", project_id=project_id)
+    pid = uuid.UUID(project_id)
+    cm = nullcontext(db_session) if db_session is not None else get_session_factory()()
+
+    async with cm as db:
+        result = await db.execute(select(Project).where(Project.id == pid))
+        project = result.scalar_one_or_none()
+        if not project:
+            return {"error": "project_not_found"}
+
+        engine = WorkflowEngine(db)
+        job_id = ctx.get("job_id", "unknown")
+        await engine.log_phase_running(pid, "funding", str(job_id))
+
+        try:
+            crew = get_funding_crew(mock_mode=True)
+            res = crew.run(project_id=str(project.id), idea_text=f"{project.name}: {project.description or ''}", mock_mode=True)
+            await _upsert_memory(db, pid, "funding_readiness", res.model_dump(), "funding")
+            await db.commit()
+            logger.info("job_completed", job="run_funding_phase", project_id=project_id)
+            return {"status": "completed", "valuation": res.estimated_valuation_range}
+        except Exception as exc:
+            await engine.log_phase_failed(pid, "funding", str(exc))
             await db.commit()
             raise
 
@@ -442,6 +658,22 @@ async def _execute_validation_crew(project: Any) -> dict[str, Any]:
     except Exception as e:
         logger.warning("validation_crew_fallback", error=str(e))
         return await _placeholder_validation(project)
+
+async def _execute_business_crew(project: Any) -> dict[str, Any]:
+    """Execute live BusinessPlanningCrew or fallback gracefully to placeholder."""
+    try:
+        from ai.crews.business_planning.crew import get_business_planning_crew
+        crew = get_business_planning_crew(mock_mode=True)
+        idea_text = f"{project.name}: {project.description or ''}"
+        result = crew.run(project_id=str(project.id), idea_text=idea_text, mock_mode=True)
+        return {
+            "lean_canvas": result.lean_canvas.model_dump(),
+            "revenue_model": result.financial_model.pricing_model,
+            "pricing_notes": result.financial_model.year_1_revenue_projection,
+        }
+    except Exception as e:
+        logger.warning("business_crew_fallback", error=str(e))
+        return await _placeholder_business_plan(project)
 
 
 # ── Placeholder AI functions (fallback) ───────────────────────────────────────

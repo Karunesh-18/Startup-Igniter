@@ -140,25 +140,27 @@ class IdeaValidationCrew:
             return agent.get("backstory", "")
         return getattr(agent, "backstory", "")
 
-    def run(self, project_id: str, idea_text: str) -> IdeaValidationResult:
+    def run(self, project_id: str, idea_text: str, mock_mode: Optional[bool] = None) -> IdeaValidationResult:
         """Execute full 6-agent sequential Idea Validation Crew pipeline against live Groq LLM.
 
         Args:
             project_id: Project UUID string identifier.
             idea_text: Submitted raw startup idea proposal.
+            mock_mode: Optional boolean override for mock execution.
 
         Returns:
             IdeaValidationResult containing all 6 validated Pydantic models.
         """
         settings = get_ai_settings()
-        ai_logger.info(f"Starting live IdeaValidationCrew run for project '{project_id}' (mock_mode={self.mock_mode})")
+        is_mock = mock_mode if mock_mode is not None else self.mock_mode
+        ai_logger.info(f"Starting live IdeaValidationCrew run for project '{project_id}' (mock_mode={is_mock})")
 
-        if self.mock_mode:
+        if is_mock:
             idea_model = StartupIdeaAnalysis(
                 summary=f"Analysis of {idea_text}",
                 startup_category="SaaS",
                 operational_pillars=["Product", "Engineering"],
-                technical_feasibility_score=80.0,
+                technical_feasibility_score=80,
                 rationale="Highly feasible with standard tech stack",
                 key_assumptions=["User demand"],
                 strengths=["Scalable model"],
@@ -171,7 +173,7 @@ class IdeaValidationCrew:
                 existing_solutions=["Legacy software"],
                 solution_gaps=["High cost"],
                 problem_severity="high",
-                urgency_score=75.0,
+                urgency_score=75,
                 confidence_score=0.85,
             )
             customer_model = CustomerIdentification(
@@ -180,7 +182,7 @@ class IdeaValidationCrew:
                 end_users=["Entrepreneurs"],
                 decision_makers=["Founders"],
                 customer_segments=["Tech startups"],
-                demographics={"age": "18-45"},
+                demographics=["Age 18-45", "Tech-savvy founders"],
                 geographic_markets=["Global"],
                 industries=["Software"],
                 pain_points=["High cost"],
@@ -188,7 +190,7 @@ class IdeaValidationCrew:
                 motivations=["Speed"],
                 adoption_barriers=["Learning curve"],
                 willingness_to_pay="medium",
-                confidence_score=0.85,
+                confidence_score=85,
             )
             value_model = ValuePropositionAnalysis(
                 core_value_proposition=f"Value prop for {idea_text}",
@@ -197,9 +199,9 @@ class IdeaValidationCrew:
                 emotional_benefits=["Peace of mind"],
                 customer_outcomes=["Faster launch"],
                 differentiators=["AI memory"],
-                value_clarity_score=85.0,
-                customer_value_score=80.0,
-                confidence_score=0.85,
+                value_clarity_score=85,
+                customer_value_score=80,
+                confidence_score=85,
             )
             category_model = StartupCategoryClassification(
                 primary_category="SaaS",
@@ -210,21 +212,21 @@ class IdeaValidationCrew:
                 revenue_model="Subscription",
                 startup_stage="Validation",
                 target_market="Developers",
-                confidence_score=0.9,
+                confidence_score=90,
                 reasoning="B2B software model",
             )
             innovation_model = InnovationScoreAnalysis(
-                overall_innovation_score=80.0,
+                overall_innovation_score=80,
                 innovation_level="High",
-                novelty_score=75.0,
-                technology_innovation_score=80.0,
-                business_model_innovation_score=75.0,
-                problem_originality_score=80.0,
-                differentiation_score=80.0,
+                novelty_score=75,
+                technology_innovation_score=80,
+                business_model_innovation_score=75,
+                problem_originality_score=80,
+                differentiation_score=80,
                 strengths=["Unique AI pipeline"],
                 improvement_opportunities=["Patent coverage"],
                 reasoning="Solid technological innovation",
-                confidence_score=0.85,
+                confidence_score=85,
             )
             return IdeaValidationResult(
                 project_id=project_id,
