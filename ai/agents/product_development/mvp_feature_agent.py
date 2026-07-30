@@ -15,6 +15,25 @@ except ImportError:
     CrewAIAgent = None
 
 
+from pathlib import Path
+
+def load_agent_prompt(filename: str = "mvp_feature.md") -> str:
+    """Load agent prompt instructions from prompts directory."""
+    prompt_path = (
+        Path(__file__).resolve().parent.parent.parent
+        / "prompts"
+        / "product_development"
+        / filename
+    )
+    if prompt_path.is_file():
+        return prompt_path.read_text(encoding="utf-8")
+    return (
+        "You are a Chief Product Officer & MVP Architect. "
+        "Prioritize core MVP features vs backlog items based on effort and customer value. "
+        "Return pure JSON only."
+    )
+
+
 def validate_agent_output(raw_output: str) -> ProductDevelopmentResult:
     """Validate raw output string into ProductDevelopmentResult Pydantic model."""
     return validate_output(raw_output, ProductDevelopmentResult)
@@ -34,7 +53,7 @@ def get_mvp_feature_agent(
 
     role = "Chief Product Officer (CPO) & MVP Architect"
     goal = "Prioritize core MVP features vs backlog items based on effort and customer value."
-    backstory = "Product leader specializing in MoSCoW prioritization and rapid MVP scoping."
+    backstory = load_agent_prompt("mvp_feature.md")
 
     if HAS_CREWAI and CrewAIAgent is not None and not mock_mode:
         return CrewAIAgent(role=role, goal=goal, backstory=backstory, verbose=True, allow_delegation=False, llm=llm, tools=tools or [])
