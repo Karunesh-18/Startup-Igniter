@@ -523,3 +523,53 @@ async def edit_business_plan(
         user_edited=plan.user_edited,
         created_at=plan.created_at.isoformat(),
     )
+
+
+# ── Additional Phase Trigger Endpoints ─────────────────────────────────────────
+
+@router.post("/{project_id}/patent", response_model=JobResponse, summary="Trigger patent & prior art research phase")
+async def trigger_patent_phase(project: EditableProject, db: DB) -> JobResponse:
+    job = await enqueue("run_patent_phase", str(project.id), project.description or "")
+    return JobResponse(job_id=str(job.job_id) if job else "local", status="queued", message="Patent research started.")
+
+
+@router.post("/{project_id}/legal", response_model=JobResponse, summary="Trigger legal compliance phase")
+async def trigger_legal_phase(project: EditableProject, db: DB) -> JobResponse:
+    job = await enqueue("run_legal_phase", str(project.id), project.description or "")
+    return JobResponse(job_id=str(job.job_id) if job else "local", status="queued", message="Legal compliance analysis started.")
+
+
+@router.post("/{project_id}/product", response_model=JobResponse, summary="Trigger product roadmap phase")
+async def trigger_product_phase(project: EditableProject, db: DB) -> JobResponse:
+    job = await enqueue("run_product_phase", str(project.id), project.description or "")
+    return JobResponse(job_id=str(job.job_id) if job else "local", status="queued", message="Product development analysis started.")
+
+
+@router.post("/{project_id}/branding", response_model=JobResponse, summary="Trigger branding & marketing phase")
+async def trigger_branding_phase(project: EditableProject, db: DB) -> JobResponse:
+    job = await enqueue("run_branding_phase", str(project.id), project.description or "")
+    return JobResponse(job_id=str(job.job_id) if job else "local", status="queued", message="Branding & marketing analysis started.")
+
+
+@router.post("/{project_id}/growth", response_model=JobResponse, summary="Trigger growth & scaling phase")
+async def trigger_growth_phase(project: EditableProject, db: DB) -> JobResponse:
+    job = await enqueue("run_growth_phase", str(project.id), project.description or "")
+    return JobResponse(job_id=str(job.job_id) if job else "local", status="queued", message="Growth & scaling analysis started.")
+
+
+@router.post("/{project_id}/funding", response_model=JobResponse, summary="Trigger funding readiness phase")
+async def trigger_funding_phase(project: EditableProject, db: DB) -> JobResponse:
+    job = await enqueue("run_funding_phase", str(project.id), project.description or "")
+    return JobResponse(job_id=str(job.job_id) if job else "local", status="queued", message="Funding readiness analysis started.")
+
+
+@router.post("/{project_id}/reporting", response_model=JobResponse, summary="Trigger master executive reporting phase")
+async def trigger_reporting_phase(project: EditableProject, db: DB) -> JobResponse:
+    job = await enqueue("run_reporting_phase", str(project.id), project.description or "")
+    return JobResponse(job_id=str(job.job_id) if job else "local", status="queued", message="Executive report generation started.")
+
+
+@router.post("/{project_id}/community", response_model=JobResponse, summary="Trigger community peer review phase")
+async def trigger_community_phase(project: EditableProject, db: DB) -> JobResponse:
+    job = await enqueue("run_community_phase", str(project.id), project.description or "")
+    return JobResponse(job_id=str(job.job_id) if job else "local", status="queued", message="Community peer review started.")

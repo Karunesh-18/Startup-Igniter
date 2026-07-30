@@ -68,3 +68,42 @@ async def test_community_crew():
     res = crew.run(project_id="p7", idea_text="DevTools API Gateway")
     assert res.project_id == "p7"
     assert len(res.recommended_mentors) > 0
+
+
+@pytest.mark.asyncio
+async def test_all_standalone_agent_factories():
+    from ai import agents
+
+    factories = [
+        agents.get_startup_idea_analyzer_agent,
+        agents.get_problem_statement_analyzer_agent,
+        agents.get_customer_identifier_agent,
+        agents.get_value_proposition_analyzer_agent,
+        agents.get_startup_category_classifier_agent,
+        agents.get_innovation_scoring_agent,
+        agents.get_market_research_agent,
+        agents.get_industry_analysis_agent,
+        agents.get_trend_analysis_agent,
+        agents.get_competitor_discovery_agent,
+        agents.get_competitor_comparison_agent,
+        agents.get_customer_persona_generator_agent,
+        agents.get_tam_sam_som_estimator_agent,
+        agents.get_feasibility_analyzer_agent,
+        agents.get_lean_canvas_agent,
+        agents.get_financial_model_agent,
+        agents.get_prior_art_search_agent,
+        agents.get_compliance_checklist_agent,
+        agents.get_legal_document_draft_agent,
+        agents.get_mvp_feature_agent,
+        agents.get_tech_stack_agent,
+        agents.get_branding_marketing_agent,
+        agents.get_growth_scaling_agent,
+        agents.get_funding_readiness_agent,
+        agents.get_master_reporting_agent,
+        agents.get_community_peer_review_agent,
+    ]
+
+    assert len(factories) == 26
+    for factory in factories:
+        agent_obj = factory(mock_mode=True)
+        assert agent_obj is not None

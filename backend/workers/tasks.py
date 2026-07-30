@@ -534,6 +534,78 @@ async def run_funding_phase(ctx: dict, project_id: str, db_session: Any = None) 
             raise
 
 
+async def run_reporting_phase(ctx: dict, project_id: str, db_session: Any = None) -> dict[str, Any]:
+    """Background job: execute Master Executive Reporting Crew synthesis."""
+    from contextlib import nullcontext
+    from db.database import get_session_factory
+    from db.models import Project
+    from sqlalchemy import select
+    from workflow.engine import WorkflowEngine
+    from ai.crews.reporting.crew import get_reporting_crew
+
+    logger.info("job_started", job="run_reporting_phase", project_id=project_id)
+    pid = uuid.UUID(project_id)
+    cm = nullcontext(db_session) if db_session is not None else get_session_factory()()
+
+    async with cm as db:
+        result = await db.execute(select(Project).where(Project.id == pid))
+        project = result.scalar_one_or_none()
+        if not project:
+            return {"error": "project_not_found"}
+
+        engine = WorkflowEngine(db)
+        job_id = ctx.get("job_id", "unknown")
+        await engine.log_phase_running(pid, "reporting", str(job_id))
+
+        try:
+            crew = get_reporting_crew(mock_mode=True)
+            res = crew.run(project_id=str(project.id), idea_text=f"{project.name}: {project.description or ''}", mock_mode=True)
+            await _upsert_memory(db, pid, "master_reporting", res.model_dump(), "reporting")
+            await db.commit()
+            logger.info("job_completed", job="run_reporting_phase", project_id=project_id)
+            return {"status": "completed", "readiness_score": res.overall_readiness_score}
+        except Exception as exc:
+            await engine.log_phase_failed(pid, "reporting", str(exc))
+            await db.commit()
+            raise
+
+
+async def run_community_phase(ctx: dict, project_id: str, db_session: Any = None) -> dict[str, Any]:
+    """Background job: execute Community & Peer Review Crew scorecards."""
+    from contextlib import nullcontext
+    from db.database import get_session_factory
+    from db.models import Project
+    from sqlalchemy import select
+    from workflow.engine import WorkflowEngine
+    from ai.crews.community.crew import get_community_crew
+
+    logger.info("job_started", job="run_community_phase", project_id=project_id)
+    pid = uuid.UUID(project_id)
+    cm = nullcontext(db_session) if db_session is not None else get_session_factory()()
+
+    async with cm as db:
+        result = await db.execute(select(Project).where(Project.id == pid))
+        project = result.scalar_one_or_none()
+        if not project:
+            return {"error": "project_not_found"}
+
+        engine = WorkflowEngine(db)
+        job_id = ctx.get("job_id", "unknown")
+        await engine.log_phase_running(pid, "community", str(job_id))
+
+        try:
+            crew = get_community_crew(mock_mode=True)
+            res = crew.run(project_id=str(project.id), idea_text=f"{project.name}: {project.description or ''}", mock_mode=True)
+            await _upsert_memory(db, pid, "community_review", res.model_dump(), "community")
+            await db.commit()
+            logger.info("job_completed", job="run_community_phase", project_id=project_id)
+            return {"status": "completed", "mentors_count": len(res.recommended_mentors)}
+        except Exception as exc:
+            await engine.log_phase_failed(pid, "community", str(exc))
+            await db.commit()
+            raise
+
+
 async def generate_export_documents(
     ctx: dict, project_id: str, doc_types: list[str]
 ) -> dict[str, Any]:
@@ -793,6 +865,14 @@ class WorkerSettings:
         run_idea_phase,
         run_validation_phase,
         run_business_phase,
+        run_patent_phase,
+        run_legal_phase,
+        run_product_phase,
+        run_branding_phase,
+        run_growth_phase,
+        run_funding_phase,
+        run_reporting_phase,
+        run_community_phase,
         generate_export_documents,
     ]
     on_startup = startup
