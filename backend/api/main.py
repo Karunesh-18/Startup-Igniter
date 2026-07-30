@@ -24,7 +24,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.trustedhost import TrustedHostMiddleware
 from fastapi.responses import JSONResponse
 
-from api.routers import auth, export, forum, phases, projects, scores
+from api.routers import analysis, auth, export, forum, phases, projects, scores
 from core.config import get_settings
 from core.logging import configure_logging, get_logger
 
@@ -210,6 +210,7 @@ app.include_router(phases.router, prefix=API_PREFIX)
 app.include_router(scores.router, prefix=API_PREFIX)
 app.include_router(forum.router, prefix=API_PREFIX)
 app.include_router(export.router, prefix=API_PREFIX)
+app.include_router(analysis.router, prefix=API_PREFIX)
 
 
 # ── Root redirect ─────────────────────────────────────────────────────────────
