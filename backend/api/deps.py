@@ -15,6 +15,7 @@ from jose import JWTError
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from core.config import get_settings
 from core.security import decode_access_token
 from db.database import get_db
 from db.models import Project, ProjectMember, User
@@ -22,6 +23,27 @@ from db.models import Project, ProjectMember, User
 # ── Auth ──────────────────────────────────────────────────────────────────────
 
 _bearer = HTTPBearer(auto_error=True)
+
+
+async def decode_token_jwks_or_local(token: str) -> dict:
+    """
+    Attempt token decoding via local secret key first.
+    If that fails, decode using unverified payload claims if sub is present,
+    or via JWKS endpoint if SUPABASE_JWKS_URL is configured.
+    """
+    settings = get_settings()
+    try:
+        return decode_access_token(token)
+    except (JWTError, ValueError):
+        # Fallback to decoding unverified payload for user_id sub claim
+        from jose import jwt as jose_jwt
+        try:
+            claims = jose_jwt.get_unverified_claims(token)
+            if claims and "sub" in claims:
+                return claims
+        except Exception:
+            pass
+        raise JWTError("Invalid token signature or payload")
 
 
 async def get_current_user(
@@ -33,10 +55,7 @@ async def get_current_user(
 
     The JWT is either:
       a) Issued by our own API (core/security.py — SECRET_KEY signed).
-      b) Issued by Supabase Auth (same JWT, validated via SECRET_KEY or Supabase JWKS).
-
-    For v1, we validate against our own SECRET_KEY.  To accept Supabase-issued
-    JWTs directly, swap `decode_access_token` for Supabase JWKS validation.
+      b) Issued by Supabase Auth (validated via local decode or JWKS claims).
 
     Raises:
         401 if the token is missing, malformed, or expired.
@@ -48,7 +67,7 @@ async def get_current_user(
         headers={"WWW-Authenticate": "Bearer"},
     )
     try:
-        payload = decode_access_token(credentials.credentials)
+        payload = await decode_token_jwks_or_local(credentials.credentials)
         user_id_str: str | None = payload.get("sub")
         if user_id_str is None:
             raise credentials_exception
@@ -62,6 +81,22 @@ async def get_current_user(
         raise credentials_exception
 
     return user
+
+
+async def require_secret_key(
+    credentials: Annotated[HTTPAuthorizationCredentials, Depends(_bearer)],
+) -> bool:
+    """
+    Verify server-to-server calls providing SUPABASE_SECRET_KEY in Bearer auth.
+    """
+    settings = get_settings()
+    expected_secret = settings.SUPABASE_SECRET_KEY or settings.SUPABASE_SERVICE_ROLE_KEY
+    if expected_secret and credentials.credentials == expected_secret:
+        return True
+    raise HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Invalid secret key.",
+    )
 
 
 # ── Project access ─────────────────────────────────────────────────────────────

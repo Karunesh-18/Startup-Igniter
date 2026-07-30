@@ -27,11 +27,14 @@ from sqlalchemy import (
     Integer,
     String,
     Text,
+    JSON,
     UniqueConstraint,
     func,
 )
-from sqlalchemy.dialects.postgresql import JSONB, UUID
+from sqlalchemy.dialects.postgresql import JSONB as PG_JSONB, UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
+
+JSONB = JSON().with_variant(PG_JSONB, "postgresql")
 
 from db.database import Base
 
@@ -129,7 +132,9 @@ class User(Base):
     projects: Mapped[list["Project"]] = relationship(
         back_populates="owner", cascade="all, delete-orphan"
     )
-    memberships: Mapped[list["ProjectMember"]] = relationship(back_populates="user")
+    memberships: Mapped[list["ProjectMember"]] = relationship(
+        back_populates="user", foreign_keys="[ProjectMember.user_id]"
+    )
     forum_posts: Mapped[list["ForumPost"]] = relationship(back_populates="author")
 
 

@@ -95,9 +95,10 @@ async def test_user(db: AsyncSession):
     from db.models import User
     from core.security import hash_password
 
+    user_id = uuid.uuid4()
     user = User(
-        id=uuid.uuid4(),
-        email="test@startup-os.dev",
+        id=user_id,
+        email=f"test_{user_id.hex[:8]}@startup-os.dev",
         name="Test Founder",
         role="student",
         bio=hash_password("testpass123"),
