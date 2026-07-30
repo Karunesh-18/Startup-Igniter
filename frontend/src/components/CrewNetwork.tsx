@@ -279,7 +279,7 @@ export default function CrewNetwork({ active = false, compact = false }: { activ
       {!compact && (
         <div className="pointer-events-none absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-6 text-[10px] uppercase tracking-[0.2em] text-white/40">
           <span className="flex items-center gap-1.5"><span className="h-1.5 w-1.5 rounded-full bg-electric" />12 Crews</span>
-          <span className="flex items-center gap-1.5"><span className="h-1.5 w-1.5 rounded-full bg-violet" />72 Agents</span>
+          <span className="flex items-center gap-1.5"><span className="h-1.5 w-1.5 rounded-full bg-violet" />66 Agents</span>
           <span className="flex items-center gap-1.5"><span className="h-1.5 w-1.5 rounded-full bg-emerald" />Live Sync</span>
         </div>
       )}

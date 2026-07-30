@@ -1,4 +1,4 @@
-/* AgentListPage — Directory of all 72 AI Agents */
+/* AgentListPage — Directory of all 66 AI Agents */
 
 import { useState } from 'react';
 import {
@@ -61,7 +61,7 @@ export default function AgentListPage({ onBack, onSelectAgent, onPhases }: Props
               <span className="text-xs text-white/60">Agent Directory</span>
             </div>
             <h1 className="text-4xl font-light leading-tight text-white sm:text-5xl">
-              72 Specialized <span className="font-serif italic text-gradient">Agents</span>
+              66 Specialized <span className="font-serif italic text-gradient">Agents</span>
             </h1>
             <p className="mt-3 max-w-xl text-white/45">
               Every agent is purpose-built for a distinct analysis task within its crew phase.

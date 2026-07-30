@@ -85,7 +85,7 @@ export default function PhaseListPage({ onBack, onSelectPhase, onAgents }: Props
           <div className="mt-8 flex flex-wrap gap-6 border-t border-white/5 pt-8">
             {[
               { label: 'Phase Crews', value: '12', icon: Network, color: '#2d7ff9' },
-              { label: 'AI Agents', value: '72', icon: Activity, color: '#8b5cf6' },
+              { label: 'AI Agents', value: '66', icon: Activity, color: '#8b5cf6' },
               { label: 'Analysis Domains', value: '12', icon: Zap, color: '#10b981' },
             ].map((s) => (
               <div key={s.label} className="flex items-center gap-3">

@@ -58,7 +58,7 @@ def print_formatted_report(result: StartupAnalysisResult) -> None:
     print("📊 MARKET RESEARCH (CREW 2)")
     print("=" * 65)
     if mr is not None:
-        print(f"• Market Overview  : {mr.market_research_analysis.market_overview[:120]}...")
+        print(f"• Market Overview  : {mr.market_research.market_overview[:120]}...")
         print(
             f"• Industry Landscape: {mr.industry_analysis.industry_name} "
             f"({mr.industry_analysis.industry_lifecycle_stage})"

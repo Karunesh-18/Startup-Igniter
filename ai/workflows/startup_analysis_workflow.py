@@ -59,6 +59,7 @@ class StartupAnalysisWorkflow:
             val_result: IdeaValidationResult = self.idea_validation_service.validate_idea(
                 idea_text=idea_text.strip(),
                 project_id=resolved_project_id,
+                mock_mode=mock_mode,
             )
         except Exception as exc:
             ai_logger.error(f"Phase 1 (Idea Validation Crew) failed: {exc}")

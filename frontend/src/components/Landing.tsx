@@ -60,7 +60,7 @@ export default function Landing({ onLaunch, onPhases, onAgents }: { onLaunch: ()
                 <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald opacity-75" />
                 <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald" />
               </span>
-              <span className="text-xs text-white/70">12 AI Crews · 72 Specialized Agents · Now in Beta</span>
+              <span className="text-xs text-white/70">12 AI Crews · 66 Specialized Agents · Now in Beta</span>
             </div>
           </div>
 
@@ -73,7 +73,7 @@ export default function Landing({ onLaunch, onPhases, onAgents }: { onLaunch: ()
 
           <p className="mx-auto mt-8 max-w-2xl text-center text-lg leading-relaxed text-white/50 animate-fade-up" style={{ animationDelay: '0.2s' }}>
             The AI Operating System that takes a single idea and orchestrates 12 specialized crews
-            through 72 agents — from validation to investor-ready, end to end.
+            through 66 agents — from validation to investor-ready, end to end.
           </p>
 
           {/* CTAs */}
@@ -92,7 +92,7 @@ export default function Landing({ onLaunch, onPhases, onAgents }: { onLaunch: ()
           <div className="mt-16 grid grid-cols-2 gap-6 sm:grid-cols-4 animate-fade-up" style={{ animationDelay: '0.4s' }}>
             {[
               { v: 12, l: 'AI Crews', c: '#2d7ff9' },
-              { v: 72, l: 'Specialized Agents', c: '#8b5cf6' },
+              { v: 66, l: 'Specialized Agents', c: '#8b5cf6' },
               { v: 340, l: 'Startups Ignited', c: '#10b981' },
               { v: 94, l: 'Investor-Ready %', c: '#fb923c' },
             ].map((s) => (
@@ -127,7 +127,7 @@ export default function Landing({ onLaunch, onPhases, onAgents }: { onLaunch: ()
             </h2>
             <p className="mt-6 text-lg text-white/50">
               Most platforms give you a single chat window. Startup Igniter deploys a coordinated
-              team of 72 AI agents across 12 crews — each an expert in its domain — working in
+              team of 66 AI agents across 12 crews — each an expert in its domain — working in
               parallel with shared memory to build your company while you watch.
             </p>
           </div>
@@ -208,7 +208,7 @@ export default function Landing({ onLaunch, onPhases, onAgents }: { onLaunch: ()
             <div>
               <span className="font-mono text-xs uppercase tracking-[0.3em] text-violet">The Crew Network</span>
               <h2 className="mt-4 text-4xl font-light leading-tight text-white sm:text-5xl">
-                72 agents.
+                66 agents.
                 <br />
                 <span className="font-serif italic text-gradient">One mission.</span>
               </h2>
@@ -510,7 +510,7 @@ export default function Landing({ onLaunch, onPhases, onAgents }: { onLaunch: ()
           <div className="mt-16 grid gap-6 md:grid-cols-3">
             {[
               { q: 'I had an idea on Monday. By Friday I had a validated market, a tech stack, and a pitch deck that closed our pre-seed.', n: 'Maya Chen', r: 'Founder, Lumen Health', c: '#2d7ff9' },
-              { q: 'The crew network is unreal. It felt like having a full team of 72 experts working in parallel — because it was.', n: 'Dev Patel', r: 'CEO, Orbit Labs', c: '#8b5cf6' },
+              { q: 'The crew network is unreal. It felt like having a full team of 66 experts working in parallel — because it was.', n: 'Dev Patel', r: 'CEO, Orbit Labs', c: '#8b5cf6' },
               { q: 'We walked into our seed round with a 64-page report no other pre-seed company had. Investors were stunned.', n: 'Sofia Reyes', r: 'Founder, Nuvora', c: '#10b981' },
             ].map((t, i) => (
               <div key={i} className="reveal gradient-border noise rounded-2xl bg-charcoal/40 p-6 backdrop-blur-sm">
@@ -546,7 +546,7 @@ export default function Landing({ onLaunch, onPhases, onAgents }: { onLaunch: ()
               <span className="font-serif italic text-gradient">one idea away</span>
             </h2>
             <p className="mx-auto mt-6 max-w-xl text-lg text-white/50">
-              Launch a mission today. Watch 72 agents build your company in real time.
+              Launch a mission today. Watch 66 agents.build your company in real time.
             </p>
             <button onClick={onLaunch} className="mt-10 btn-primary inline-flex items-center gap-2 rounded-full px-8 py-4 text-lg font-medium">
               Ignite Your Startup
@@ -579,3 +579,4 @@ export default function Landing({ onLaunch, onPhases, onAgents }: { onLaunch: ()
     </div>
   );
 }
+

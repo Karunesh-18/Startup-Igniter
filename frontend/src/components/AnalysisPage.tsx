@@ -1,8 +1,11 @@
 import { useState } from 'react';
-import { ArrowLeft, Rocket, Sparkles, Zap, AlertTriangle, CheckCircle2, Loader2 } from 'lucide-react';
+import {
+  ArrowLeft, Rocket, Sparkles, Zap, AlertTriangle, Loader2,
+  CheckCircle2, Brain, Network, Lightbulb,
+} from 'lucide-react';
 import NeuralBackground from './NeuralBackground';
 import { useScrollReveal } from '@/hooks/useScrollReveal';
-import { useAnalysis } from '@/hooks/useAnalysis';
+import { runAnalysis } from '@/lib/api';
 import type { AnalysisResult } from '@/lib/types';
 
 const EXAMPLES = [
@@ -13,12 +16,23 @@ const EXAMPLES = [
   'Autonomous warehouse robots with multi-agent AI for inventory management',
 ];
 
-// Crew color palette matching crews.ts
-const CREW_COLORS: Record<number, { color: string; color2: string; label: string }> = {
-  1: { color: '#2d7ff9', color2: '#6366f1', label: 'Idea Validation' },
-  2: { color: '#14b8a6', color2: '#2d7ff9', label: 'Market Research' },
-  3: { color: '#8b5cf6', color2: '#6366f1', label: 'Research & Patent' },
-};
+// Rotating status messages during API call
+const LOADING_MESSAGES = [
+  'Running Idea Validation agents…',
+  'Researching market landscape…',
+  'Mining patent databases…',
+  'Assessing technical feasibility…',
+  'Designing revenue model…',
+  'Scoping the MVP roadmap…',
+  'Auditing legal & compliance…',
+  'Crafting brand identity…',
+  'Matching investors…',
+  'Modelling growth loops…',
+  'Building final report…',
+  'Synthesising all 66 agents…',
+];
+
+type Status = 'idle' | 'running' | 'done' | 'error';
 
 interface Props {
   onBack: () => void;
@@ -28,21 +42,31 @@ interface Props {
 export default function AnalysisPage({ onBack, onComplete }: Props) {
   useScrollReveal();
   const [idea, setIdea] = useState('');
-  const { status, steps, activeStep, result, error, submit } = useAnalysis();
+  const [status, setStatus] = useState<Status>('idle');
+  const [error, setError] = useState<string | null>(null);
+  const [msgIdx, setMsgIdx] = useState(0);
 
-  const launch = () => {
+  const launch = async () => {
     if (!idea.trim()) return;
-    submit(idea.trim());
+    setStatus('running');
+    setError(null);
+
+    // Cycle through status messages
+    const interval = setInterval(() => {
+      setMsgIdx((i) => (i + 1) % LOADING_MESSAGES.length);
+    }, 3500);
+
+    try {
+      const result = await runAnalysis({ idea_text: idea.trim(), mock_mode: false });
+      clearInterval(interval);
+      setStatus('done');
+      setTimeout(() => onComplete(result), 800);
+    } catch (err: any) {
+      clearInterval(interval);
+      setError(err?.message ?? 'Analysis failed. Please try again.');
+      setStatus('error');
+    }
   };
-
-  // Navigate to results when done
-  if (status === 'done' && result) {
-    // Small delay so user sees final step completion
-    setTimeout(() => onComplete(result), 600);
-  }
-
-  const isRunning = status === 'running';
-  const isError = status === 'error';
 
   return (
     <div className="relative min-h-screen overflow-hidden bg-void">
@@ -52,24 +76,28 @@ export default function AnalysisPage({ onBack, onComplete }: Props) {
       <div className="absolute inset-0 radial-spotlight" />
 
       <div className="relative z-10 mx-auto max-w-4xl px-6 py-12">
-        <button onClick={onBack} className="mb-8 flex items-center gap-2 text-sm text-white/50 transition-colors hover:text-white">
+        <button
+          onClick={onBack}
+          disabled={status === 'running'}
+          className="mb-8 flex items-center gap-2 text-sm text-white/50 transition-colors hover:text-white disabled:pointer-events-none disabled:opacity-30"
+        >
           <ArrowLeft className="h-4 w-4" />
           Back
         </button>
 
-        {/* ── Input Section ── */}
-        {!isRunning && status !== 'done' && (
+        {/* ── Idle / Error Input ── */}
+        {status !== 'running' && status !== 'done' && (
           <div>
             <div className="reveal text-center">
               <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-1.5">
                 <Sparkles className="h-3.5 w-3.5 text-violet" />
-                <span className="text-xs text-white/60">New Mission</span>
+                <span className="text-xs text-white/60">New Mission · 12 Crews · 66 Agents</span>
               </div>
               <h1 className="text-4xl font-light leading-tight text-white sm:text-5xl">
                 What are we <span className="font-serif italic text-gradient">building</span>?
               </h1>
               <p className="mx-auto mt-4 max-w-xl text-white/50">
-                Describe your startup idea. 20 AI agents across 3 specialized crews will analyse it end-to-end.
+                Describe your startup idea in 1–3 sentences. Our 66 AI agents across 12 specialized crews will analyse it end-to-end and generate an investor-ready report.
               </p>
             </div>
 
@@ -78,14 +106,14 @@ export default function AnalysisPage({ onBack, onComplete }: Props) {
               <textarea
                 value={idea}
                 onChange={(e) => setIdea(e.target.value)}
-                placeholder="e.g. An AI platform that turns startup ideas into investor-ready companies..."
-                rows={3}
+                placeholder="e.g. An AI platform that turns startup ideas into investor-ready companies…"
+                rows={4}
                 className="w-full resize-none rounded-2xl bg-transparent px-5 py-4 text-lg text-white placeholder-white/25 focus:outline-none"
               />
               <div className="flex items-center justify-between px-4 pb-3">
                 <div className="flex items-center gap-2 text-xs text-white/30">
                   <Zap className="h-3.5 w-3.5 text-electric" />
-                  {idea.length} chars · 3 crews · 20 agents
+                  {idea.length} chars · 12 crews · 66 agents
                 </div>
                 <button
                   onClick={launch}
@@ -114,131 +142,107 @@ export default function AnalysisPage({ onBack, onComplete }: Props) {
               </div>
             </div>
 
-            {/* Error state */}
-            {isError && error && (
+            {/* Error */}
+            {status === 'error' && error && (
               <div className="mt-8 flex items-start gap-3 rounded-2xl border border-red-500/20 bg-red-500/10 p-4">
                 <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-red-400" />
                 <div>
                   <div className="text-sm font-medium text-red-300">Analysis failed</div>
                   <div className="mt-1 text-xs text-red-400/80">{error}</div>
+                  <button
+                    onClick={launch}
+                    className="mt-3 flex items-center gap-1.5 text-xs text-red-300 hover:text-red-200"
+                  >
+                    <Rocket className="h-3.5 w-3.5" /> Retry
+                  </button>
                 </div>
               </div>
             )}
           </div>
         )}
 
-        {/* ── Execution Pipeline ── */}
-        {isRunning && (
-          <div className="animate-fade-up">
-            {/* Status badge */}
-            <div className="mb-8 text-center">
+        {/* ── Running ── */}
+        {status === 'running' && (
+          <div className="animate-fade-up flex min-h-[70vh] flex-col items-center justify-center">
+            {/* Orbital animation */}
+            <div className="relative mb-10 flex h-40 w-40 items-center justify-center">
+              {/* Outer ring */}
+              <div className="absolute inset-0 rounded-full border border-electric/20 animate-spin-slow" />
+              <div className="absolute inset-3 rounded-full border border-violet/15 animate-spin-slower" />
+              <div className="absolute inset-6 rounded-full border border-teal/10 animate-spin-slow" />
+              {/* Core */}
+              <div className="relative flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-electric to-violet shadow-[0_0_40px_rgba(45,127,249,0.5)]">
+                <Brain className="h-8 w-8 text-white" />
+              </div>
+              {/* Orbiting dots */}
+              {[0, 60, 120, 180, 240, 300].map((deg) => (
+                <div
+                  key={deg}
+                  className="absolute h-2 w-2 rounded-full bg-electric/70 animate-spin-slow"
+                  style={{
+                    transformOrigin: '70px 70px',
+                    transform: `rotate(${deg}deg) translateX(56px)`,
+                    animationDelay: `${deg / 360}s`,
+                  }}
+                />
+              ))}
+            </div>
+
+            <div className="text-center">
               <div className="mb-2 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-1.5">
                 <Loader2 className="h-3.5 w-3.5 animate-spin text-electric" />
                 <span className="text-xs text-white/60">Mission in progress</span>
               </div>
-              <h2 className="text-2xl font-light text-white">
-                Analysing <span className="text-gradient font-medium">"{idea.length > 60 ? idea.slice(0, 60) + '…' : idea}"</span>
+
+              <h2 className="mt-4 text-2xl font-light text-white">
+                Analysing <span className="text-gradient font-medium">"{idea.length > 55 ? idea.slice(0, 55) + '…' : idea}"</span>
               </h2>
-              <p className="mt-2 text-sm text-white/40">
-                {steps.filter((s) => s.status === 'done').length} / {steps.length} agents complete
+
+              <p className="mt-4 text-sm text-white/50 transition-all duration-700 min-h-[1.5rem]">
+                {LOADING_MESSAGES[msgIdx]}
               </p>
             </div>
 
-            {/* Crew sections */}
-            {[1, 2, 3].map((crewId) => {
-              const crewSteps = steps.filter((s) => s.crew === crewId);
-              const crew = CREW_COLORS[crewId];
-              const crewDone = crewSteps.every((s) => s.status === 'done');
-              const crewActive = crewSteps.some((s) => s.status === 'running');
-
-              return (
-                <div key={crewId} className="mb-8">
-                  {/* Crew header */}
-                  <div className="mb-3 flex items-center gap-3">
-                    <div
-                      className="h-2 w-2 rounded-full"
-                      style={{ background: crewDone ? '#10b981' : crewActive ? crew.color : 'rgba(255,255,255,0.2)' }}
-                    />
-                    <span className="text-xs font-medium uppercase tracking-wider text-white/50">
-                      Crew {crewId} — {crew.label}
-                    </span>
-                    {crewDone && <CheckCircle2 className="h-3.5 w-3.5 text-emerald" />}
-                  </div>
-
-                  {/* Agent cards */}
-                  <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
-                    {crewSteps.map((step) => {
-                      const isActive = step.status === 'running';
-                      const isDone = step.status === 'done';
-
-                      return (
-                        <div
-                          key={step.id}
-                          className="relative overflow-hidden rounded-2xl border bg-charcoal/60 p-3 backdrop-blur-sm transition-all duration-500"
-                          style={{
-                            borderColor: isDone
-                              ? `${crew.color}44`
-                              : isActive
-                              ? `${crew.color}66`
-                              : 'rgba(255,255,255,0.06)',
-                            boxShadow: isActive ? `0 0 20px -8px ${crew.color}` : 'none',
-                          }}
-                        >
-                          {/* Pulsing ring when active */}
-                          {isActive && (
-                            <span
-                              className="pointer-events-none absolute inset-0 rounded-2xl animate-ping"
-                              style={{ border: `1px solid ${crew.color}`, animationDuration: '1.5s', opacity: 0.4 }}
-                            />
-                          )}
-
-                          <div className="flex items-center justify-between gap-2">
-                            <span className="text-xs font-medium text-white/80 leading-tight">{step.name}</span>
-                            <span
-                              className="shrink-0 rounded-full px-1.5 py-0.5 text-[8px] font-bold uppercase tracking-wider"
-                              style={{
-                                background: isDone
-                                  ? 'rgba(16,185,129,0.15)'
-                                  : isActive
-                                  ? `${crew.color}22`
-                                  : 'rgba(255,255,255,0.04)',
-                                color: isDone ? '#10b981' : isActive ? crew.color : 'rgba(255,255,255,0.3)',
-                              }}
-                            >
-                              {isDone ? '✓' : isActive ? 'Running' : 'Queue'}
-                            </span>
-                          </div>
-
-                          {/* Progress bar */}
-                          <div className="mt-2 h-0.5 overflow-hidden rounded-full bg-white/5">
-                            <div
-                              className="h-full rounded-full transition-all duration-100"
-                              style={{
-                                width: `${isDone ? 100 : step.progress * 100}%`,
-                                background: `linear-gradient(90deg, ${crew.color}, ${crew.color2})`,
-                                boxShadow: isActive ? `0 0 6px ${crew.color}` : 'none',
-                              }}
-                            />
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
+            {/* Phase progress indicators */}
+            <div className="mt-12 grid grid-cols-4 gap-2 sm:grid-cols-6 lg:grid-cols-12">
+              {Array.from({ length: 12 }, (_, i) => (
+                <div
+                  key={i}
+                  className="flex flex-col items-center gap-1"
+                >
+                  <div
+                    className="h-1 w-full rounded-full"
+                    style={{
+                      background: msgIdx > i
+                        ? 'linear-gradient(90deg, #2d7ff9, #8b5cf6)'
+                        : msgIdx === i
+                        ? 'rgba(45,127,249,0.5)'
+                        : 'rgba(255,255,255,0.06)',
+                      boxShadow: msgIdx === i ? '0 0 8px rgba(45,127,249,0.6)' : 'none',
+                      animation: msgIdx === i ? 'shimmer 1.5s infinite' : 'none',
+                      backgroundSize: msgIdx === i ? '200% 100%' : 'auto',
+                    }}
+                  />
+                  <span className="font-mono text-[8px] text-white/20">{String(i + 1).padStart(2, '0')}</span>
                 </div>
-              );
-            })}
+              ))}
+            </div>
+
+            <p className="mt-6 text-xs text-white/25">
+              66 agents · 12 crews · This may take a few minutes
+            </p>
           </div>
         )}
 
-        {/* ── Completion State ── */}
+        {/* ── Done ── */}
         {status === 'done' && (
-          <div className="flex min-h-[40vh] items-center justify-center animate-scale-in">
+          <div className="flex min-h-[60vh] items-center justify-center animate-scale-in">
             <div className="gradient-border noise mx-auto max-w-md rounded-3xl bg-charcoal/50 p-8 text-center backdrop-blur-xl">
-              <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-emerald to-teal">
-                <Rocket className="h-7 w-7 text-white" />
+              <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-emerald to-teal shadow-[0_0_30px_rgba(16,185,129,0.4)]">
+                <CheckCircle2 className="h-7 w-7 text-white" />
               </div>
               <h3 className="mt-6 text-2xl font-light text-white">Analysis Complete</h3>
-              <p className="mt-2 text-sm text-white/50">Loading your results…</p>
+              <p className="mt-2 text-sm text-white/50">Loading your investor report…</p>
               <Loader2 className="mx-auto mt-4 h-5 w-5 animate-spin text-emerald" />
             </div>
           </div>
