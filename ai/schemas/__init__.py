@@ -36,6 +36,17 @@ from ai.schemas.startup_analysis import StartupAnalysisResult
 from ai.schemas.startup_category import StartupCategoryClassification
 from ai.schemas.value_proposition import ValuePropositionAnalysis
 
+from ai.schemas.branding_marketing import BrandingMarketingResult
+from ai.schemas.business_plan import BusinessPlanResult, FinancialModel, LeanCanvas
+from ai.schemas.community import CommunityResult
+from ai.schemas.feasibility import FeasibilityResult
+from ai.schemas.funding import FundingResult
+from ai.schemas.growth_scaling import GrowthScalingResult
+from ai.schemas.legal_compliance import ComplianceItem, LegalComplianceResult, LegalDocumentDraft
+from ai.schemas.product_development import MVPFeature, ProductDevelopmentResult, TechStackRecommendation
+from ai.schemas.reporting import MasterReportResult
+from ai.schemas.research_patent import PatentAnalysis
+
 __all__ = [
     "StartupIdeaAnalysis",
     "ProblemStatementAnalysis",
@@ -67,4 +78,20 @@ __all__ = [
     "ResearchPatentContext",
     "FeasibilityContext",
     "BusinessPlanningContext",
+    "LeanCanvas",
+    "FinancialModel",
+    "BusinessPlanResult",
+    "ComplianceItem",
+    "LegalDocumentDraft",
+    "LegalComplianceResult",
+    "MVPFeature",
+    "TechStackRecommendation",
+    "ProductDevelopmentResult",
+    "PatentAnalysis",
+    "FeasibilityResult",
+    "BrandingMarketingResult",
+    "GrowthScalingResult",
+    "FundingResult",
+    "MasterReportResult",
+    "CommunityResult",
 ]

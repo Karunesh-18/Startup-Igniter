@@ -63,12 +63,12 @@ async def test_login_wrong_password(client: AsyncClient):
 
 
 @pytest.mark.asyncio
-async def test_get_me(client: AsyncClient, auth_headers: dict):
+async def test_get_me(client: AsyncClient, auth_headers: dict, test_user: dict):
     """Authenticated user can fetch their profile."""
     response = await client.get("/api/v1/auth/me", headers=auth_headers)
     assert response.status_code == 200
     data = response.json()
-    assert data["email"] == "test@startup-os.dev"
+    assert data["email"] == test_user["user"].email
     assert data["name"] == "Test Founder"
 
 

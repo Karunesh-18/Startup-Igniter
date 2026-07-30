@@ -6,7 +6,7 @@ value MUST be supplied via environment or a .env file (never hardcoded).
 """
 
 from functools import lru_cache
-from typing import Literal
+from typing import Any, Literal
 
 from pydantic import AnyHttpUrl, Field, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -25,17 +25,27 @@ class Settings(BaseSettings):
     APP_VERSION: str = "0.1.0"
     ENVIRONMENT: Literal["development", "staging", "production"] = "development"
     SECRET_KEY: str = Field(default="dev-insecure-secret-change-me", min_length=32)
-    ALLOWED_ORIGINS: list[str] = ["http://localhost:3000"]
+    ALLOWED_ORIGINS: Any = ["http://localhost:3000"]
 
     @field_validator("ALLOWED_ORIGINS", mode="before")
     @classmethod
     def parse_origins(cls, v: str | list) -> list[str]:
         if isinstance(v, str):
+            v = v.strip()
+            if v.startswith("[") and v.endswith("]"):
+                import json
+                try:
+                    return json.loads(v)
+                except Exception:
+                    pass
             return [origin.strip() for origin in v.split(",") if origin.strip()]
         return v
 
     # ── Database (Supabase / PostgreSQL) ─────────────────────────────────
     SUPABASE_URL: str = ""
+    SUPABASE_PUBLISHABLE_KEY: str = ""
+    SUPABASE_SECRET_KEY: str = ""
+    SUPABASE_JWKS_URL: str = ""
     SUPABASE_SERVICE_ROLE_KEY: str = ""
     DATABASE_URL: str = ""          # asyncpg DSN
     DATABASE_URL_SYNC: str = ""     # psycopg2 DSN (Alembic only)
