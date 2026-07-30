@@ -16,7 +16,7 @@ const CREW_ICONS: Record<string, any> = {
   Banknote, TrendingUp, Users, FileText,
 };
 
-export default function Landing({ onLaunch, onDashboard }: { onLaunch: () => void; onDashboard: () => void }) {
+export default function Landing({ onLaunch, onPhases, onAgents }: { onLaunch: () => void; onPhases: () => void; onAgents: () => void }) {
   useScrollReveal();
   const [netActive, setNetActive] = useState(false);
   const [pipelineRunning, setPipelineRunning] = useState(false);
@@ -82,9 +82,9 @@ export default function Landing({ onLaunch, onDashboard }: { onLaunch: () => voi
               Ignite Your Startup
               <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
             </button>
-            <button onClick={onDashboard} className="btn-ghost flex items-center gap-2 rounded-full px-7 py-3.5 text-base text-white/80">
+            <button onClick={onPhases} className="btn-ghost flex items-center gap-2 rounded-full px-7 py-3.5 text-base text-white/80">
               <Activity className="h-4 w-4" />
-              View Mission Control
+              View All Phases
             </button>
           </div>
 
@@ -489,8 +489,8 @@ export default function Landing({ onLaunch, onDashboard }: { onLaunch: () => voi
           </div>
 
           <div className="mt-12 text-center">
-            <button onClick={onDashboard} className="btn-primary inline-flex items-center gap-2 rounded-full px-7 py-3.5 text-base font-medium">
-              Open Full Dashboard
+            <button onClick={onPhases} className="btn-primary inline-flex items-center gap-2 rounded-full px-7 py-3.5 text-base font-medium">
+              Explore All Phases
               <ArrowRight className="h-4 w-4" />
             </button>
           </div>
