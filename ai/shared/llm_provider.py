@@ -201,7 +201,7 @@ def call_live_llm(
                 {"role": "user", "content": user_prompt},
             ],
             "temperature": temperature,
-            "max_tokens": 2048,
+            "max_tokens": 4096,
         }
         if provider_label == "Groq":
             payload["response_format"] = {"type": "json_object"}

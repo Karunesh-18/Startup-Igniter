@@ -10,9 +10,11 @@ from ai.schemas.market_research import (
     CustomerPersona,
     IndustryAnalysis,
     MarketResearchAnalysis,
+    MarketResearchResult,
     TAMSAMSOMAnalysis,
     TrendAnalysis,
 )
+from ai.schemas.research_patent import PatentAnalysis
 from ai.shared.research.research_bundle import ResearchBundle
 
 
