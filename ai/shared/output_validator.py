@@ -55,19 +55,20 @@ def parse_json_safely(raw_output: str) -> Dict[str, Any]:
     Raises:
         JSONParsingError: If JSON syntax decoding fails.
     """
-    sanitized_text = clean_json_text(raw_output)
+    raw_str = (raw_output or "").strip()
+    sanitized_text = clean_json_text(raw_str)
 
     try:
         data = json.loads(sanitized_text)
     except json.JSONDecodeError as err:
         ai_logger.error(
-            f"JSON Decode Failure: {str(err)} | Snippet: {raw_output[:250]!r}"
+            f"JSON Decode Failure: {str(err)} | Snippet: {raw_str[:250]!r}"
         )
         raise JSONParsingError(
             f"Failed to decode valid JSON from LLM output: {str(err)}",
             details={
                 "json_error": str(err),
-                "raw_snippet": raw_output[:300],
+                "raw_snippet": raw_str[:300],
             },
         ) from err
 

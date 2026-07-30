@@ -141,3 +141,111 @@ class LLMFactory:
 
         # Fallback if CrewAI not yet installed
         return config
+
+
+def call_live_llm(
+    system_prompt: str,
+    user_prompt: str,
+    model_name: Optional[str] = None,
+    temperature: float = 0.2,
+    timeout: float = 45.0,
+    max_retries: int = 8,
+) -> str:
+    """Execute live LLM completion call using OpenRouter (primary) or Groq with automatic rate limit retries."""
+    import time
+    import httpx
+    from ai.config import get_ai_settings
+
+    settings = get_ai_settings(reload=True)
+
+    openrouter_key = os.getenv("OPENROUTER_API_KEY") or settings.openrouter_api_key
+    groq_key = os.getenv("GROQ_API_KEY") or settings.groq_api_key
+
+    if openrouter_key:
+        url = "https://openrouter.ai/api/v1/chat/completions"
+        headers = {
+            "Authorization": f"Bearer {openrouter_key}",
+            "HTTP-Referer": "https://startup-igniter.ai",
+            "X-Title": "Startup Igniter AI Engine",
+            "Content-Type": "application/json",
+        }
+        if not model_name or "groq" in model_name or "versatile" in model_name or "instant" in model_name:
+            primary_model = settings.openrouter_model_heavy
+        else:
+            primary_model = model_name
+        fast_model = settings.openrouter_model_fast
+        provider_label = "OpenRouter"
+    elif groq_key:
+        url = "https://api.groq.com/openai/v1/chat/completions"
+        headers = {
+            "Authorization": f"Bearer {groq_key}",
+            "Content-Type": "application/json",
+        }
+        primary_model = (model_name or settings.groq_model_heavy).replace("groq/", "")
+        fast_model = settings.groq_model_fast.replace("groq/", "")
+        provider_label = "Groq"
+    else:
+        raise MissingAPIKeyError(
+            key_name="OPENROUTER_API_KEY or GROQ_API_KEY",
+            provider_name="OpenRouter / Groq",
+        )
+
+    httpx_timeout = httpx.Timeout(35.0, connect=10.0, read=35.0)
+
+    for attempt in range(max_retries):
+        target_model = primary_model if attempt < 2 else fast_model
+        payload = {
+            "model": target_model,
+            "messages": [
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": user_prompt},
+            ],
+            "temperature": temperature,
+            "max_tokens": 2048,
+        }
+        if provider_label == "Groq":
+            payload["response_format"] = {"type": "json_object"}
+        try:
+            with httpx.Client(timeout=httpx_timeout) as client:
+                res = client.post(url, headers=headers, json=payload)
+                if res.status_code == 429 or res.status_code == 503:
+                    if attempt == max_retries - 1:
+                        res.raise_for_status()
+                    sleep_sec = 2.0 * (attempt + 1)
+                    ai_logger.warning(
+                        f"{provider_label} Rate Limit / Busy ({res.status_code} for '{target_model}'). "
+                        f"Retrying in {sleep_sec:.1f}s (attempt {attempt + 1}/{max_retries})..."
+                    )
+                    time.sleep(sleep_sec)
+                    continue
+                res.raise_for_status()
+                data = res.json()
+                content = data.get("choices", [{}])[0].get("message", {}).get("content")
+                if content and content.strip():
+                    return content
+                ai_logger.warning(
+                    f"{provider_label} returned empty content for '{target_model}'. Retrying (attempt {attempt + 1}/{max_retries})..."
+                )
+                time.sleep(2.0)
+        except httpx.HTTPStatusError as exc:
+            err_msg = exc.response.text if exc.response is not None else str(exc)
+            if attempt == max_retries - 1:
+                ai_logger.error(f"{provider_label} HTTP error ({exc.response.status_code}): {err_msg}")
+                raise
+            sleep_sec = 2.0 * (attempt + 1)
+            ai_logger.warning(
+                f"{provider_label} HTTP {exc.response.status_code} ({err_msg}). Retrying in {sleep_sec:.1f}s (attempt {attempt + 1}/{max_retries})..."
+            )
+            time.sleep(sleep_sec)
+        except httpx.RequestError as exc:
+            if attempt == max_retries - 1:
+                ai_logger.error(f"{provider_label} network request failed: {exc}")
+                raise
+            sleep_sec = 2.0 * (attempt + 1)
+            ai_logger.warning(
+                f"{provider_label} network request error ({exc}). Retrying in {sleep_sec:.1f}s (attempt {attempt + 1}/{max_retries})..."
+            )
+            time.sleep(sleep_sec)
+
+    return ""
+

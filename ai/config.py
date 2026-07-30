@@ -61,6 +61,15 @@ class AISettings(BaseSettings):
         default="llama-3.1-8b-instant", alias="GROQ_MODEL_FAST"
     )
 
+    # --- OpenRouter LLM Provider ---
+    openrouter_api_key: Optional[str] = Field(default=None, alias="OPENROUTER_API_KEY")
+    openrouter_model_heavy: str = Field(
+        default="meta-llama/llama-3.3-70b-instruct", alias="OPENROUTER_MODEL_HEAVY"
+    )
+    openrouter_model_fast: str = Field(
+        default="meta-llama/llama-3.1-8b-instruct", alias="OPENROUTER_MODEL_FAST"
+    )
+
     # --- Search & Scraping APIs ---
     tavily_api_key: Optional[str] = Field(default=None, alias="TAVILY_API_KEY")
     exa_api_key: Optional[str] = Field(default=None, alias="EXA_API_KEY")

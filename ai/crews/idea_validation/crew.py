@@ -82,89 +82,16 @@ def _call_live_groq_llm(
     timeout: float = 45.0,
     max_retries: int = 6,
 ) -> str:
-    """Execute live LLM completion call against Groq API with 429 rate limit and network error retries.
-
-    Args:
-        system_prompt: System prompt / agent backstory.
-        user_prompt: User input prompt containing proposal & context.
-        model_name: Model endpoint string (e.g., 'llama-3.3-70b-versatile').
-        temperature: LLM sampling temperature.
-        timeout: HTTP request timeout in seconds.
-        max_retries: Max retry attempts when hit with rate limits or network issues.
-
-    Returns:
-        Raw LLM text output string.
-    """
-    import time
-    settings = get_ai_settings()
-    api_key = settings.groq_api_key or os.getenv("GROQ_API_KEY")
-    if not api_key:
-        raise ValueError("GROQ_API_KEY is not configured in environment.")
-
-    # Strip provider prefix if present e.g. 'groq/llama-3.3-70b-versatile' -> 'llama-3.3-70b-versatile'
-    clean_model_name = model_name.replace("groq/", "")
-
-    url = "https://api.groq.com/openai/v1/chat/completions"
-    headers = {
-        "Authorization": f"Bearer {api_key}",
-        "Content-Type": "application/json",
-    }
-    payload = {
-        "model": clean_model_name,
-        "messages": [
-            {"role": "system", "content": system_prompt},
-            {"role": "user", "content": user_prompt},
-        ],
-        "temperature": temperature,
-        "max_tokens": 2048,
-        "response_format": {"type": "json_object"},
-    }
-
-    httpx_timeout = httpx.Timeout(timeout, connect=15.0)
-
-    for attempt in range(max_retries):
-        try:
-            with httpx.Client(timeout=httpx_timeout) as client:
-                res = client.post(url, headers=headers, json=payload)
-                if res.status_code == 429:
-                    if attempt == max_retries - 1:
-                        res.raise_for_status()
-                    retry_after = res.headers.get("retry-after")
-                    if retry_after:
-                        try:
-                            sleep_sec = float(retry_after) + 0.5
-                        except ValueError:
-                            sleep_sec = 3.0 * (2.0 ** attempt)
-                    else:
-                        sleep_sec = 3.0 * (2.0 ** attempt)
-                    ai_logger.warning(
-                        f"Groq Rate Limit (429 hit). Retrying in {sleep_sec:.1f}s (attempt {attempt + 1}/{max_retries})..."
-                    )
-                    time.sleep(sleep_sec)
-                    continue
-                if res.status_code >= 500:
-                    if attempt == max_retries - 1:
-                        res.raise_for_status()
-                    sleep_sec = 2.0 ** attempt
-                    ai_logger.warning(
-                        f"Groq Server Error ({res.status_code}). Retrying in {sleep_sec}s (attempt {attempt + 1}/{max_retries})..."
-                    )
-                    time.sleep(sleep_sec)
-                    continue
-                res.raise_for_status()
-                data = res.json()
-                return data["choices"][0]["message"]["content"]
-        except (httpx.RequestError, httpx.HTTPStatusError) as exc:
-            if attempt == max_retries - 1:
-                ai_logger.error(f"Groq API call failed after {max_retries} attempts: {exc}")
-                raise
-            sleep_sec = 2.0 ** attempt
-            ai_logger.warning(
-                f"Groq API network/request error ({exc}). Retrying in {sleep_sec}s (attempt {attempt + 1}/{max_retries})..."
-            )
-            time.sleep(sleep_sec)
-
-    return ""
+    """Execute live LLM completion call using OpenRouter (primary) or Groq."""
+    from ai.shared.llm_provider import call_live_llm
+    return call_live_llm(
+        system_prompt=system_prompt,
+        user_prompt=user_prompt,
+        model_name=model_name,
+        temperature=temperature,
+        timeout=timeout,
+        max_retries=max_retries,
+    )
 
 
 class IdeaValidationCrew:
@@ -236,24 +163,18 @@ class IdeaValidationCrew:
             "summary, startup_category, operational_pillars, technical_feasibility_score, "
             "rationale, key_assumptions, strengths, weaknesses."
         )
-        if self.mock_mode:
-            raw_idea_text = """{
-                "summary": "AI platform assisting doctors in medical diagnostic disease detection.",
-                "startup_category": "HealthTech",
-                "operational_pillars": ["AI Model", "Doctor Interface", "HIPAA Cloud"],
-                "technical_feasibility_score": 80,
-                "rationale": "High feasibility using deep learning.",
-                "key_assumptions": ["Dataset access"],
-                "strengths": ["Fast detection"],
-                "weaknesses": ["FDA hurdles"]
-            }"""
-        else:
-            raw_idea_text = _call_live_groq_llm(
-                system_prompt=self._get_backstory(self.idea_agent),
-                user_prompt=idea_user_prompt,
-                model_name=settings.groq_model_heavy,
-            )
+        raw_idea_text = _call_live_groq_llm(
+            system_prompt=self._get_backstory(self.idea_agent),
+            user_prompt=idea_user_prompt,
+            model_name=settings.groq_model_heavy,
+        )
         idea_model = validate_idea_output(raw_idea_text)
+        self.memory_manager.write_memory(
+            project_id=project_id,
+            key="startup_analysis",
+            value=idea_model.model_dump(),
+            source_phase="idea",
+        )
         self.memory_manager.write_memory(
             project_id=project_id,
             key="idea_analysis",
@@ -273,23 +194,11 @@ class IdeaValidationCrew:
             "problem_statement, affected_users, root_causes, existing_solutions, solution_gaps, "
             "problem_severity, urgency_score, confidence_score."
         )
-        if self.mock_mode:
-            raw_problem_text = """{
-                "problem_statement": "Delayed disease detection causing adverse health outcomes.",
-                "affected_users": ["Doctors", "Patients"],
-                "root_causes": ["High diagnostic workload"],
-                "existing_solutions": ["Manual review"],
-                "solution_gaps": ["High error latency"],
-                "problem_severity": "critical",
-                "urgency_score": 90,
-                "confidence_score": 0.90
-            }"""
-        else:
-            raw_problem_text = _call_live_groq_llm(
-                system_prompt=self._get_backstory(self.problem_agent),
-                user_prompt=problem_user_prompt,
-                model_name=settings.groq_model_heavy,
-            )
+        raw_problem_text = _call_live_groq_llm(
+            system_prompt=self._get_backstory(self.problem_agent),
+            user_prompt=problem_user_prompt,
+            model_name=settings.groq_model_heavy,
+        )
         problem_model = validate_problem_output(raw_problem_text)
         self.memory_manager.write_memory(
             project_id=project_id,
@@ -311,29 +220,11 @@ class IdeaValidationCrew:
             "demographics, geographic_markets, industries, pain_points, customer_needs, motivations, "
             "adoption_barriers, willingness_to_pay, confidence_score."
         )
-        if self.mock_mode:
-            raw_customer_text = """{
-                "primary_customers": ["Hospitals", "Diagnostic Labs"],
-                "secondary_customers": ["Insurance Providers"],
-                "end_users": ["Doctors", "Radiologists"],
-                "decision_makers": ["Chief Medical Officer"],
-                "customer_segments": ["B2B Healthcare"],
-                "demographics": ["Medical providers"],
-                "geographic_markets": ["Global"],
-                "industries": ["Healthcare"],
-                "pain_points": ["Diagnostic delay"],
-                "customer_needs": ["Fast accurate analysis"],
-                "motivations": ["Better health outcomes"],
-                "adoption_barriers": ["Regulatory"],
-                "willingness_to_pay": "high",
-                "confidence_score": 90
-            }"""
-        else:
-            raw_customer_text = _call_live_groq_llm(
-                system_prompt=self._get_backstory(self.customer_agent),
-                user_prompt=customer_user_prompt,
-                model_name=settings.groq_model_heavy,
-            )
+        raw_customer_text = _call_live_groq_llm(
+            system_prompt=self._get_backstory(self.customer_agent),
+            user_prompt=customer_user_prompt,
+            model_name=settings.groq_model_heavy,
+        )
         customer_model = validate_customer_output(raw_customer_text)
         self.memory_manager.write_memory(
             project_id=project_id,
@@ -354,24 +245,11 @@ class IdeaValidationCrew:
             "core_value_proposition, unique_selling_proposition, functional_benefits, emotional_benefits, "
             "customer_outcomes, differentiators, value_clarity_score, customer_value_score, confidence_score."
         )
-        if self.mock_mode:
-            raw_value_text = """{
-                "core_value_proposition": "Real-time AI diagnostic decision support.",
-                "unique_selling_proposition": "Clinical-grade disease detection integrated into EHR.",
-                "functional_benefits": ["Faster diagnosis"],
-                "emotional_benefits": ["Physician peace of mind"],
-                "customer_outcomes": ["50% faster turnaround"],
-                "differentiators": ["Proprietary AI vision model"],
-                "value_clarity_score": 90,
-                "customer_value_score": 92,
-                "confidence_score": 90
-            }"""
-        else:
-            raw_value_text = _call_live_groq_llm(
-                system_prompt=self._get_backstory(self.value_agent),
-                user_prompt=value_user_prompt,
-                model_name=settings.groq_model_heavy,
-            )
+        raw_value_text = _call_live_groq_llm(
+            system_prompt=self._get_backstory(self.value_agent),
+            user_prompt=value_user_prompt,
+            model_name=settings.groq_model_heavy,
+        )
         value_model = validate_value_output(raw_value_text)
         self.memory_manager.write_memory(
             project_id=project_id,
@@ -391,25 +269,11 @@ class IdeaValidationCrew:
             "primary_category, secondary_categories, industry, technology_domains, business_model, "
             "revenue_model, startup_stage, target_market, confidence_score, reasoning."
         )
-        if self.mock_mode:
-            raw_category_text = """{
-                "primary_category": "HealthTech",
-                "secondary_categories": ["AI", "SaaS"],
-                "industry": "Healthcare",
-                "technology_domains": ["Machine Learning"],
-                "business_model": "B2B",
-                "revenue_model": "Subscription",
-                "startup_stage": "Idea",
-                "target_market": "Hospitals",
-                "confidence_score": 95,
-                "reasoning": "Disease detection AI for hospitals."
-            }"""
-        else:
-            raw_category_text = _call_live_groq_llm(
-                system_prompt=self._get_backstory(self.category_agent),
-                user_prompt=category_user_prompt,
-                model_name=settings.groq_model_fast,
-            )
+        raw_category_text = _call_live_groq_llm(
+            system_prompt=self._get_backstory(self.category_agent),
+            user_prompt=category_user_prompt,
+            model_name=settings.groq_model_fast,
+        )
         category_model = validate_category_output(raw_category_text)
         self.memory_manager.write_memory(
             project_id=project_id,
@@ -431,26 +295,11 @@ class IdeaValidationCrew:
             "business_model_innovation_score, problem_originality_score, differentiation_score, "
             "strengths, improvement_opportunities, reasoning, confidence_score."
         )
-        if self.mock_mode:
-            raw_innovation_text = """{
-                "overall_innovation_score": 82,
-                "innovation_level": "High",
-                "novelty_score": 80,
-                "technology_innovation_score": 85,
-                "business_model_innovation_score": 70,
-                "problem_originality_score": 75,
-                "differentiation_score": 80,
-                "strengths": ["AI diagnostic computer vision"],
-                "improvement_opportunities": ["Federated learning"],
-                "reasoning": "High technology innovation applying vision models to medical diagnostics.",
-                "confidence_score": 90
-            }"""
-        else:
-            raw_innovation_text = _call_live_groq_llm(
-                system_prompt=self._get_backstory(self.innovation_agent),
-                user_prompt=innovation_user_prompt,
-                model_name=settings.groq_model_heavy,
-            )
+        raw_innovation_text = _call_live_groq_llm(
+            system_prompt=self._get_backstory(self.innovation_agent),
+            user_prompt=innovation_user_prompt,
+            model_name=settings.groq_model_heavy,
+        )
         innovation_model = validate_innovation_output(raw_innovation_text)
         self.memory_manager.write_memory(
             project_id=project_id,
