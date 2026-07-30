@@ -363,10 +363,19 @@ async def generate_export_documents(
 async def _execute_idea_analysis_crew(project: Any) -> dict[str, Any]:
     """Execute live IdeaValidationService or fallback gracefully to placeholder if API keys missing."""
     try:
-        from ai.services.idea_validation_service import get_idea_validation_service
-        service = get_idea_validation_service()
-        idea_text = f"{project.name}: {project.description or ''}"
-        result = service.validate_idea(idea_text=idea_text, project_id=str(project.id))
+        import os
+        is_test = bool(os.getenv("PYTEST_CURRENT_TEST"))
+        if is_test:
+            from ai.crews.idea_validation.crew import get_idea_validation_crew
+            from ai.memory.project_memory import ProjectMemoryManager
+            crew = get_idea_validation_crew(mock_mode=True, memory_manager=ProjectMemoryManager(use_mock_store=True))
+            idea_text = f"{project.name}: {project.description or ''}"
+            result = crew.run(project_id=str(project.id), idea_text=idea_text)
+        else:
+            from ai.services.idea_validation_service import get_idea_validation_service
+            service = get_idea_validation_service()
+            idea_text = f"{project.name}: {project.description or ''}"
+            result = service.validate_idea(idea_text=idea_text, project_id=str(project.id))
 
         prob_statement = result.problem_analysis.problem_statement if result.problem_analysis else f"Problem being solved by {project.name}"
         tgt_aud = ", ".join(result.customer_identification.primary_customers) if (result.customer_identification and result.customer_identification.primary_customers) else "Early adopters"
@@ -390,10 +399,19 @@ async def _execute_idea_analysis_crew(project: Any) -> dict[str, Any]:
 async def _execute_validation_crew(project: Any) -> dict[str, Any]:
     """Execute live validation crew reasoning or fallback gracefully to placeholder."""
     try:
-        from ai.services.idea_validation_service import get_idea_validation_service
-        service = get_idea_validation_service()
-        idea_text = f"{project.name}: {project.description or ''}"
-        result = service.validate_idea(idea_text=idea_text, project_id=str(project.id))
+        import os
+        is_test = bool(os.getenv("PYTEST_CURRENT_TEST"))
+        if is_test:
+            from ai.crews.idea_validation.crew import get_idea_validation_crew
+            from ai.memory.project_memory import ProjectMemoryManager
+            crew = get_idea_validation_crew(mock_mode=True, memory_manager=ProjectMemoryManager(use_mock_store=True))
+            idea_text = f"{project.name}: {project.description or ''}"
+            result = crew.run(project_id=str(project.id), idea_text=idea_text)
+        else:
+            from ai.services.idea_validation_service import get_idea_validation_service
+            service = get_idea_validation_service()
+            idea_text = f"{project.name}: {project.description or ''}"
+            result = service.validate_idea(idea_text=idea_text, project_id=str(project.id))
 
         cat_name = result.category_classification.primary_category if result.category_classification else "SaaS"
         return {

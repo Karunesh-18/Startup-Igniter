@@ -74,6 +74,12 @@ class AISettings(BaseSettings):
     tavily_api_key: Optional[str] = Field(default=None, alias="TAVILY_API_KEY")
     exa_api_key: Optional[str] = Field(default=None, alias="EXA_API_KEY")
     zyte_api_key: Optional[str] = Field(default=None, alias="ZYTE_API_KEY")
+    zyte_enabled: bool = Field(default=False, alias="ZYTE_ENABLED")
+
+    # --- Academic & Patent APIs ---
+    hf_token: Optional[str] = Field(default=None, alias="HF_TOKEN")
+    semantic_scholar_api_key: Optional[str] = Field(default=None, alias="SEMANTIC_SCHOLAR_API_KEY")
+    openalex_email: Optional[str] = Field(default=None, alias="OPENALEX_EMAIL")
 
     # --- Supabase Database & Memory ---
     supabase_url: Optional[str] = Field(default=None, alias="SUPABASE_URL")
