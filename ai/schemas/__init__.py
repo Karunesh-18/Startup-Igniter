@@ -23,6 +23,15 @@ from ai.schemas.market_research import (
     TrendAnalysis,
 )
 from ai.schemas.problem_statement import ProblemStatementAnalysis
+from ai.schemas.research_patent import (
+    ExistingSolutionAnalysis,
+    InnovationGapAnalysis,
+    IPStrategy,
+    PatentAnalysis,
+    ResearchPaperAnalysis,
+    ResearchPatentResult,
+    TechnologyReadiness,
+)
 from ai.schemas.startup_analysis import StartupAnalysisResult
 from ai.schemas.startup_category import StartupCategoryClassification
 from ai.schemas.value_proposition import ValuePropositionAnalysis
@@ -46,6 +55,13 @@ __all__ = [
     "TAMSAMSOMAnalysis",
     "MarketResearchResult",
     "StartupAnalysisResult",
+    "PatentAnalysis",
+    "ResearchPaperAnalysis",
+    "ExistingSolutionAnalysis",
+    "InnovationGapAnalysis",
+    "TechnologyReadiness",
+    "IPStrategy",
+    "ResearchPatentResult",
     "IdeaValidationContext",
     "MarketResearchContext",
     "ResearchPatentContext",

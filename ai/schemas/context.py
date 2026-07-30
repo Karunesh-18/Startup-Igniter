@@ -14,7 +14,15 @@ from ai.schemas.market_research import (
     TAMSAMSOMAnalysis,
     TrendAnalysis,
 )
-from ai.schemas.research_patent import PatentAnalysis
+from ai.schemas.research_patent import (
+    ExistingSolutionAnalysis,
+    InnovationGapAnalysis,
+    IPStrategy,
+    PatentAnalysis,
+    ResearchPaperAnalysis,
+    ResearchPatentResult,
+    TechnologyReadiness,
+)
 from ai.shared.research.research_bundle import ResearchBundle
 
 
@@ -87,11 +95,42 @@ class ResearchPatentContext(BaseModel):
         default=None,
         description="Populated MarketResearchContext output from Crew 2.",
     )
+    market_research: Optional[MarketResearchResult] = Field(
+        default=None,
+        description="Populated MarketResearchResult output from Crew 2.",
+    )
     research_bundle: Optional[ResearchBundle] = Field(
         default=None,
         description="Optional external research bundle from ResearchManager (Tavily/Exa/Zyte).",
     )
-    patent_research: Optional[Any] = Field(default=None)
+    patent_analysis: Optional[PatentAnalysis] = Field(
+        default=None,
+        description="PatentAnalysis output populated by PatentSearchAgent.",
+    )
+    research_paper_analysis: Optional[ResearchPaperAnalysis] = Field(
+        default=None,
+        description="ResearchPaperAnalysis output populated by ResearchPaperAnalyzerAgent.",
+    )
+    existing_solution_analysis: Optional[ExistingSolutionAnalysis] = Field(
+        default=None,
+        description="ExistingSolutionAnalysis output populated by ExistingSolutionAnalyzerAgent.",
+    )
+    innovation_gap_analysis: Optional[InnovationGapAnalysis] = Field(
+        default=None,
+        description="InnovationGapAnalysis output populated by InnovationGapIdentifierAgent.",
+    )
+    technology_readiness: Optional[TechnologyReadiness] = Field(
+        default=None,
+        description="TechnologyReadiness output populated by TechnologyReadinessAgent.",
+    )
+    ip_strategy: Optional[IPStrategy] = Field(
+        default=None,
+        description="IPStrategy output populated by IntellectualPropertyStrategyAgent.",
+    )
+    research_patent_result: Optional[ResearchPatentResult] = Field(
+        default=None,
+        description="Final ResearchPatentResult output populated by ResearchPatentSummaryAgent.",
+    )
 
 
 class FeasibilityContext(BaseModel):

@@ -30,12 +30,14 @@ class IdeaValidationService:
         self,
         idea_text: str,
         project_id: Optional[str] = None,
+        mock_mode: bool = False,
     ) -> IdeaValidationResult:
-        """Execute full 6-agent sequential Idea Validation pipeline against live LLMs.
+        """Execute full 6-agent sequential Idea Validation pipeline.
 
         Args:
             idea_text: Raw startup idea proposal text.
             project_id: Optional explicit project ID. Generated if not provided.
+            mock_mode: If True, operates in test mode without live LLM calls.
 
         Returns:
             IdeaValidationResult Pydantic model containing complete validation analysis.
@@ -45,11 +47,11 @@ class IdeaValidationService:
 
         resolved_project_id = project_id or f"proj-val-{uuid.uuid4().hex[:8]}"
         ai_logger.info(
-            f"IdeaValidationService starting validation for project '{resolved_project_id}'"
+            f"IdeaValidationService starting validation for project '{resolved_project_id}' (mock={mock_mode})"
         )
 
         crew = get_idea_validation_crew(
-            mock_mode=False,
+            mock_mode=mock_mode,
             memory_manager=self.memory_manager,
         )
 
@@ -62,6 +64,8 @@ class IdeaValidationService:
             f"IdeaValidationService completed for project '{resolved_project_id}' with score {result.overall_validation_score}/100"
         )
         return result
+
+    run_idea_validation = validate_idea
 
 
 def get_idea_validation_service(

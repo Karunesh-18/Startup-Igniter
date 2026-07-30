@@ -62,6 +62,14 @@ class TestIdeaValidationCrewLiveExecution(unittest.TestCase):
         self.assertIsNotNone(cat_task)
         self.assertIsNotNone(innov_task)
 
+    def test_idea_validation_service_instantiation(self):
+        """Test instantiation and initialization of IdeaValidationService."""
+        from ai.services.idea_validation_service import get_idea_validation_service, IdeaValidationService
+        service = get_idea_validation_service()
+        self.assertIsInstance(service, IdeaValidationService)
+        self.assertIsNotNone(service.memory_manager)
+
+
     def test_live_crew_execution_edtech_proposal(self):
         """Test full live IdeaValidationCrew run for an EdTech proposal against Groq API."""
         memory_mgr = ProjectMemoryManager(use_mock_store=True)
