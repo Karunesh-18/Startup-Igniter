@@ -25,7 +25,7 @@ class Settings(BaseSettings):
     APP_VERSION: str = "0.1.0"
     ENVIRONMENT: Literal["development", "staging", "production"] = "development"
     SECRET_KEY: str = Field(default="dev-insecure-secret-change-me", min_length=32)
-    ALLOWED_ORIGINS: Any = ["http://localhost:3000"]
+    ALLOWED_ORIGINS: Any = ["http://localhost:5173", "http://localhost:3000"]
 
     @field_validator("ALLOWED_ORIGINS", mode="before")
     @classmethod

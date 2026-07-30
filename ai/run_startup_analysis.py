@@ -5,6 +5,9 @@ import json
 import sys
 from typing import List
 
+if hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8")
+
 from ai.schemas.startup_analysis import StartupAnalysisResult
 from ai.shared.logger import ai_logger
 from ai.workflows.startup_analysis_workflow import StartupAnalysisWorkflow

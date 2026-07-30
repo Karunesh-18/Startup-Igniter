@@ -16,6 +16,18 @@ export default function CrewNetwork({ active = false, compact = false }: { activ
   const [progress, setProgress] = useState(0);
   const nodesRef = useRef<NodePos[]>([]);
   const animRef = useRef(0);
+  const hoveredRef = useRef<{ crew: number; agent: number } | null>(null);
+  const frameRef = useRef(0);
+  const activeRef = useRef(active);
+  const progressRef = useRef(progress);
+
+  useEffect(() => {
+    activeRef.current = active;
+  }, [active]);
+
+  useEffect(() => {
+    progressRef.current = progress;
+  }, [progress]);
 
   // Build node positions: 12 clusters arranged in a ring, each with 6 agents in a small orbit
   useEffect(() => {
@@ -55,14 +67,17 @@ export default function CrewNetwork({ active = false, compact = false }: { activ
     };
     window.addEventListener('resize', onResize);
 
-    let frame = 0;
     const render = () => {
       const ctx = canvas.getContext('2d');
       if (!ctx) return;
       ctx.clearRect(0, 0, w, h);
-      frame += 0.016;
+      frameRef.current += 0.016;
+      const frame = frameRef.current;
+      const curActive = activeRef.current;
+      const curProgress = progressRef.current;
+      const curHovered = hoveredRef.current;
 
-      const t = active ? Math.min(progress, 1) : 0.35;
+      const t = curActive ? Math.min(curProgress, 1) : 0.35;
 
       // Center hub
       const hubGrad = ctx.createRadialGradient(cx, cy, 0, cx, cy, 40 * dpr);
@@ -92,7 +107,7 @@ export default function CrewNetwork({ active = false, compact = false }: { activ
 
       // Connections from hub to clusters
       clusterCenters.forEach((cc, ci) => {
-        const pulse = active ? (Math.sin(frame * 2 + ci) * 0.5 + 0.5) : 0;
+        const pulse = curActive ? (Math.sin(frame * 2 + ci) * 0.5 + 0.5) : 0;
         const grad = ctx.createLinearGradient(cx, cy, cc.x, cc.y);
         grad.addColorStop(0, `rgba(139,92,246,${0.15 * t})`);
         grad.addColorStop(1, hexToRgba(cc.color, 0.25 * t + pulse * 0.15));
@@ -104,7 +119,7 @@ export default function CrewNetwork({ active = false, compact = false }: { activ
         ctx.stroke();
 
         // Data packet
-        if (active) {
+        if (curActive) {
           const pp = ((frame * 0.3 + ci * 0.15) % 1);
           const px = cx + (cc.x - cx) * pp;
           const py = cy + (cc.y - cy) * pp;
@@ -136,9 +151,9 @@ export default function CrewNetwork({ active = false, compact = false }: { activ
         const ax = cluster.x + Math.cos(orbitAngle) * (agentOrbit + wobble);
         const ay = cluster.y + Math.sin(orbitAngle) * (agentOrbit + wobble);
 
-        const isHovered = hovered?.crew === node.crew && hovered?.agent === node.agent;
+        const isHovered = curHovered?.crew === node.crew && curHovered?.agent === node.agent;
         const nodeSize = (isHovered ? 4 : 2.5) * dpr;
-        const glow = active ? (Math.sin(frame * 1.5 + ni * 0.3) * 0.3 + 0.7) : 0.4;
+        const glow = curActive ? (Math.sin(frame * 1.5 + ni * 0.3) * 0.3 + 0.7) : 0.4;
 
         // Glow
         const ng = ctx.createRadialGradient(ax, ay, 0, ax, ay, nodeSize * 4);
@@ -174,7 +189,7 @@ export default function CrewNetwork({ active = false, compact = false }: { activ
       // Cluster centers
       clusterCenters.forEach((cc, ci) => {
         const crew = CREWS[ci];
-        const pulse = active ? (Math.sin(frame * 1.5 + ci) * 0.3 + 0.7) : 0.5;
+        const pulse = curActive ? (Math.sin(frame * 1.5 + ci) * 0.3 + 0.7) : 0.5;
         const cg = ctx.createRadialGradient(cc.x, cc.y, 0, cc.x, cc.y, 14 * dpr);
         cg.addColorStop(0, hexToRgba(crew.color, 0.6 * t * pulse));
         cg.addColorStop(1, hexToRgba(crew.color, 0));
@@ -197,7 +212,7 @@ export default function CrewNetwork({ active = false, compact = false }: { activ
       cancelAnimationFrame(animRef.current);
       window.removeEventListener('resize', onResize);
     };
-  }, [active, progress, hovered]);
+  }, []);
 
   // Animate progress when active
   useEffect(() => {
@@ -234,7 +249,13 @@ export default function CrewNetwork({ active = false, compact = false }: { activ
         nearest = { crew: n.crew, agent: n.agent };
       }
     });
+    hoveredRef.current = nearest;
     setHovered(nearest);
+  };
+
+  const onLeave = () => {
+    hoveredRef.current = null;
+    setHovered(null);
   };
 
   return (
@@ -242,7 +263,7 @@ export default function CrewNetwork({ active = false, compact = false }: { activ
       <canvas
         ref={canvasRef}
         onMouseMove={onMove}
-        onMouseLeave={() => setHovered(null)}
+        onMouseLeave={onLeave}
         className="h-full w-full cursor-crosshair"
       />
       {hovered && (

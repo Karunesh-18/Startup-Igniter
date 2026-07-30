@@ -61,6 +61,19 @@ def parse_json_safely(raw_output: str) -> Dict[str, Any]:
     try:
         data = json.loads(sanitized_text)
     except json.JSONDecodeError as err:
+        # Fallback: use raw_decode starting from first '{' or '['
+        first_brace = sanitized_text.find('{')
+        first_bracket = sanitized_text.find('[')
+        if first_brace != -1 or first_bracket != -1:
+            indices = [i for i in (first_brace, first_bracket) if i != -1]
+            start_idx = min(indices)
+            try:
+                data, _ = json.JSONDecoder().raw_decode(sanitized_text, start_idx)
+                if isinstance(data, dict):
+                    return data
+            except json.JSONDecodeError:
+                pass
+
         ai_logger.error(
             f"JSON Decode Failure: {str(err)} | Snippet: {raw_str[:250]!r}"
         )
@@ -68,7 +81,7 @@ def parse_json_safely(raw_output: str) -> Dict[str, Any]:
             f"Failed to decode valid JSON from LLM output: {str(err)}",
             details={
                 "json_error": str(err),
-                "raw_snippet": raw_str[:300],
+                "raw_snippet": raw_str[:500],
             },
         ) from err
 

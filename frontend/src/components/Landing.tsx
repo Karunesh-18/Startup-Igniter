@@ -20,7 +20,27 @@ export default function Landing({ onLaunch, onDashboard }: { onLaunch: () => voi
   useScrollReveal();
   const [netActive, setNetActive] = useState(false);
   const [pipelineRunning, setPipelineRunning] = useState(false);
+  const [pipelineDone, setPipelineDone] = useState(false);
   const netRef = useRef<HTMLDivElement>(null);
+  const pipelineRef = useRef<HTMLDivElement>(null);
+
+  // Auto-start pipeline when scrolled into view
+  useEffect(() => {
+    const el = pipelineRef.current;
+    if (!el) return;
+    const obs = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting && !pipelineRunning && !pipelineDone) {
+            setPipelineRunning(true);
+          }
+        });
+      },
+      { threshold: 0.25 }
+    );
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, [pipelineRunning, pipelineDone]);
 
   return (
     <div className="relative min-h-screen overflow-hidden bg-void">
@@ -131,8 +151,8 @@ export default function Landing({ onLaunch, onDashboard }: { onLaunch: () => voi
                   </div>
                 ))}
               </div>
-              {/* Mini network viz */}
-              <div className="mt-8 h-40 rounded-2xl border border-white/5 bg-void/40 p-4">
+              {/* Mini network viz — enlarged so nodes aren't cramped */}
+              <div className="mt-8 h-72 rounded-2xl border border-white/5 bg-void/40 p-2">
                 <CrewNetwork compact active />
               </div>
             </div>
@@ -285,17 +305,37 @@ export default function Landing({ onLaunch, onDashboard }: { onLaunch: () => voi
               Twelve stages, executed in sequence. Each crew owns its stage, hands off to the next,
               and leaves a fully documented trail behind.
             </p>
-            <button
-              onClick={() => setPipelineRunning(true)}
-              className="mt-8 btn-primary inline-flex items-center gap-2 rounded-full px-6 py-3 text-sm font-medium"
-            >
-              <Rocket className="h-4 w-4" />
-              Run Demo Pipeline
-            </button>
+            {/* Replay button shown after pipeline finishes */}
+            {pipelineDone && (
+              <button
+                onClick={() => { setPipelineDone(false); setPipelineRunning(false); setTimeout(() => setPipelineRunning(true), 80); }}
+                className="mt-8 btn-primary inline-flex items-center gap-2 rounded-full px-6 py-3 text-sm font-medium"
+              >
+                <Rocket className="h-4 w-4" />
+                Replay Pipeline
+              </button>
+            )}
+            {!pipelineDone && pipelineRunning && (
+              <div className="mt-8 inline-flex items-center gap-2 rounded-full border border-orange/30 bg-orange/10 px-5 py-2.5 text-sm text-orange">
+                <span className="relative flex h-2 w-2">
+                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-orange opacity-75" />
+                  <span className="relative inline-flex h-2 w-2 rounded-full bg-orange" />
+                </span>
+                Pipeline Running…
+              </div>
+            )}
+            {!pipelineDone && !pipelineRunning && (
+              <div className="mt-8 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-5 py-2.5 text-sm text-white/40">
+                Scroll to auto-launch pipeline
+              </div>
+            )}
           </div>
 
-          <div className="mt-16">
-            <ExecutionPipeline running={pipelineRunning} onComplete={() => {}} />
+          <div ref={pipelineRef} className="mt-16">
+            <ExecutionPipeline
+              running={pipelineRunning}
+              onComplete={() => { setPipelineDone(true); setPipelineRunning(false); }}
+            />
           </div>
         </div>
       </section>

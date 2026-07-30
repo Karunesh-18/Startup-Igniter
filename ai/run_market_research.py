@@ -5,6 +5,12 @@ import json
 import sys
 from typing import Optional
 
+if hasattr(sys.stdout, "reconfigure"):
+    try:
+        sys.stdout.reconfigure(encoding="utf-8")
+    except Exception:
+        pass
+
 from ai.memory.project_memory import ProjectMemoryManager
 from ai.schemas.idea_validation import IdeaValidationResult
 from ai.services.idea_validation_service import IdeaValidationService
