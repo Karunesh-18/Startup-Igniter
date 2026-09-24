@@ -63,6 +63,14 @@ class MarketResearchAnalysis(BaseModel):
         le=1.0,
         description="Confidence score rating strictly between 0.0 and 1.0.",
     )
+    citations: List[str] = Field(
+        default_factory=list,
+        description=(
+            "Source URLs backing the claims above, when external research (Tavily/Exa/Zyte) "
+            "was supplied in the prompt. Optional and defaults empty so this schema stays "
+            "backward compatible with LLM-only reasoning when no research bundle is available."
+        ),
+    )
 
     @field_validator("confidence_score", mode="before")
     @classmethod
@@ -178,6 +186,14 @@ class IndustryAnalysis(BaseModel):
         le=1.0,
         description="Confidence score rating strictly between 0.0 and 1.0.",
     )
+    citations: List[str] = Field(
+        default_factory=list,
+        description=(
+            "Source URLs backing the claims above, when external research (Tavily/Exa/Zyte) "
+            "was supplied in the prompt. Optional and defaults empty so this schema stays "
+            "backward compatible with LLM-only reasoning when no research bundle is available."
+        ),
+    )
 
     @field_validator("confidence_score", mode="before")
     @classmethod
@@ -288,6 +304,14 @@ class TrendAnalysis(BaseModel):
         ge=0.0,
         le=1.0,
         description="Confidence score rating strictly between 0.0 and 1.0.",
+    )
+    citations: List[str] = Field(
+        default_factory=list,
+        description=(
+            "Source URLs backing the claims above, when external research (Tavily/Exa/Zyte) "
+            "was supplied in the prompt. Optional and defaults empty so this schema stays "
+            "backward compatible with LLM-only reasoning when no research bundle is available."
+        ),
     )
 
     @field_validator("confidence_score", mode="before")
@@ -415,6 +439,14 @@ class CompetitorDiscovery(BaseModel):
         le=1.0,
         description="Confidence score rating strictly between 0.0 and 1.0.",
     )
+    citations: List[str] = Field(
+        default_factory=list,
+        description=(
+            "Source URLs backing the claims above, when external research (Tavily/Exa/Zyte) "
+            "was supplied in the prompt. Optional and defaults empty so this schema stays "
+            "backward compatible with LLM-only reasoning when no research bundle is available."
+        ),
+    )
 
     @field_validator("confidence_score", mode="before")
     @classmethod
@@ -511,6 +543,14 @@ class CompetitorComparison(BaseModel):
         ge=0.0,
         le=1.0,
         description="Confidence score rating strictly between 0.0 and 1.0.",
+    )
+    citations: List[str] = Field(
+        default_factory=list,
+        description=(
+            "Source URLs backing the claims above, when external research (Tavily/Exa/Zyte) "
+            "was supplied in the prompt. Optional and defaults empty so this schema stays "
+            "backward compatible with LLM-only reasoning when no research bundle is available."
+        ),
     )
 
     @field_validator("confidence_score", mode="before")
@@ -742,6 +782,14 @@ class CustomerPersona(BaseModel):
         le=1.0,
         description="Confidence score rating strictly between 0.0 and 1.0.",
     )
+    citations: List[str] = Field(
+        default_factory=list,
+        description=(
+            "Source URLs backing the claims above, when external research (Tavily/Exa/Zyte) "
+            "was supplied in the prompt. Optional and defaults empty so this schema stays "
+            "backward compatible with LLM-only reasoning when no research bundle is available."
+        ),
+    )
 
     @field_validator("confidence_score", mode="before")
     @classmethod
@@ -792,6 +840,14 @@ class TAMSAMSOMAnalysis(BaseModel):
         ge=0.0,
         le=1.0,
         description="Confidence score rating strictly between 0.0 and 1.0.",
+    )
+    citations: List[str] = Field(
+        default_factory=list,
+        description=(
+            "Source URLs backing the claims above, when external research (Tavily/Exa/Zyte) "
+            "was supplied in the prompt. Optional and defaults empty so this schema stays "
+            "backward compatible with LLM-only reasoning when no research bundle is available."
+        ),
     )
 
     @field_validator("confidence_score", mode="before")

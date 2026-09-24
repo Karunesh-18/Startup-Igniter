@@ -14,6 +14,7 @@ from ai.schemas.research_patent import PatentAnalysis
 from ai.shared.constants import ModelTier
 from ai.shared.logger import ai_logger
 from ai.shared.output_validator import validate_output
+from ai.shared.research.prompt_formatting import format_research_bundle_for_prompt
 
 
 def load_agent_prompt(filename: str = "patent_search.md") -> str:
@@ -121,9 +122,7 @@ def run_patent_search_agent(
         f"Initializing PatentSearchAgent: tier={ModelTier.HEAVY}, temp=0.2, mock={mock_mode}"
     )
 
-    # Research bundle placeholder check (Future Version 2 Tavily/Exa/Zyte integration)
-    if patent_context.research_bundle:
-        ai_logger.debug("PatentSearchAgent: Optional research_bundle present in context.")
+    grounding_block, has_grounding = format_research_bundle_for_prompt(patent_context.research_bundle)
 
     ai_logger.info(f"Running PatentSearchAgent for project '{project_id}'...")
 
@@ -139,6 +138,12 @@ def run_patent_search_agent(
     if mr_result and mr_result.market_research:
         mr_context_text += f"\nMarket Stage: {mr_result.market_research.market_stage}"
 
+    citation_instruction = (
+        "Cite the source URL for every claim that came from the sources above in the "
+        "`citations` field. Do not invent sources that are not listed above."
+        if has_grounding
+        else "No external sources were supplied; leave `citations` empty rather than inventing sources."
+    )
     system_prompt = load_agent_prompt("patent_search.md")
     user_prompt = (
         f"Perform an analytical patent search and IP landscape assessment for the following startup proposal:\n\n"
@@ -147,11 +152,13 @@ def run_patent_search_agent(
         f"Problem Statement: {problem}\n"
         f"Core Value Proposition: {value_prop}\n"
         f"Innovation Score: {innovation_score}/100"
-        f"{mr_context_text}\n\n"
+        f"{mr_context_text}"
+        f"{grounding_block}\n\n"
         "Return pure JSON matching the PatentAnalysis schema with fields: "
         "existing_patent_summary, patent_landscape, major_patent_holders, related_technology_domains, "
         "patent_activity_level, potential_patent_conflicts, white_space_opportunities, patentability_assessment, "
-        "freedom_to_operate_observations, innovation_opportunities, patent_risks, novelty_assessment, confidence_score."
+        "freedom_to_operate_observations, innovation_opportunities, patent_risks, novelty_assessment, "
+        f"confidence_score, citations. {citation_instruction}"
     )
 
     if mock_mode:

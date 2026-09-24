@@ -29,6 +29,10 @@ class PatentAnalysis(BaseModel):
     patent_risks: List[str] = Field(default_factory=list, description="Identified IP risks or patent thicket threats.")
     novelty_assessment: str = Field(default="", description="Qualitative assessment of technical novelty.")
     confidence_score: float = Field(default=0.85, description="Confidence score (0.0-1.0).")
+    citations: List[str] = Field(
+        default_factory=list,
+        description="Source URLs backing the analysis above, when external patent-office scrapes were supplied.",
+    )
 
 
 class ResearchPaperAnalysis(BaseModel):

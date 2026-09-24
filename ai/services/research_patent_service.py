@@ -10,6 +10,7 @@ from ai.schemas.idea_validation import IdeaValidationResult
 from ai.schemas.market_research import MarketResearchResult
 from ai.schemas.research_patent import ResearchPatentResult
 from ai.shared.logger import ai_logger
+from ai.shared.research.research_manager import ResearchManager
 
 
 class ResearchPatentService:
@@ -39,10 +40,18 @@ class ResearchPatentService:
         proj_id = project_id or idea_validation.project_id or f"proj-{uuid.uuid4().hex[:8]}"
         ai_logger.info(f"ResearchPatentService starting for project '{proj_id}' (mock={mock_mode}).")
 
+        research_bundle = None
+        if not mock_mode:
+            try:
+                research_bundle = ResearchManager().gather_patent_research(idea_validation.idea_text)
+            except Exception as err:  # noqa: BLE001 -- grounding is best-effort, never blocks the run
+                ai_logger.warning(f"ResearchManager patent search failed for project '{proj_id}', proceeding ungrounded: {err}")
+
         context = ResearchPatentContext(
             project_id=proj_id,
             idea_validation=idea_validation,
             market_research=market_research,
+            research_bundle=research_bundle,
         )
 
         crew = ResearchPatentCrew(memory_manager=self.memory_manager)

@@ -56,3 +56,14 @@ class ResearchBundle(BaseModel):
         default_factory=dict,
         description="Execution metadata including provider response times and query params.",
     )
+
+    def merge(self, other: "ResearchBundle") -> "ResearchBundle":
+        """Combine this bundle with another (e.g. Tavily + Exa + Zyte results for
+        the same query), concatenating every list field and merging metadata."""
+        merged = ResearchBundle()
+        for field_name in type(self).model_fields:
+            if field_name == "metadata":
+                continue
+            setattr(merged, field_name, getattr(self, field_name) + getattr(other, field_name))
+        merged.metadata = {**self.metadata, **other.metadata}
+        return merged

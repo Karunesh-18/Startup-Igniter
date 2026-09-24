@@ -54,15 +54,28 @@ class ProjectMemoryManager:
 
     _embedder_instance = None
 
-    def __init__(self, use_mock_store: bool = True) -> None:
+    def __init__(
+        self,
+        use_mock_store: bool = True,
+        persist_callback: Optional[Any] = None,
+    ) -> None:
         """Initialize Project Memory Manager.
 
         Args:
             use_mock_store: If True, uses in-memory dictionary store for offline tests.
+            persist_callback: Optional `Callable[[MemoryEntry], None]` invoked by
+                write_memory() when use_mock_store is False. `ai/` deliberately
+                does not import backend/db (no SQLAlchemy dependency here), so
+                real Postgres persistence is the caller's responsibility --
+                backend/workers/tasks.py already holds a DB session and is the
+                natural place to pass e.g. `lambda entry: upsert_project_memory(db, entry)`.
+                Without one, non-mock writes still compute a real embedding but
+                are otherwise a no-op, same as before this parameter existed.
         """
         self.settings = get_ai_settings()
         self.config = self.settings.memory_config
         self.use_mock_store = use_mock_store
+        self.persist_callback = persist_callback
         # In-memory mock store: project_id -> List[MemoryEntry]
         self._mock_db: Dict[str, List[MemoryEntry]] = {}
 
@@ -146,7 +159,20 @@ class ProjectMemoryManager:
             ai_logger.info(f"[LOCAL MEMORY] Saved '{key}' for project '{project_id}' in phase '{source_phase}'")
             return entry
 
-        # Production path: Supabase DB insertion (handled when DB connection is active)
+        # Production path: delegate persistence to the caller-supplied callback
+        # (see persist_callback in __init__). Without one, this computes a real
+        # embedding but doesn't persist -- previously it never persisted at all
+        # regardless of configuration, silently.
+        if self.persist_callback is not None:
+            try:
+                self.persist_callback(entry)
+            except Exception as err:  # noqa: BLE001 -- a memory-write failure shouldn't sink the caller's run
+                ai_logger.warning(f"persist_callback failed for '{key}' (project '{project_id}'): {err}")
+        else:
+            ai_logger.debug(
+                f"write_memory('{key}', project '{project_id}') computed but not persisted -- "
+                "no persist_callback configured and use_mock_store=False."
+            )
         return entry
 
     def query_memory(

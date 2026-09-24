@@ -11,6 +11,7 @@ from ai.memory.project_memory import ProjectMemoryManager
 from ai.schemas.context import MarketResearchContext
 from ai.schemas.idea_validation import IdeaValidationResult
 from ai.schemas.market_research import MarketResearchAnalysis
+from ai.shared.research.prompt_formatting import format_research_bundle_for_prompt
 from ai.shared.constants import ModelTier
 from ai.shared.logger import ai_logger
 from ai.shared.output_validator import validate_output
@@ -163,6 +164,12 @@ def run_market_research_agent(
     innovation_score = validation_result.innovation_scoring.overall_innovation_score
 
     system_prompt = load_agent_prompt("market_research.md")
+    citation_instruction = (
+        "Cite the source URL for every claim that came from the sources above in the "
+        "`citations` field. Do not invent sources that are not listed above."
+        if has_grounding
+        else "No external sources were supplied; leave `citations` empty rather than inventing sources."
+    )
     user_prompt = (
         f"Perform a high-level market assessment for the following validated startup proposal:\n\n"
         f"Idea Text: '{validation_result.idea_text}'\n"
@@ -170,11 +177,12 @@ def run_market_research_agent(
         f"Problem Statement: {problem}\n"
         f"Target Primary Customers: {customers}\n"
         f"Core Value Proposition: {value_prop}\n"
-        f"Overall Innovation Score: {innovation_score}/100\n\n"
+        f"Overall Innovation Score: {innovation_score}/100\n"
+        f"{grounding_block}\n\n"
         "Return pure JSON matching the MarketResearchAnalysis schema with fields: "
         "market_overview, industry_overview, market_stage, market_maturity, market_size_summary, "
         "market_demand, market_opportunities, market_challenges, growth_drivers, market_risks, "
-        "future_outlook, confidence_score."
+        f"future_outlook, confidence_score, citations. {citation_instruction}"
     )
 
     if mock_mode:

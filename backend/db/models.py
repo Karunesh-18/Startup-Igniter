@@ -39,9 +39,11 @@ JSONB = JSON().with_variant(PG_JSONB, "postgresql")
 from db.database import Base
 
 # ── Custom pgvector type ──────────────────────────────────────────────────────
-# We use a raw String column holding the vector literal until pgvector's
-# SQLAlchemy integration is pinned.  Swap for Vector(384) once pgvector-python
-# is added to pyproject.toml.
+# pgvector-python is now a declared dependency (backend/pyproject.toml), so
+# this resolves to the real Vector(384) column. The ImportError fallback to
+# Text stays as a defensive guard for any environment that hasn't installed
+# it yet, rather than a hard requirement — a fresh `pip install -e .` always
+# gets the real type.
 try:
     from pgvector.sqlalchemy import Vector  # type: ignore
 
