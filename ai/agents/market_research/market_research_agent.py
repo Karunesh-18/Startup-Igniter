@@ -147,9 +147,7 @@ def run_market_research_agent(
     settings = get_ai_settings()
     memory_mgr = memory_manager or ProjectMemoryManager(use_mock_store=True)
 
-    if market_context.research_bundle:
-        # Future enhancement: Use verified external research from ResearchManager (Tavily/Exa/Zyte)
-        pass
+    grounding_block, has_grounding = format_research_bundle_for_prompt(market_context.research_bundle)
 
     agent = get_market_research_agent(
         model_tier=ModelTier.HEAVY,
