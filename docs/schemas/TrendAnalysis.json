@@ -1,0 +1,137 @@
+{
+  "description": "Structured Pydantic schema for TrendAnalysisAgent output.",
+  "properties": {
+    "current_trends": {
+      "description": "Current active trends influencing the target industry vertical.",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1,
+      "title": "Current Trends",
+      "type": "array"
+    },
+    "emerging_trends": {
+      "description": "Emerging early-stage trends shaping the future of the sector.",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1,
+      "title": "Emerging Trends",
+      "type": "array"
+    },
+    "technology_trends": {
+      "description": "Key technological advancements and digital transformation trends.",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1,
+      "title": "Technology Trends",
+      "type": "array"
+    },
+    "consumer_behavior_trends": {
+      "description": "Shifts in customer expectations, buying habits, and usage behavior.",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1,
+      "title": "Consumer Behavior Trends",
+      "type": "array"
+    },
+    "regulatory_trends": {
+      "description": "Evolving legal, compliance, policy, and governance trends.",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1,
+      "title": "Regulatory Trends",
+      "type": "array"
+    },
+    "investment_trends": {
+      "description": "Venture funding, capital deployment, and investor focus trends.",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1,
+      "title": "Investment Trends",
+      "type": "array"
+    },
+    "sustainability_trends": {
+      "description": "ESG, environmental impact, and sustainability trends.",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1,
+      "title": "Sustainability Trends",
+      "type": "array"
+    },
+    "future_predictions": {
+      "description": "Key predictions and projections for the industry over the next 3-5 years.",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1,
+      "title": "Future Predictions",
+      "type": "array"
+    },
+    "opportunities_from_trends": {
+      "description": "Strategic opportunities created by these macro and tech trends.",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1,
+      "title": "Opportunities From Trends",
+      "type": "array"
+    },
+    "risks_from_trends": {
+      "description": "Potential risks, disruption threats, or vulnerabilities introduced by trends.",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1,
+      "title": "Risks From Trends",
+      "type": "array"
+    },
+    "trend_stability": {
+      "description": "Assessment of trend longevity and stability (e.g. Highly Stable, Volatile, Sustained Long-Term).",
+      "title": "Trend Stability",
+      "type": "string"
+    },
+    "trend_relevance": {
+      "description": "Relevance rating and impact magnitude of trends on the specific startup proposal.",
+      "title": "Trend Relevance",
+      "type": "string"
+    },
+    "confidence_score": {
+      "description": "Confidence score rating strictly between 0.0 and 1.0.",
+      "maximum": 1.0,
+      "minimum": 0.0,
+      "title": "Confidence Score",
+      "type": "number"
+    },
+    "citations": {
+      "description": "Source URLs backing the claims above, when external research (Tavily/Exa/Zyte) was supplied in the prompt. Optional and defaults empty so this schema stays backward compatible with LLM-only reasoning when no research bundle is available.",
+      "items": {
+        "type": "string"
+      },
+      "title": "Citations",
+      "type": "array"
+    }
+  },
+  "required": [
+    "current_trends",
+    "emerging_trends",
+    "technology_trends",
+    "consumer_behavior_trends",
+    "regulatory_trends",
+    "investment_trends",
+    "sustainability_trends",
+    "future_predictions",
+    "opportunities_from_trends",
+    "risks_from_trends",
+    "trend_stability",
+    "trend_relevance",
+    "confidence_score"
+  ],
+  "title": "TrendAnalysis",
+  "type": "object"
+}

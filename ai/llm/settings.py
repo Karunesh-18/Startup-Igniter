@@ -71,6 +71,19 @@ class LLMSettings(BaseSettings):
         alias="LLM_MODEL_FAST",
         description="Self-hosted model name for ModelTier.FAST.",
     )
+    llm_base_url_fast: Optional[str] = Field(
+        default=None,
+        alias="LLM_BASE_URL_FAST",
+        description=(
+            "Optional separate base URL for ModelTier.FAST. vLLM serves one base "
+            "model per process, so Qwen3-32B (HEAVY/REASONING) and Qwen3-8B (FAST) "
+            "run as two separate servers (see training/serve/vllm_up.sh) -- content-"
+            "based routing by model name isn't something a plain reverse proxy does "
+            "cleanly, so the gateway picks the URL per tier directly instead. "
+            "Defaults to LLM_BASE_URL when unset, i.e. one server answering both "
+            "tiers still works unchanged."
+        ),
+    )
     llm_guided_decoding: bool = Field(
         default=True,
         alias="LLM_GUIDED_DECODING",
@@ -109,6 +122,21 @@ class LLMSettings(BaseSettings):
     @property
     def has_selfhosted(self) -> bool:
         return bool(self.llm_base_url)
+
+    def selfhosted_base_url_for_tier(self, tier: "ModelTier") -> Optional[str]:
+        """Resolve which self-hosted server answers a given tier.
+
+        FAST uses `llm_base_url_fast` when set (Qwen3-8B's own vLLM server —
+        see training/serve/vllm_up.sh, port 8002); everything else uses
+        `llm_base_url` (Qwen3-32B, port 8001). Falls back to `llm_base_url`
+        for FAST too when no separate URL is configured, so a single
+        one-server setup keeps working unchanged.
+        """
+        from ai.shared.constants import ModelTier  # local import: avoids a hard dependency for callers that don't need it
+
+        if tier == ModelTier.FAST and self.llm_base_url_fast:
+            return self.llm_base_url_fast
+        return self.llm_base_url
 
     @property
     def has_groq(self) -> bool:

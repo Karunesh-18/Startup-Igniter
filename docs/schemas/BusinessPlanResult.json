@@ -1,0 +1,172 @@
+{
+  "$defs": {
+    "FinancialModel": {
+      "description": "Schema representing financial projections and pricing strategy.",
+      "properties": {
+        "pricing_model": {
+          "description": "Subscription, pay-per-use, or freemium model.",
+          "title": "Pricing Model",
+          "type": "string"
+        },
+        "price_points": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "description": "Tiered pricing breakdown.",
+          "title": "Price Points",
+          "type": "object"
+        },
+        "estimated_cac": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Estimated Customer Acquisition Cost.",
+          "title": "Estimated Cac"
+        },
+        "estimated_ltv": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Estimated Customer Lifetime Value.",
+          "title": "Estimated Ltv"
+        },
+        "year_1_revenue_projection": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Year 1 revenue target.",
+          "title": "Year 1 Revenue Projection"
+        }
+      },
+      "required": [
+        "pricing_model"
+      ],
+      "title": "FinancialModel",
+      "type": "object"
+    },
+    "LeanCanvas": {
+      "description": "Schema representing Lean Canvas business model data.",
+      "properties": {
+        "problem": {
+          "description": "Top 3 problems being addressed.",
+          "title": "Problem",
+          "type": "string"
+        },
+        "solution": {
+          "description": "Top 3 features offering solutions.",
+          "title": "Solution",
+          "type": "string"
+        },
+        "unique_value_proposition": {
+          "description": "Clear, compelling message explaining uniqueness.",
+          "title": "Unique Value Proposition",
+          "type": "string"
+        },
+        "unfair_advantage": {
+          "description": "Thing that cannot be easily copied or bought.",
+          "title": "Unfair Advantage",
+          "type": "string"
+        },
+        "customer_segments": {
+          "description": "Target customers and early adopters.",
+          "title": "Customer Segments",
+          "type": "string"
+        },
+        "key_metrics": {
+          "description": "Key activities measured.",
+          "items": {
+            "type": "string"
+          },
+          "title": "Key Metrics",
+          "type": "array"
+        },
+        "channels": {
+          "description": "Pathways to reach customers.",
+          "items": {
+            "type": "string"
+          },
+          "title": "Channels",
+          "type": "array"
+        },
+        "cost_structure": {
+          "description": "Fixed and variable costs.",
+          "items": {
+            "type": "string"
+          },
+          "title": "Cost Structure",
+          "type": "array"
+        },
+        "revenue_streams": {
+          "description": "Revenue models and pricing.",
+          "items": {
+            "type": "string"
+          },
+          "title": "Revenue Streams",
+          "type": "array"
+        }
+      },
+      "required": [
+        "problem",
+        "solution",
+        "unique_value_proposition",
+        "unfair_advantage",
+        "customer_segments"
+      ],
+      "title": "LeanCanvas",
+      "type": "object"
+    }
+  },
+  "description": "Unified result container for Business Planning Crew.",
+  "properties": {
+    "project_id": {
+      "description": "Project UUID string.",
+      "title": "Project Id",
+      "type": "string"
+    },
+    "lean_canvas": {
+      "$ref": "#/$defs/LeanCanvas",
+      "description": "Structured Lean Canvas model."
+    },
+    "financial_model": {
+      "$ref": "#/$defs/FinancialModel",
+      "description": "Financial model projections."
+    },
+    "executive_summary": {
+      "description": "Synthesized business summary.",
+      "title": "Executive Summary",
+      "type": "string"
+    },
+    "confidence_score": {
+      "default": 0.85,
+      "description": "Confidence score (0.0 to 1.0).",
+      "title": "Confidence Score",
+      "type": "number"
+    }
+  },
+  "required": [
+    "project_id",
+    "lean_canvas",
+    "financial_model",
+    "executive_summary"
+  ],
+  "title": "BusinessPlanResult",
+  "type": "object"
+}

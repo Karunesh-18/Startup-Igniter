@@ -1,0 +1,63 @@
+# LoRA fine-tune, Qwen3-8B, 8xB200. Default for FAST-tier fine-tuning.
+#
+# Launch:
+#   accelerate launch -m axolotl.cli.train training/configs/qwen3-8b-lora.yaml
+
+base_model: Qwen/Qwen3-8B
+model_type: AutoModelForCausalLM
+tokenizer_type: AutoTokenizer
+trust_remote_code: true
+
+adapter: lora
+lora_out_dir: ./training/adapters/qwen3-8b/idea_validation
+lora_r: 16
+lora_alpha: 32
+lora_dropout: 0.05
+lora_target_modules:
+  - q_proj
+  - k_proj
+  - v_proj
+  - o_proj
+  - gate_proj
+  - up_proj
+  - down_proj
+
+datasets:
+  - path: training/data/corpus/idea_validation/train.chat.jsonl
+    type: chat_template
+    field_messages: messages
+val_set_size: 0.0
+test_datasets:
+  - path: training/data/corpus/idea_validation/val.chat.jsonl
+    type: chat_template
+    field_messages: messages
+
+sequence_len: 4096
+sample_packing: true
+pad_to_sequence_len: true
+
+bf16: true
+tf32: true
+flash_attention: true
+deepspeed: null
+fsdp: null
+
+# 8B is small enough that a single GPU could run this; using all 8 via DDP
+# just for a larger effective batch size / faster wall-clock, not because
+# it's required for memory.
+micro_batch_size: 8
+gradient_accumulation_steps: 2   # effective batch = 8 * 2 * 8 GPUs = 128
+num_epochs: 3
+learning_rate: 0.0003
+lr_scheduler: cosine
+warmup_ratio: 0.03
+weight_decay: 0.0
+optimizer: adamw_torch_fused
+
+gradient_checkpointing: true
+logging_steps: 10
+eval_steps: 50
+save_steps: 100
+save_total_limit: 3
+
+output_dir: ./training/checkpoints/qwen3-8b-lora/idea_validation

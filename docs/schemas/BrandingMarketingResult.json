@@ -1,0 +1,57 @@
+{
+  "description": "Unified result container for Branding & Marketing Crew.",
+  "properties": {
+    "project_id": {
+      "description": "Project UUID string.",
+      "title": "Project Id",
+      "type": "string"
+    },
+    "brand_name_suggestions": {
+      "description": "Suggested brand names.",
+      "items": {
+        "type": "string"
+      },
+      "title": "Brand Name Suggestions",
+      "type": "array"
+    },
+    "tagline": {
+      "description": "Core brand tagline.",
+      "title": "Tagline",
+      "type": "string"
+    },
+    "brand_positioning": {
+      "description": "Brand positioning strategy.",
+      "title": "Brand Positioning",
+      "type": "string"
+    },
+    "copywriting_angles": {
+      "description": "High-converting messaging angles.",
+      "items": {
+        "type": "string"
+      },
+      "title": "Copywriting Angles",
+      "type": "array"
+    },
+    "launch_channel_strategy": {
+      "description": "GTM launch channels.",
+      "items": {
+        "type": "string"
+      },
+      "title": "Launch Channel Strategy",
+      "type": "array"
+    },
+    "confidence_score": {
+      "default": 0.88,
+      "description": "Confidence score (0.0 to 1.0).",
+      "title": "Confidence Score",
+      "type": "number"
+    }
+  },
+  "required": [
+    "project_id",
+    "tagline",
+    "brand_positioning"
+  ],
+  "title": "BrandingMarketingResult",
+  "type": "object"
+}

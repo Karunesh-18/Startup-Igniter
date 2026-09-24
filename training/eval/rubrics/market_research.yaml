@@ -1,0 +1,25 @@
+crew: 2
+crew_name: Market Research
+criteria:
+  - name: groundedness
+    description: >
+      When a research bundle was supplied, does every factual claim (market
+      size, named competitor, cited trend) trace to a `citations` entry that
+      actually appears in the supplied sources? Any claim that reads as
+      specific/factual but has no citation is a groundedness failure -- see
+      docs/architecture/0005-grounding-layer.md.
+  - name: appropriate_uncertainty
+    description: >
+      When NO research bundle was supplied, does the output appropriately
+      hedge (e.g. "estimated," "typical for this category") rather than
+      stating invented numbers with false precision?
+  - name: competitive_specificity
+    description: >
+      Are named competitors (CompetitorDiscovery/CompetitorComparison) real
+      and relevant to the stated category, not generic industry giants
+      reflexively named regardless of fit?
+  - name: internal_consistency
+    description: >
+      Do market_stage, market_maturity, and market_demand agree with each
+      other (e.g. "Declining" stage paired with "High accelerating demand"
+      would fail this criterion)?

@@ -15,6 +15,12 @@ from pydantic import BaseModel
 from ai.llm.providers.base import LLMResponse, ProviderRequestError
 from ai.shared.logger import ai_logger
 
+# Client errors where retrying literally cannot help: an invalid/revoked key
+# (401/403), a malformed request the same payload will always fail (400/422),
+# or a URL/model that doesn't exist (404). 429 (rate limit) and 5xx (server-side,
+# often transient) are handled by the retry-with-backoff path above instead.
+_NON_RETRYABLE_STATUS_CODES = frozenset({400, 401, 403, 404, 422})
+
 
 def build_json_schema_response_format(schema_class: Type[BaseModel]) -> Dict[str, Any]:
     """Build an OpenAI/vLLM-style json_schema response_format from a Pydantic model.
@@ -106,12 +112,23 @@ def chat_completion(
         except httpx.HTTPStatusError as exc:
             last_error = exc
             err_msg = exc.response.text if exc.response is not None else str(exc)
+            status = exc.response.status_code if exc.response is not None else None
+            if status in _NON_RETRYABLE_STATUS_CODES:
+                # An invalid/revoked key, a malformed request, or a missing
+                # resource will not succeed on retry -- failing fast here is
+                # the fix for a real bug found during corpus generation: this
+                # used to retry a 401 three times with exponential backoff
+                # (~12s wasted) on every single call before falling through.
+                ai_logger.error(
+                    f"{provider_label} HTTP {status} (non-retryable): {err_msg}"
+                )
+                break
             if attempt == max_retries - 1:
-                ai_logger.error(f"{provider_label} HTTP error ({exc.response.status_code}): {err_msg}")
+                ai_logger.error(f"{provider_label} HTTP error ({status}): {err_msg}")
                 break
             sleep_sec = 2.0 * (attempt + 1)
             ai_logger.warning(
-                f"{provider_label} HTTP {exc.response.status_code} ({err_msg}). "
+                f"{provider_label} HTTP {status} ({err_msg}). "
                 f"Retrying in {sleep_sec:.1f}s (attempt {attempt + 1}/{max_retries})..."
             )
             time.sleep(sleep_sec)

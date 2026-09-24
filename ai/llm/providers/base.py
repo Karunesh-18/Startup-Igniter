@@ -44,6 +44,7 @@ class BaseLLMProvider(ABC):
         system_prompt: str,
         user_prompt: str,
         model: str,
+        tier: Any = None,
         temperature: float = 0.2,
         max_tokens: Optional[int] = 4096,
         timeout: float = 60.0,
@@ -54,6 +55,11 @@ class BaseLLMProvider(ABC):
         """Execute a chat completion and return raw text (not yet parsed/validated).
 
         Args:
+            tier: The ModelTier the caller asked for (typed as `Any` here to
+                avoid a hard import of ai.shared.constants in this base module).
+                Most providers ignore it (`model` is already resolved); only
+                SelfHostedProvider currently uses it, to pick between two
+                separate vLLM servers when LLM_BASE_URL_FAST is configured.
             schema_class: When provided and the provider supports guided decoding,
                 the provider SHOULD constrain generation to this Pydantic schema's
                 JSON Schema via response_format. Providers that don't support it

@@ -1,0 +1,43 @@
+{
+  "description": "Unified result container for Community & Peer Review Crew.",
+  "properties": {
+    "project_id": {
+      "description": "Project UUID string.",
+      "title": "Project Id",
+      "type": "string"
+    },
+    "peer_review_scorecard": {
+      "additionalProperties": {
+        "type": "number"
+      },
+      "description": "Peer review feedback scores.",
+      "title": "Peer Review Scorecard",
+      "type": "object"
+    },
+    "community_feedback_summary": {
+      "description": "Synthesized feedback from founder network.",
+      "title": "Community Feedback Summary",
+      "type": "string"
+    },
+    "recommended_mentors": {
+      "description": "Target mentor profiles.",
+      "items": {
+        "type": "string"
+      },
+      "title": "Recommended Mentors",
+      "type": "array"
+    },
+    "confidence_score": {
+      "default": 0.88,
+      "description": "Confidence score (0.0 to 1.0).",
+      "title": "Confidence Score",
+      "type": "number"
+    }
+  },
+  "required": [
+    "project_id",
+    "community_feedback_summary"
+  ],
+  "title": "CommunityResult",
+  "type": "object"
+}

@@ -1,0 +1,79 @@
+{
+  "description": "Schema representing intellectual property protection strategy and portfolio roadmap.",
+  "properties": {
+    "patent_strategy_recommendations": {
+      "description": "Priority patent filing recommendations.",
+      "items": {
+        "type": "string"
+      },
+      "title": "Patent Strategy Recommendations",
+      "type": "array"
+    },
+    "trade_secret_opportunities": {
+      "description": "Proprietary trade secret protections.",
+      "items": {
+        "type": "string"
+      },
+      "title": "Trade Secret Opportunities",
+      "type": "array"
+    },
+    "copyright_protection_areas": {
+      "description": "Source code and design copyright areas.",
+      "items": {
+        "type": "string"
+      },
+      "title": "Copyright Protection Areas",
+      "type": "array"
+    },
+    "licensing_considerations": {
+      "description": "Commercial API and open-source licensing considerations.",
+      "items": {
+        "type": "string"
+      },
+      "title": "Licensing Considerations",
+      "type": "array"
+    },
+    "defensive_ip_tactics": {
+      "description": "Defensive publication and moat tactics.",
+      "items": {
+        "type": "string"
+      },
+      "title": "Defensive Ip Tactics",
+      "type": "array"
+    },
+    "open_source_strategy": {
+      "default": "Open-core model",
+      "description": "Open-source vs proprietary licensing model strategy.",
+      "title": "Open Source Strategy",
+      "type": "string"
+    },
+    "ip_defensibility_score": {
+      "default": 82.0,
+      "description": "IP defensibility score (0-100).",
+      "title": "Ip Defensibility Score",
+      "type": "number"
+    },
+    "confidence_score": {
+      "default": 0.9,
+      "description": "Confidence score (0.0-1.0).",
+      "title": "Confidence Score",
+      "type": "number"
+    },
+    "reasoning_summary": {
+      "default": "",
+      "description": "IP portfolio rationale.",
+      "title": "Reasoning Summary",
+      "type": "string"
+    },
+    "recommendations": {
+      "description": "Actionable IP steps.",
+      "items": {
+        "type": "string"
+      },
+      "title": "Recommendations",
+      "type": "array"
+    }
+  },
+  "title": "IPStrategy",
+  "type": "object"
+}

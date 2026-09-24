@@ -1,0 +1,140 @@
+{
+  "$defs": {
+    "ComplianceItem": {
+      "description": "Individual legal compliance checklist item.",
+      "properties": {
+        "category": {
+          "description": "Registration, Tax, IP, or Sectoral.",
+          "title": "Category",
+          "type": "string"
+        },
+        "title": {
+          "description": "Checklist item title.",
+          "title": "Title",
+          "type": "string"
+        },
+        "description": {
+          "description": "Detailed compliance requirement.",
+          "title": "Description",
+          "type": "string"
+        },
+        "is_mandatory": {
+          "default": true,
+          "description": "Whether required by law.",
+          "title": "Is Mandatory",
+          "type": "boolean"
+        },
+        "regulatory_body": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "e.g., MCA, GSTN, DPIIT.",
+          "title": "Regulatory Body"
+        }
+      },
+      "required": [
+        "category",
+        "title",
+        "description"
+      ],
+      "title": "ComplianceItem",
+      "type": "object"
+    },
+    "LegalDocumentDraft": {
+      "description": "Drafted legal agreement container.",
+      "properties": {
+        "document_type": {
+          "description": "NDA, Founder Agreement, or Terms of Service.",
+          "title": "Document Type",
+          "type": "string"
+        },
+        "title": {
+          "description": "Document title.",
+          "title": "Title",
+          "type": "string"
+        },
+        "content": {
+          "description": "Complete legal contract draft text.",
+          "title": "Content",
+          "type": "string"
+        },
+        "disclaimer": {
+          "default": "DISCLAIMER: This document is an AI-generated draft for reference only. Consult a licensed attorney before signing.",
+          "description": "Mandatory legal disclaimer.",
+          "title": "Disclaimer",
+          "type": "string"
+        }
+      },
+      "required": [
+        "document_type",
+        "title",
+        "content"
+      ],
+      "title": "LegalDocumentDraft",
+      "type": "object"
+    }
+  },
+  "description": "Unified result container for Legal & Compliance Crew.",
+  "properties": {
+    "project_id": {
+      "description": "Project UUID string.",
+      "title": "Project Id",
+      "type": "string"
+    },
+    "compliance_checklist": {
+      "description": "Category compliance items.",
+      "items": {
+        "$ref": "#/$defs/ComplianceItem"
+      },
+      "title": "Compliance Checklist",
+      "type": "array"
+    },
+    "draft_nda": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/LegalDocumentDraft"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "Drafted Mutual NDA."
+    },
+    "draft_founder_agreement": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/LegalDocumentDraft"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "Drafted Founder Agreement."
+    },
+    "overall_summary": {
+      "description": "Legal readiness summary.",
+      "title": "Overall Summary",
+      "type": "string"
+    },
+    "confidence_score": {
+      "default": 0.85,
+      "description": "Confidence score (0.0 to 1.0).",
+      "title": "Confidence Score",
+      "type": "number"
+    }
+  },
+  "required": [
+    "project_id",
+    "overall_summary"
+  ],
+  "title": "LegalComplianceResult",
+  "type": "object"
+}

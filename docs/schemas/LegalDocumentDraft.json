@@ -1,0 +1,33 @@
+{
+  "description": "Drafted legal agreement container.",
+  "properties": {
+    "document_type": {
+      "description": "NDA, Founder Agreement, or Terms of Service.",
+      "title": "Document Type",
+      "type": "string"
+    },
+    "title": {
+      "description": "Document title.",
+      "title": "Title",
+      "type": "string"
+    },
+    "content": {
+      "description": "Complete legal contract draft text.",
+      "title": "Content",
+      "type": "string"
+    },
+    "disclaimer": {
+      "default": "DISCLAIMER: This document is an AI-generated draft for reference only. Consult a licensed attorney before signing.",
+      "description": "Mandatory legal disclaimer.",
+      "title": "Disclaimer",
+      "type": "string"
+    }
+  },
+  "required": [
+    "document_type",
+    "title",
+    "content"
+  ],
+  "title": "LegalDocumentDraft",
+  "type": "object"
+}

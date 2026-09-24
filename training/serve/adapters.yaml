@@ -1,0 +1,39 @@
+# Per-crew LoRA adapter registry (see docs/architecture/0003-qwen3-base-models.md
+# for why adapters are per-crew, not per-agent). vllm_up.sh's --lora-modules
+# flags are generated from this file's keys -- keep them in sync.
+#
+# Only crews with a trained adapter should be listed here; the gateway falls
+# back to the BASE model (no adapter) for any crew without one, which is a
+# legitimate state for the 9 specified-but-unbuilt crews until they're
+# trained.
+
+qwen3-32b:
+  idea_validation:
+    path: training/adapters/qwen3-32b/idea_validation
+    trained_from: training/configs/qwen3-32b-lora.yaml
+    status: not_yet_trained   # flip to `trained` once a real run completes and passes docs/ops/eval.md's gates
+  market_research:
+    path: training/adapters/qwen3-32b/market_research
+    trained_from: training/configs/qwen3-32b-lora.yaml
+    status: not_yet_trained
+  research_patent:
+    path: training/adapters/qwen3-32b/research_patent
+    trained_from: training/configs/qwen3-32b-lora.yaml
+    status: not_yet_trained
+
+qwen3-8b:
+  idea_validation:
+    path: training/adapters/qwen3-8b/idea_validation
+    trained_from: training/configs/qwen3-8b-lora.yaml
+    status: not_yet_trained
+  market_research:
+    path: training/adapters/qwen3-8b/market_research
+    trained_from: training/configs/qwen3-8b-lora.yaml
+    status: not_yet_trained
+  research_patent:
+    path: training/adapters/qwen3-8b/research_patent
+    trained_from: training/configs/qwen3-8b-lora.yaml
+    status: not_yet_trained
+
+# Crews 4-12: no adapter until the crew itself is built (see docs/phases/04-*.md
+# through 12-*.md) and has a real per-crew corpus to train on.

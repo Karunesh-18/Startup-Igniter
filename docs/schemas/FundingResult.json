@@ -1,0 +1,57 @@
+{
+  "description": "Unified result container for Funding & Investor Readiness Crew.",
+  "properties": {
+    "project_id": {
+      "description": "Project UUID string.",
+      "title": "Project Id",
+      "type": "string"
+    },
+    "pitch_deck_slides": {
+      "description": "10-slide pitch deck structure.",
+      "items": {
+        "type": "string"
+      },
+      "title": "Pitch Deck Slides",
+      "type": "array"
+    },
+    "estimated_valuation_range": {
+      "description": "Estimated pre-money valuation range.",
+      "title": "Estimated Valuation Range",
+      "type": "string"
+    },
+    "fundraising_target": {
+      "description": "Target capital raising amount.",
+      "title": "Fundraising Target",
+      "type": "string"
+    },
+    "investor_checklist": {
+      "description": "Due diligence readiness checklist.",
+      "items": {
+        "type": "string"
+      },
+      "title": "Investor Checklist",
+      "type": "array"
+    },
+    "investor_types": {
+      "description": "Angel, Seed VC, Micro VC targets.",
+      "items": {
+        "type": "string"
+      },
+      "title": "Investor Types",
+      "type": "array"
+    },
+    "confidence_score": {
+      "default": 0.88,
+      "description": "Confidence score (0.0 to 1.0).",
+      "title": "Confidence Score",
+      "type": "number"
+    }
+  },
+  "required": [
+    "project_id",
+    "estimated_valuation_range",
+    "fundraising_target"
+  ],
+  "title": "FundingResult",
+  "type": "object"
+}

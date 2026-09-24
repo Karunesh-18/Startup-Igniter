@@ -1,0 +1,26 @@
+crew: 3
+crew_name: Research & Patent
+criteria:
+  - name: groundedness
+    description: >
+      Does `existing_patent_summary`/`patentability_assessment` cite real
+      scraped patent-office content (see PatentAnalysis.citations) rather
+      than inventing plausible-sounding patent holders or filings? This is
+      the highest-stakes hallucination surface in the whole pipeline --
+      score strictly.
+  - name: trl_calibration
+    description: >
+      Is the assigned Technology Readiness Level (1-9) consistent with the
+      idea's actual described state (a two-sentence fragment idea should not
+      receive TRL 7+ "system prototype demonstrated in operational
+      environment")?
+  - name: ip_strategy_relevance
+    description: >
+      Are IP strategy recommendations specific to the technology domain
+      (e.g. software vs. hardware vs. biotech have very different patenting
+      realities), not generic "file a patent" advice?
+  - name: synthesis_quality
+    description: >
+      Does the final summary (ResearchPatentResult) actually integrate the
+      6 sub-analyses, or does it read as a disconnected restatement of each
+      one in sequence?

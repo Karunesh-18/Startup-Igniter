@@ -1,0 +1,1668 @@
+{
+  "$defs": {
+    "CompetitorComparison": {
+      "description": "Structured Pydantic schema for CompetitorComparisonAgent output.",
+      "properties": {
+        "startup_position": {
+          "description": "Assessment of the startup's current market position relative to competitors.",
+          "minLength": 5,
+          "title": "Startup Position",
+          "type": "string"
+        },
+        "competitive_advantages": {
+          "description": "Key strategic advantages and unique moats held by the startup.",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Competitive Advantages",
+          "type": "array"
+        },
+        "competitive_weaknesses": {
+          "description": "Key competitive vulnerabilities or gaps relative to established incumbents.",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Competitive Weaknesses",
+          "type": "array"
+        },
+        "feature_comparison": {
+          "description": "High-level comparison points of key feature capabilities vs competitors.",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Feature Comparison",
+          "type": "array"
+        },
+        "technology_comparison": {
+          "description": "Comparison of technological stack, AI depth, and architecture vs competitors.",
+          "title": "Technology Comparison",
+          "type": "string"
+        },
+        "customer_focus_comparison": {
+          "description": "Comparison of target customer segment focus and user alignment vs competitors.",
+          "title": "Customer Focus Comparison",
+          "type": "string"
+        },
+        "pricing_strategy_comparison": {
+          "description": "High-level pricing model and cost structure comparison vs market alternatives.",
+          "title": "Pricing Strategy Comparison",
+          "type": "string"
+        },
+        "innovation_comparison": {
+          "description": "Innovation pace and technological novelty comparison vs incumbents.",
+          "title": "Innovation Comparison",
+          "type": "string"
+        },
+        "market_positioning": {
+          "description": "Strategic positioning statement and value vector relative to existing players.",
+          "title": "Market Positioning",
+          "type": "string"
+        },
+        "competitive_gap": {
+          "description": "Unserved market needs or feature voids left open by existing competitors.",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Competitive Gap",
+          "type": "array"
+        },
+        "differentiation_opportunities": {
+          "description": "Clear opportunities for the startup to carve out a distinct competitive position.",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Differentiation Opportunities",
+          "type": "array"
+        },
+        "overall_competitive_score": {
+          "description": "Overall rating score of the startup's competitive strength from 0.0 to 10.0.",
+          "maximum": 10.0,
+          "minimum": 0.0,
+          "title": "Overall Competitive Score",
+          "type": "number"
+        },
+        "confidence_score": {
+          "description": "Confidence score rating strictly between 0.0 and 1.0.",
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Confidence Score",
+          "type": "number"
+        },
+        "citations": {
+          "description": "Source URLs backing the claims above, when external research (Tavily/Exa/Zyte) was supplied in the prompt. Optional and defaults empty so this schema stays backward compatible with LLM-only reasoning when no research bundle is available.",
+          "items": {
+            "type": "string"
+          },
+          "title": "Citations",
+          "type": "array"
+        }
+      },
+      "required": [
+        "startup_position",
+        "competitive_advantages",
+        "competitive_weaknesses",
+        "feature_comparison",
+        "technology_comparison",
+        "customer_focus_comparison",
+        "pricing_strategy_comparison",
+        "innovation_comparison",
+        "market_positioning",
+        "competitive_gap",
+        "differentiation_opportunities",
+        "overall_competitive_score",
+        "confidence_score"
+      ],
+      "title": "CompetitorComparison",
+      "type": "object"
+    },
+    "CompetitorDiscovery": {
+      "description": "Structured Pydantic schema for CompetitorDiscoveryAgent output.",
+      "properties": {
+        "direct_competitors": {
+          "description": "List of direct competitors offering similar core solutions.",
+          "items": {
+            "$ref": "#/$defs/CompetitorInfo"
+          },
+          "minItems": 1,
+          "title": "Direct Competitors",
+          "type": "array"
+        },
+        "indirect_competitors": {
+          "description": "List of indirect competitors solving similar problems through alternative methods.",
+          "items": {
+            "$ref": "#/$defs/CompetitorInfo"
+          },
+          "title": "Indirect Competitors",
+          "type": "array"
+        },
+        "emerging_competitors": {
+          "description": "List of early-stage startups or emerging market entrants.",
+          "items": {
+            "$ref": "#/$defs/CompetitorInfo"
+          },
+          "title": "Emerging Competitors",
+          "type": "array"
+        },
+        "market_leaders": {
+          "description": "Established market leaders and dominant industry incumbents.",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Market Leaders",
+          "type": "array"
+        },
+        "startup_challengers": {
+          "description": "High-growth startup challengers disrupting the sector.",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Startup Challengers",
+          "type": "array"
+        },
+        "alternative_solutions": {
+          "description": "Non-software, manual, or legacy alternative solutions used by customers.",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Alternative Solutions",
+          "type": "array"
+        },
+        "competition_intensity": {
+          "description": "Overall market competition intensity (e.g. Low, Moderate, High, Fierce).",
+          "title": "Competition Intensity",
+          "type": "string"
+        },
+        "major_competitor_count": {
+          "description": "Estimated count of major active competitors in the primary segment.",
+          "minimum": 0,
+          "title": "Major Competitor Count",
+          "type": "integer"
+        },
+        "confidence_score": {
+          "description": "Confidence score rating strictly between 0.0 and 1.0.",
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Confidence Score",
+          "type": "number"
+        },
+        "citations": {
+          "description": "Source URLs backing the claims above, when external research (Tavily/Exa/Zyte) was supplied in the prompt. Optional and defaults empty so this schema stays backward compatible with LLM-only reasoning when no research bundle is available.",
+          "items": {
+            "type": "string"
+          },
+          "title": "Citations",
+          "type": "array"
+        }
+      },
+      "required": [
+        "direct_competitors",
+        "market_leaders",
+        "startup_challengers",
+        "alternative_solutions",
+        "competition_intensity",
+        "major_competitor_count",
+        "confidence_score"
+      ],
+      "title": "CompetitorDiscovery",
+      "type": "object"
+    },
+    "CompetitorInfo": {
+      "description": "Structured information for an identified competitor entity.",
+      "properties": {
+        "name": {
+          "description": "Formal name of the competitor organization or product.",
+          "minLength": 1,
+          "title": "Name",
+          "type": "string"
+        },
+        "category": {
+          "description": "Competitor category classification (e.g., Direct, Indirect, Emerging, Incumbent).",
+          "title": "Category",
+          "type": "string"
+        },
+        "description": {
+          "description": "Short summary description of the competitor's market position and value prop.",
+          "title": "Description",
+          "type": "string"
+        },
+        "target_market": {
+          "description": "Target customer segment or geographic market served by this competitor.",
+          "title": "Target Market",
+          "type": "string"
+        },
+        "primary_offering": {
+          "description": "Core product, platform, or service offered by this competitor.",
+          "title": "Primary Offering",
+          "type": "string"
+        }
+      },
+      "required": [
+        "name",
+        "category",
+        "description",
+        "target_market",
+        "primary_offering"
+      ],
+      "title": "CompetitorInfo",
+      "type": "object"
+    },
+    "CustomerIdentification": {
+      "description": "Structured Pydantic schema for CustomerIdentifier agent output.",
+      "properties": {
+        "primary_customers": {
+          "description": "Primary target customers who buy or pay for the solution.",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Primary Customers",
+          "type": "array"
+        },
+        "secondary_customers": {
+          "description": "Secondary target customers or secondary buyer personas.",
+          "items": {
+            "type": "string"
+          },
+          "title": "Secondary Customers",
+          "type": "array"
+        },
+        "end_users": {
+          "description": "Actual end users who use the product day-to-day.",
+          "items": {
+            "type": "string"
+          },
+          "title": "End Users",
+          "type": "array"
+        },
+        "decision_makers": {
+          "description": "Key decision makers involved in purchasing or procurement.",
+          "items": {
+            "type": "string"
+          },
+          "title": "Decision Makers",
+          "type": "array"
+        },
+        "customer_segments": {
+          "description": "Core customer segment categories (e.g. B2B Hospitals, Private Clinics).",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Customer Segments",
+          "type": "array"
+        },
+        "demographics": {
+          "description": "Demographic or firmographic characteristics of target users.",
+          "items": {
+            "type": "string"
+          },
+          "title": "Demographics",
+          "type": "array"
+        },
+        "geographic_markets": {
+          "description": "Primary geographic markets or regional focus areas.",
+          "items": {
+            "type": "string"
+          },
+          "title": "Geographic Markets",
+          "type": "array"
+        },
+        "industries": {
+          "description": "Target industry verticals or sectors.",
+          "items": {
+            "type": "string"
+          },
+          "title": "Industries",
+          "type": "array"
+        },
+        "pain_points": {
+          "description": "Core pain points experienced by target customers.",
+          "items": {
+            "type": "string"
+          },
+          "title": "Pain Points",
+          "type": "array"
+        },
+        "customer_needs": {
+          "description": "Essential customer needs and requirements.",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Customer Needs",
+          "type": "array"
+        },
+        "motivations": {
+          "description": "Key purchasing motivations and value drivers.",
+          "items": {
+            "type": "string"
+          },
+          "title": "Motivations",
+          "type": "array"
+        },
+        "adoption_barriers": {
+          "description": "Potential barriers to customer adoption or purchase.",
+          "items": {
+            "type": "string"
+          },
+          "title": "Adoption Barriers",
+          "type": "array"
+        },
+        "willingness_to_pay": {
+          "description": "Estimated willingness to pay rating or level ('low', 'medium', 'high', or detailed description).",
+          "title": "Willingness To Pay",
+          "type": "string"
+        },
+        "confidence_score": {
+          "description": "Confidence score rating from 0 to 100.",
+          "maximum": 100,
+          "minimum": 0,
+          "title": "Confidence Score",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "primary_customers",
+        "customer_segments",
+        "customer_needs",
+        "willingness_to_pay",
+        "confidence_score"
+      ],
+      "title": "CustomerIdentification",
+      "type": "object"
+    },
+    "CustomerPersona": {
+      "description": "Structured Pydantic schema for CustomerPersonaGenerator agent output.",
+      "properties": {
+        "primary_persona": {
+          "$ref": "#/$defs/PersonaProfile",
+          "description": "Core target customer persona profile."
+        },
+        "secondary_personas": {
+          "description": "Secondary or supporting customer persona profiles.",
+          "items": {
+            "$ref": "#/$defs/PersonaProfile"
+          },
+          "title": "Secondary Personas",
+          "type": "array"
+        },
+        "confidence_score": {
+          "description": "Confidence score rating strictly between 0.0 and 1.0.",
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Confidence Score",
+          "type": "number"
+        },
+        "citations": {
+          "description": "Source URLs backing the claims above, when external research (Tavily/Exa/Zyte) was supplied in the prompt. Optional and defaults empty so this schema stays backward compatible with LLM-only reasoning when no research bundle is available.",
+          "items": {
+            "type": "string"
+          },
+          "title": "Citations",
+          "type": "array"
+        }
+      },
+      "required": [
+        "primary_persona",
+        "confidence_score"
+      ],
+      "title": "CustomerPersona",
+      "type": "object"
+    },
+    "IdeaValidationResult": {
+      "description": "Combined structured Pydantic schema for full Idea Validation Crew results.",
+      "properties": {
+        "project_id": {
+          "description": "Unique project identifier.",
+          "title": "Project Id",
+          "type": "string"
+        },
+        "idea_text": {
+          "description": "Original raw startup proposal text.",
+          "title": "Idea Text",
+          "type": "string"
+        },
+        "idea_analysis": {
+          "$ref": "#/$defs/StartupIdeaAnalysis"
+        },
+        "problem_analysis": {
+          "$ref": "#/$defs/ProblemStatementAnalysis"
+        },
+        "customer_identification": {
+          "$ref": "#/$defs/CustomerIdentification"
+        },
+        "value_proposition": {
+          "$ref": "#/$defs/ValuePropositionAnalysis"
+        },
+        "category_classification": {
+          "$ref": "#/$defs/StartupCategoryClassification"
+        },
+        "innovation_scoring": {
+          "$ref": "#/$defs/InnovationScoreAnalysis"
+        },
+        "overall_validation_score": {
+          "description": "Weighted composite validation score from 0.0 to 100.0.",
+          "maximum": 100.0,
+          "minimum": 0.0,
+          "title": "Overall Validation Score",
+          "type": "number"
+        }
+      },
+      "required": [
+        "project_id",
+        "idea_text",
+        "idea_analysis",
+        "problem_analysis",
+        "customer_identification",
+        "value_proposition",
+        "category_classification",
+        "innovation_scoring",
+        "overall_validation_score"
+      ],
+      "title": "IdeaValidationResult",
+      "type": "object"
+    },
+    "IndustryAnalysis": {
+      "description": "Structured Pydantic schema for IndustryAnalysisAgent output.",
+      "properties": {
+        "industry_name": {
+          "description": "Formal name of the industry vertical.",
+          "minLength": 2,
+          "title": "Industry Name",
+          "type": "string"
+        },
+        "industry_description": {
+          "description": "Detailed description of the industry landscape.",
+          "minLength": 5,
+          "title": "Industry Description",
+          "type": "string"
+        },
+        "industry_classification": {
+          "description": "Standard industry classification taxonomy or sector grouping.",
+          "title": "Industry Classification",
+          "type": "string"
+        },
+        "industry_lifecycle_stage": {
+          "description": "Lifecycle stage of the industry (e.g. Emerging, Growth, Mature, Consolidation).",
+          "title": "Industry Lifecycle Stage",
+          "type": "string"
+        },
+        "industry_maturity": {
+          "description": "Maturity level rating of the overall industry.",
+          "title": "Industry Maturity",
+          "type": "string"
+        },
+        "industry_growth_rate": {
+          "description": "Estimated qualitative or quantitative industry CAGR/growth rate trajectory.",
+          "title": "Industry Growth Rate",
+          "type": "string"
+        },
+        "industry_drivers": {
+          "description": "Core macro and technological drivers spurring industry progression.",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Industry Drivers",
+          "type": "array"
+        },
+        "industry_challenges": {
+          "description": "Structural or economic challenges facing companies in this industry.",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Industry Challenges",
+          "type": "array"
+        },
+        "entry_barriers": {
+          "description": "Key barriers to entry for new market entrants.",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Entry Barriers",
+          "type": "array"
+        },
+        "regulatory_environment": {
+          "description": "Overview of regulatory complexity, compliance requirements, and government oversight.",
+          "title": "Regulatory Environment",
+          "type": "string"
+        },
+        "technology_adoption": {
+          "description": "Level and speed of modern technology adoption across industry incumbents.",
+          "title": "Technology Adoption",
+          "type": "string"
+        },
+        "innovation_level": {
+          "description": "Current innovation intensity and rate of technological disruption.",
+          "title": "Innovation Level",
+          "type": "string"
+        },
+        "investment_activity": {
+          "description": "Venture capital, private equity, and corporate M&A investment activity level.",
+          "title": "Investment Activity",
+          "type": "string"
+        },
+        "future_outlook": {
+          "description": "Comprehensive 3-5 year future industry outlook.",
+          "title": "Future Outlook",
+          "type": "string"
+        },
+        "confidence_score": {
+          "description": "Confidence score rating strictly between 0.0 and 1.0.",
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Confidence Score",
+          "type": "number"
+        },
+        "citations": {
+          "description": "Source URLs backing the claims above, when external research (Tavily/Exa/Zyte) was supplied in the prompt. Optional and defaults empty so this schema stays backward compatible with LLM-only reasoning when no research bundle is available.",
+          "items": {
+            "type": "string"
+          },
+          "title": "Citations",
+          "type": "array"
+        }
+      },
+      "required": [
+        "industry_name",
+        "industry_description",
+        "industry_classification",
+        "industry_lifecycle_stage",
+        "industry_maturity",
+        "industry_growth_rate",
+        "industry_drivers",
+        "industry_challenges",
+        "entry_barriers",
+        "regulatory_environment",
+        "technology_adoption",
+        "innovation_level",
+        "investment_activity",
+        "future_outlook",
+        "confidence_score"
+      ],
+      "title": "IndustryAnalysis",
+      "type": "object"
+    },
+    "InnovationScoreAnalysis": {
+      "description": "Structured Pydantic schema for InnovationScoringAgent output.",
+      "properties": {
+        "overall_innovation_score": {
+          "description": "Composite overall innovation rating score from 0 to 100.",
+          "maximum": 100,
+          "minimum": 0,
+          "title": "Overall Innovation Score",
+          "type": "integer"
+        },
+        "innovation_level": {
+          "description": "Categorical innovation level ('Very Low', 'Low', 'Moderate', 'High', 'Exceptional').",
+          "title": "Innovation Level",
+          "type": "string"
+        },
+        "novelty_score": {
+          "description": "Core concept novelty rating score from 0 to 100.",
+          "maximum": 100,
+          "minimum": 0,
+          "title": "Novelty Score",
+          "type": "integer"
+        },
+        "technology_innovation_score": {
+          "description": "Technical and architectural innovation score from 0 to 100.",
+          "maximum": 100,
+          "minimum": 0,
+          "title": "Technology Innovation Score",
+          "type": "integer"
+        },
+        "business_model_innovation_score": {
+          "description": "Business and revenue model innovation rating from 0 to 100.",
+          "maximum": 100,
+          "minimum": 0,
+          "title": "Business Model Innovation Score",
+          "type": "integer"
+        },
+        "problem_originality_score": {
+          "description": "Originality score of the target problem being solved from 0 to 100.",
+          "maximum": 100,
+          "minimum": 0,
+          "title": "Problem Originality Score",
+          "type": "integer"
+        },
+        "differentiation_score": {
+          "description": "Competitive differentiation and moat score from 0 to 100.",
+          "maximum": 100,
+          "minimum": 0,
+          "title": "Differentiation Score",
+          "type": "integer"
+        },
+        "strengths": {
+          "description": "Key innovation strengths of the proposal.",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Strengths",
+          "type": "array"
+        },
+        "improvement_opportunities": {
+          "description": "Areas where innovation or differentiation could be enhanced.",
+          "items": {
+            "type": "string"
+          },
+          "title": "Improvement Opportunities",
+          "type": "array"
+        },
+        "reasoning": {
+          "description": "Detailed rationale explaining score allocations and innovation breakdown.",
+          "minLength": 5,
+          "title": "Reasoning",
+          "type": "string"
+        },
+        "confidence_score": {
+          "description": "Analysis confidence rating score from 0 to 100.",
+          "maximum": 100,
+          "minimum": 0,
+          "title": "Confidence Score",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "overall_innovation_score",
+        "innovation_level",
+        "novelty_score",
+        "technology_innovation_score",
+        "business_model_innovation_score",
+        "problem_originality_score",
+        "differentiation_score",
+        "strengths",
+        "reasoning",
+        "confidence_score"
+      ],
+      "title": "InnovationScoreAnalysis",
+      "type": "object"
+    },
+    "MarketResearchAnalysis": {
+      "description": "Structured Pydantic schema for MarketResearchAgent output.",
+      "properties": {
+        "market_overview": {
+          "description": "High-level assessment and overview of the target market landscape.",
+          "minLength": 5,
+          "title": "Market Overview",
+          "type": "string"
+        },
+        "industry_overview": {
+          "description": "Overview of the broader industry vertical and sector dynamics.",
+          "minLength": 5,
+          "title": "Industry Overview",
+          "type": "string"
+        },
+        "market_stage": {
+          "description": "Stage of the market (e.g. Emerging, Growth, Mature, Declining).",
+          "title": "Market Stage",
+          "type": "string"
+        },
+        "market_maturity": {
+          "description": "Maturity level of the market (e.g. Early Stage, Growth Stage, Highly Mature).",
+          "title": "Market Maturity",
+          "type": "string"
+        },
+        "market_size_summary": {
+          "description": "Qualitative summary of market size and growth potential.",
+          "title": "Market Size Summary",
+          "type": "string"
+        },
+        "market_demand": {
+          "description": "Current and projected trajectory of market demand (e.g. High Demand, Accelerating).",
+          "title": "Market Demand",
+          "type": "string"
+        },
+        "market_opportunities": {
+          "description": "Key market opportunities driving potential startup expansion.",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Market Opportunities",
+          "type": "array"
+        },
+        "market_challenges": {
+          "description": "Core operational, regulatory, or structural challenges in this market.",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Market Challenges",
+          "type": "array"
+        },
+        "growth_drivers": {
+          "description": "Primary macro and micro drivers pushing market growth.",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Growth Drivers",
+          "type": "array"
+        },
+        "market_risks": {
+          "description": "Major market and macro risks associated with entering this sector.",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Market Risks",
+          "type": "array"
+        },
+        "future_outlook": {
+          "description": "Future trajectory and 3-5 year outlook for the market.",
+          "title": "Future Outlook",
+          "type": "string"
+        },
+        "confidence_score": {
+          "description": "Confidence score rating strictly between 0.0 and 1.0.",
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Confidence Score",
+          "type": "number"
+        },
+        "citations": {
+          "description": "Source URLs backing the claims above, when external research (Tavily/Exa/Zyte) was supplied in the prompt. Optional and defaults empty so this schema stays backward compatible with LLM-only reasoning when no research bundle is available.",
+          "items": {
+            "type": "string"
+          },
+          "title": "Citations",
+          "type": "array"
+        }
+      },
+      "required": [
+        "market_overview",
+        "industry_overview",
+        "market_stage",
+        "market_maturity",
+        "market_size_summary",
+        "market_demand",
+        "market_opportunities",
+        "market_challenges",
+        "growth_drivers",
+        "market_risks",
+        "future_outlook",
+        "confidence_score"
+      ],
+      "title": "MarketResearchAnalysis",
+      "type": "object"
+    },
+    "MarketResearchResult": {
+      "description": "Unified master output model combining all 7 Market Research Crew task analyses.",
+      "properties": {
+        "project_id": {
+          "description": "Unique project UUID identifier.",
+          "title": "Project Id",
+          "type": "string"
+        },
+        "market_research": {
+          "$ref": "#/$defs/MarketResearchAnalysis",
+          "description": "Task 1: Market Research Overview."
+        },
+        "industry_analysis": {
+          "$ref": "#/$defs/IndustryAnalysis",
+          "description": "Task 2: Industry Analysis."
+        },
+        "trend_analysis": {
+          "$ref": "#/$defs/TrendAnalysis",
+          "description": "Task 3: Trend Analysis."
+        },
+        "competitor_discovery": {
+          "$ref": "#/$defs/CompetitorDiscovery",
+          "description": "Task 4: Competitor Discovery."
+        },
+        "competitor_comparison": {
+          "$ref": "#/$defs/CompetitorComparison",
+          "description": "Task 5: Competitor Comparison."
+        },
+        "customer_persona": {
+          "$ref": "#/$defs/CustomerPersona",
+          "description": "Task 6: Customer Persona Profiles."
+        },
+        "tam_sam_som": {
+          "$ref": "#/$defs/TAMSAMSOMAnalysis",
+          "description": "Task 7: TAM SAM SOM Market Sizing."
+        },
+        "overall_summary": {
+          "description": "Comprehensive synthesized overall market research executive summary.",
+          "title": "Overall Summary",
+          "type": "string"
+        },
+        "overall_market_score": {
+          "description": "Dynamically calculated market opportunity score (0.0 to 100.0).",
+          "maximum": 100.0,
+          "minimum": 0.0,
+          "title": "Overall Market Score",
+          "type": "number"
+        },
+        "confidence_score": {
+          "description": "Overall confidence rating across all market research tasks (0.0 to 1.0).",
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Confidence Score",
+          "type": "number"
+        }
+      },
+      "required": [
+        "project_id",
+        "market_research",
+        "industry_analysis",
+        "trend_analysis",
+        "competitor_discovery",
+        "competitor_comparison",
+        "customer_persona",
+        "tam_sam_som",
+        "overall_summary",
+        "overall_market_score",
+        "confidence_score"
+      ],
+      "title": "MarketResearchResult",
+      "type": "object"
+    },
+    "PersonaProfile": {
+      "description": "Detailed target customer persona profile.",
+      "properties": {
+        "persona_name": {
+          "description": "Fictional persona identifier name (e.g., Enterprise CTO Elena).",
+          "minLength": 1,
+          "title": "Persona Name",
+          "type": "string"
+        },
+        "persona_type": {
+          "description": "Type category of persona (e.g. Primary Buyer, End User, Decision Maker).",
+          "title": "Persona Type",
+          "type": "string"
+        },
+        "age_range": {
+          "description": "Target age demographic bracket (e.g., 30-45).",
+          "title": "Age Range",
+          "type": "string"
+        },
+        "gender": {
+          "description": "Gender breakdown or 'All / Gender Neutral'.",
+          "title": "Gender",
+          "type": "string"
+        },
+        "occupation": {
+          "description": "Primary job title or professional role.",
+          "title": "Occupation",
+          "type": "string"
+        },
+        "education_level": {
+          "description": "Highest educational attainment.",
+          "title": "Education Level",
+          "type": "string"
+        },
+        "income_range": {
+          "description": "Income bracket or corporate budget range.",
+          "title": "Income Range",
+          "type": "string"
+        },
+        "location": {
+          "description": "Geographic region or urbanization environment.",
+          "title": "Location",
+          "type": "string"
+        },
+        "digital_literacy": {
+          "description": "Digital literacy level (e.g., High, Moderate, Expert).",
+          "title": "Digital Literacy",
+          "type": "string"
+        },
+        "technical_skill_level": {
+          "description": "Technical proficiency and software adoption skill level.",
+          "title": "Technical Skill Level",
+          "type": "string"
+        },
+        "goals": {
+          "description": "Primary professional or personal goals.",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Goals",
+          "type": "array"
+        },
+        "motivations": {
+          "description": "Core driving motivations for seeking a solution.",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Motivations",
+          "type": "array"
+        },
+        "pain_points": {
+          "description": "Key frustrations and operational pain points experienced.",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Pain Points",
+          "type": "array"
+        },
+        "challenges": {
+          "description": "Main obstacles blocking goal achievement.",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Challenges",
+          "type": "array"
+        },
+        "daily_activities": {
+          "description": "Typical daily workflow and operational activities.",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Daily Activities",
+          "type": "array"
+        },
+        "buying_behavior": {
+          "description": "Purchasing habits, evaluation speed, and approval process.",
+          "title": "Buying Behavior",
+          "type": "string"
+        },
+        "decision_factors": {
+          "description": "Key criteria influencing purchasing decision (e.g., ROI, Ease of Use, Security).",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Decision Factors",
+          "type": "array"
+        },
+        "preferred_platforms": {
+          "description": "Preferred software platforms, OS, and ecosystems.",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Preferred Platforms",
+          "type": "array"
+        },
+        "communication_channels": {
+          "description": "Preferred channels for marketing and support (e.g., Email, LinkedIn, Slack).",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Communication Channels",
+          "type": "array"
+        },
+        "device_usage": {
+          "description": "Primary hardware devices used (e.g., Desktop Mac/PC, Mobile iOS).",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Device Usage",
+          "type": "array"
+        },
+        "expected_features": {
+          "description": "Must-have product capabilities expected by this persona.",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Expected Features",
+          "type": "array"
+        },
+        "price_sensitivity": {
+          "description": "Price sensitivity rating (e.g., Low - Value Driven, Moderate, High - Budget Constrained).",
+          "title": "Price Sensitivity",
+          "type": "string"
+        },
+        "adoption_readiness": {
+          "description": "Readiness to adopt new technology (e.g., Innovator, Early Adopter, Pragmatist).",
+          "title": "Adoption Readiness",
+          "type": "string"
+        },
+        "customer_lifetime_value": {
+          "description": "Estimated qualitative or quantitative Customer Lifetime Value (CLV) potential.",
+          "title": "Customer Lifetime Value",
+          "type": "string"
+        }
+      },
+      "required": [
+        "persona_name",
+        "persona_type",
+        "age_range",
+        "gender",
+        "occupation",
+        "education_level",
+        "income_range",
+        "location",
+        "digital_literacy",
+        "technical_skill_level",
+        "goals",
+        "motivations",
+        "pain_points",
+        "challenges",
+        "daily_activities",
+        "buying_behavior",
+        "decision_factors",
+        "preferred_platforms",
+        "communication_channels",
+        "device_usage",
+        "expected_features",
+        "price_sensitivity",
+        "adoption_readiness",
+        "customer_lifetime_value"
+      ],
+      "title": "PersonaProfile",
+      "type": "object"
+    },
+    "ProblemStatementAnalysis": {
+      "description": "Structured Pydantic schema for ProblemStatementAnalyzer output.",
+      "properties": {
+        "problem_statement": {
+          "description": "Clear, concise formulation of the core problem being analyzed.",
+          "minLength": 10,
+          "title": "Problem Statement",
+          "type": "string"
+        },
+        "affected_users": {
+          "description": "User groups or personas impacted by this problem.",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Affected Users",
+          "type": "array"
+        },
+        "root_causes": {
+          "description": "Underlying root causes giving rise to the problem.",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Root Causes",
+          "type": "array"
+        },
+        "existing_solutions": {
+          "description": "Current manual workarounds or existing solutions employed today.",
+          "items": {
+            "type": "string"
+          },
+          "title": "Existing Solutions",
+          "type": "array"
+        },
+        "solution_gaps": {
+          "description": "Deficiencies, gaps, or limitations in current solutions.",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Solution Gaps",
+          "type": "array"
+        },
+        "problem_severity": {
+          "description": "Severity level of the pain point ('low', 'medium', 'high', 'critical').",
+          "title": "Problem Severity",
+          "type": "string"
+        },
+        "urgency_score": {
+          "description": "Market urgency score rating from 0 (nice-to-have) to 100 (critical hair-on-fire).",
+          "maximum": 100,
+          "minimum": 0,
+          "title": "Urgency Score",
+          "type": "integer"
+        },
+        "confidence_score": {
+          "description": "Analysis confidence rating score between 0.00 and 1.00.",
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Confidence Score",
+          "type": "number"
+        }
+      },
+      "required": [
+        "problem_statement",
+        "affected_users",
+        "root_causes",
+        "solution_gaps",
+        "problem_severity",
+        "urgency_score",
+        "confidence_score"
+      ],
+      "title": "ProblemStatementAnalysis",
+      "type": "object"
+    },
+    "StartupCategoryClassification": {
+      "description": "Structured Pydantic schema for StartupCategoryClassifier agent output.",
+      "properties": {
+        "primary_category": {
+          "description": "Primary startup category classification (e.g. AI, HealthTech, SaaS, FinTech).",
+          "minLength": 2,
+          "title": "Primary Category",
+          "type": "string"
+        },
+        "secondary_categories": {
+          "description": "Secondary category tags if applicable.",
+          "items": {
+            "type": "string"
+          },
+          "title": "Secondary Categories",
+          "type": "array"
+        },
+        "industry": {
+          "description": "Primary industry vertical (e.g. Healthcare, Agriculture, Financial Services).",
+          "minLength": 2,
+          "title": "Industry",
+          "type": "string"
+        },
+        "technology_domains": {
+          "description": "Core technology domains involved (e.g. Computer Vision, Deep Learning, Cloud API).",
+          "items": {
+            "type": "string"
+          },
+          "title": "Technology Domains",
+          "type": "array"
+        },
+        "business_model": {
+          "description": "Business model structure (e.g., B2B, B2C, D2C, B2G, Marketplace, Subscription, Platform, Enterprise).",
+          "minLength": 2,
+          "title": "Business Model",
+          "type": "string"
+        },
+        "revenue_model": {
+          "description": "Primary revenue model (e.g., Subscription, Freemium, Transaction Fee, Licensing, Usage Based).",
+          "minLength": 2,
+          "title": "Revenue Model",
+          "type": "string"
+        },
+        "startup_stage": {
+          "description": "Current estimated startup stage (e.g., Idea, MVP, Prototype, Early Revenue, Growth, Scale).",
+          "minLength": 2,
+          "title": "Startup Stage",
+          "type": "string"
+        },
+        "target_market": {
+          "description": "Target customer market segment description.",
+          "minLength": 2,
+          "title": "Target Market",
+          "type": "string"
+        },
+        "confidence_score": {
+          "description": "Classification confidence score rating from 0 to 100.",
+          "maximum": 100,
+          "minimum": 0,
+          "title": "Confidence Score",
+          "type": "integer"
+        },
+        "reasoning": {
+          "description": "Concise rationale explaining the classification decision.",
+          "minLength": 5,
+          "title": "Reasoning",
+          "type": "string"
+        }
+      },
+      "required": [
+        "primary_category",
+        "industry",
+        "business_model",
+        "revenue_model",
+        "startup_stage",
+        "target_market",
+        "confidence_score",
+        "reasoning"
+      ],
+      "title": "StartupCategoryClassification",
+      "type": "object"
+    },
+    "StartupIdeaAnalysis": {
+      "description": "Structured Pydantic schema for Startup Idea Analyzer output.",
+      "properties": {
+        "summary": {
+          "description": "Concise synthesis summary of the core startup proposal concept.",
+          "minLength": 5,
+          "title": "Summary",
+          "type": "string"
+        },
+        "startup_category": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Primary industry vertical/category classification if identified.",
+          "title": "Startup Category"
+        },
+        "operational_pillars": {
+          "description": "Core operational/technical pillars required to build the startup.",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Operational Pillars",
+          "type": "array"
+        },
+        "technical_feasibility_score": {
+          "description": "Feasibility score rating from 0 (impossible) to 100 (highly feasible).",
+          "maximum": 100,
+          "minimum": 0,
+          "title": "Technical Feasibility Score",
+          "type": "integer"
+        },
+        "rationale": {
+          "description": "Detailed technical feasibility rationale and explanation.",
+          "minLength": 10,
+          "title": "Rationale",
+          "type": "string"
+        },
+        "key_assumptions": {
+          "description": "Critical underlying assumptions that require market/tech validation.",
+          "items": {
+            "type": "string"
+          },
+          "title": "Key Assumptions",
+          "type": "array"
+        },
+        "strengths": {
+          "description": "Key architectural, technical, or market strengths of the proposal.",
+          "items": {
+            "type": "string"
+          },
+          "title": "Strengths",
+          "type": "array"
+        },
+        "weaknesses": {
+          "description": "Potential operational, data, or technical weaknesses/risks.",
+          "items": {
+            "type": "string"
+          },
+          "title": "Weaknesses",
+          "type": "array"
+        }
+      },
+      "required": [
+        "summary",
+        "operational_pillars",
+        "technical_feasibility_score",
+        "rationale"
+      ],
+      "title": "StartupIdeaAnalysis",
+      "type": "object"
+    },
+    "TAMSAMSOMAnalysis": {
+      "description": "Structured Pydantic schema for TAMSAMSOMEstimator agent output.",
+      "properties": {
+        "tam_description": {
+          "description": "Detailed description of Total Addressable Market (TAM).",
+          "title": "Tam Description",
+          "type": "string"
+        },
+        "tam_value": {
+          "description": "Estimated monetary value of TAM (e.g. '$45.2 Billion').",
+          "title": "Tam Value",
+          "type": "string"
+        },
+        "sam_description": {
+          "description": "Detailed description of Serviceable Addressable Market (SAM).",
+          "title": "Sam Description",
+          "type": "string"
+        },
+        "sam_value": {
+          "description": "Estimated monetary value of SAM (e.g. '$6.8 Billion').",
+          "title": "Sam Value",
+          "type": "string"
+        },
+        "som_description": {
+          "description": "Detailed description of Serviceable Obtainable Market (SOM).",
+          "title": "Som Description",
+          "type": "string"
+        },
+        "som_value": {
+          "description": "Estimated monetary value of SOM (e.g. '$120 Million').",
+          "title": "Som Value",
+          "type": "string"
+        },
+        "methodology": {
+          "description": "Methodology and assumptions used for market sizing calculation.",
+          "title": "Methodology",
+          "type": "string"
+        },
+        "confidence_score": {
+          "description": "Confidence score rating strictly between 0.0 and 1.0.",
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Confidence Score",
+          "type": "number"
+        },
+        "citations": {
+          "description": "Source URLs backing the claims above, when external research (Tavily/Exa/Zyte) was supplied in the prompt. Optional and defaults empty so this schema stays backward compatible with LLM-only reasoning when no research bundle is available.",
+          "items": {
+            "type": "string"
+          },
+          "title": "Citations",
+          "type": "array"
+        }
+      },
+      "required": [
+        "tam_description",
+        "tam_value",
+        "sam_description",
+        "sam_value",
+        "som_description",
+        "som_value",
+        "methodology",
+        "confidence_score"
+      ],
+      "title": "TAMSAMSOMAnalysis",
+      "type": "object"
+    },
+    "TrendAnalysis": {
+      "description": "Structured Pydantic schema for TrendAnalysisAgent output.",
+      "properties": {
+        "current_trends": {
+          "description": "Current active trends influencing the target industry vertical.",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Current Trends",
+          "type": "array"
+        },
+        "emerging_trends": {
+          "description": "Emerging early-stage trends shaping the future of the sector.",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Emerging Trends",
+          "type": "array"
+        },
+        "technology_trends": {
+          "description": "Key technological advancements and digital transformation trends.",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Technology Trends",
+          "type": "array"
+        },
+        "consumer_behavior_trends": {
+          "description": "Shifts in customer expectations, buying habits, and usage behavior.",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Consumer Behavior Trends",
+          "type": "array"
+        },
+        "regulatory_trends": {
+          "description": "Evolving legal, compliance, policy, and governance trends.",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Regulatory Trends",
+          "type": "array"
+        },
+        "investment_trends": {
+          "description": "Venture funding, capital deployment, and investor focus trends.",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Investment Trends",
+          "type": "array"
+        },
+        "sustainability_trends": {
+          "description": "ESG, environmental impact, and sustainability trends.",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Sustainability Trends",
+          "type": "array"
+        },
+        "future_predictions": {
+          "description": "Key predictions and projections for the industry over the next 3-5 years.",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Future Predictions",
+          "type": "array"
+        },
+        "opportunities_from_trends": {
+          "description": "Strategic opportunities created by these macro and tech trends.",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Opportunities From Trends",
+          "type": "array"
+        },
+        "risks_from_trends": {
+          "description": "Potential risks, disruption threats, or vulnerabilities introduced by trends.",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Risks From Trends",
+          "type": "array"
+        },
+        "trend_stability": {
+          "description": "Assessment of trend longevity and stability (e.g. Highly Stable, Volatile, Sustained Long-Term).",
+          "title": "Trend Stability",
+          "type": "string"
+        },
+        "trend_relevance": {
+          "description": "Relevance rating and impact magnitude of trends on the specific startup proposal.",
+          "title": "Trend Relevance",
+          "type": "string"
+        },
+        "confidence_score": {
+          "description": "Confidence score rating strictly between 0.0 and 1.0.",
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Confidence Score",
+          "type": "number"
+        },
+        "citations": {
+          "description": "Source URLs backing the claims above, when external research (Tavily/Exa/Zyte) was supplied in the prompt. Optional and defaults empty so this schema stays backward compatible with LLM-only reasoning when no research bundle is available.",
+          "items": {
+            "type": "string"
+          },
+          "title": "Citations",
+          "type": "array"
+        }
+      },
+      "required": [
+        "current_trends",
+        "emerging_trends",
+        "technology_trends",
+        "consumer_behavior_trends",
+        "regulatory_trends",
+        "investment_trends",
+        "sustainability_trends",
+        "future_predictions",
+        "opportunities_from_trends",
+        "risks_from_trends",
+        "trend_stability",
+        "trend_relevance",
+        "confidence_score"
+      ],
+      "title": "TrendAnalysis",
+      "type": "object"
+    },
+    "ValuePropositionAnalysis": {
+      "description": "Structured Pydantic schema for ValuePropositionAnalyzer agent output.",
+      "properties": {
+        "core_value_proposition": {
+          "description": "Clear, 1-2 sentence core value proposition statement.",
+          "minLength": 5,
+          "title": "Core Value Proposition",
+          "type": "string"
+        },
+        "unique_selling_proposition": {
+          "description": "Unique selling proposition (USP) highlighting the primary differentiator.",
+          "minLength": 5,
+          "title": "Unique Selling Proposition",
+          "type": "string"
+        },
+        "functional_benefits": {
+          "description": "Tangible functional benefits (e.g., faster diagnostic speed, automated reporting).",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Functional Benefits",
+          "type": "array"
+        },
+        "emotional_benefits": {
+          "description": "Psychological or emotional benefits (e.g., peace of mind, confidence in decisions).",
+          "items": {
+            "type": "string"
+          },
+          "title": "Emotional Benefits",
+          "type": "array"
+        },
+        "customer_outcomes": {
+          "description": "Quantifiable customer outcomes and results (e.g. 50% faster diagnosis time).",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Customer Outcomes",
+          "type": "array"
+        },
+        "differentiators": {
+          "description": "Key competitive differentiators and value moats.",
+          "items": {
+            "type": "string"
+          },
+          "title": "Differentiators",
+          "type": "array"
+        },
+        "value_clarity_score": {
+          "description": "Clarity rating of the value proposition from 0 (confusing) to 100 (crystal clear).",
+          "maximum": 100,
+          "minimum": 0,
+          "title": "Value Clarity Score",
+          "type": "integer"
+        },
+        "customer_value_score": {
+          "description": "Estimated customer value rating score from 0 to 100.",
+          "maximum": 100,
+          "minimum": 0,
+          "title": "Customer Value Score",
+          "type": "integer"
+        },
+        "confidence_score": {
+          "description": "Analysis confidence rating score from 0 to 100.",
+          "maximum": 100,
+          "minimum": 0,
+          "title": "Confidence Score",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "core_value_proposition",
+        "unique_selling_proposition",
+        "functional_benefits",
+        "customer_outcomes",
+        "value_clarity_score",
+        "customer_value_score",
+        "confidence_score"
+      ],
+      "title": "ValuePropositionAnalysis",
+      "type": "object"
+    }
+  },
+  "description": "Unified master analysis output combining Idea Validation (Crew 1) and Market Research (Crew 2).",
+  "properties": {
+    "project_id": {
+      "description": "Unique identifier for the startup project.",
+      "title": "Project Id",
+      "type": "string"
+    },
+    "startup_idea_text": {
+      "description": "Original raw startup idea proposal text submitted by the user.",
+      "title": "Startup Idea Text",
+      "type": "string"
+    },
+    "idea_validation": {
+      "$ref": "#/$defs/IdeaValidationResult",
+      "description": "Complete output result from Idea Validation Crew (Crew 1)."
+    },
+    "market_research": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/MarketResearchResult"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "Complete output result from Market Research Crew (Crew 2), if executed successfully."
+    },
+    "overall_summary": {
+      "description": "Comprehensive executive summary synthesizing findings from both Idea Validation and Market Research.",
+      "title": "Overall Summary",
+      "type": "string"
+    },
+    "overall_readiness_score": {
+      "description": "Dynamic weighted composite readiness score from 0.0 to 100.0.",
+      "maximum": 100.0,
+      "minimum": 0.0,
+      "title": "Overall Readiness Score",
+      "type": "number"
+    },
+    "confidence_score": {
+      "description": "Average confidence score across both crews from 0.0 to 1.0.",
+      "maximum": 1.0,
+      "minimum": 0.0,
+      "title": "Confidence Score",
+      "type": "number"
+    },
+    "status": {
+      "default": "success",
+      "description": "Overall pipeline execution status ('success', 'partial_failure', 'failure').",
+      "title": "Status",
+      "type": "string"
+    },
+    "error_message": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "Error details if a phase encountered a failure.",
+      "title": "Error Message"
+    }
+  },
+  "required": [
+    "project_id",
+    "startup_idea_text",
+    "idea_validation",
+    "overall_summary",
+    "overall_readiness_score",
+    "confidence_score"
+  ],
+  "title": "StartupAnalysisResult",
+  "type": "object"
+}

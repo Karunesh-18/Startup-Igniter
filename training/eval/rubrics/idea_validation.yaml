@@ -1,0 +1,24 @@
+crew: 1
+crew_name: Idea Validation
+criteria:
+  - name: specificity
+    description: >
+      Does the output engage with THIS idea's actual details (the specific
+      problem, mechanism, customer) rather than generic startup-advice
+      boilerplate that would fit almost any submission?
+  - name: internal_consistency
+    description: >
+      Do the sub-scores (technical_feasibility_score, urgency_score,
+      customer_value_score, etc.) agree with the qualitative rationale --
+      e.g. a 90+ feasibility score paired with a rationale describing major
+      unsolved technical risk would fail this criterion.
+  - name: actionability
+    description: >
+      Would a real founder learn something they could act on (a real risk to
+      investigate, a real assumption to test), or is the output purely
+      descriptive restatement of the input?
+  - name: schema_discipline
+    description: >
+      Are list fields (key_assumptions, strengths, weaknesses, etc.)
+      populated with genuinely distinct items, not near-duplicate restatements
+      padding out a min_length requirement?

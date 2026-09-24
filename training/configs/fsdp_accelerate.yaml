@@ -1,0 +1,21 @@
+# accelerate launch config for the full-SFT configs (qwen3-*-full.yaml).
+# Not needed for the LoRA configs, which use plain DDP.
+compute_environment: LOCAL_MACHINE
+distributed_type: FSDP
+fsdp_config:
+  fsdp_auto_wrap_policy: TRANSFORMER_BASED_WRAP
+  fsdp_backward_prefetch: BACKWARD_PRE
+  fsdp_cpu_ram_efficient_loading: true
+  fsdp_forward_prefetch: false
+  fsdp_offload_params: false
+  fsdp_sharding_strategy: FULL_SHARD
+  fsdp_state_dict_type: FULL_STATE_DICT
+  fsdp_sync_module_states: true
+  fsdp_use_orig_params: true
+mixed_precision: bf16
+num_machines: 1
+num_processes: 8   # 8xB200 on one DGX node
+main_training_function: main
+rdzv_backend: static
+same_network: true
+use_cpu: false

@@ -32,6 +32,7 @@ class MockProvider(BaseLLMProvider):
         system_prompt: str,
         user_prompt: str,
         model: str,
+        tier: Any = None,
         temperature: float = 0.2,
         max_tokens: Optional[int] = 4096,
         timeout: float = 60.0,

@@ -1,0 +1,33 @@
+{
+  "description": "Schema for individual MVP feature item.",
+  "properties": {
+    "feature_name": {
+      "description": "Name of feature.",
+      "title": "Feature Name",
+      "type": "string"
+    },
+    "description": {
+      "description": "Feature functionality summary.",
+      "title": "Description",
+      "type": "string"
+    },
+    "priority": {
+      "default": "Must Have",
+      "description": "Must Have, Should Have, Could Have.",
+      "title": "Priority",
+      "type": "string"
+    },
+    "complexity": {
+      "default": "Medium",
+      "description": "Low, Medium, High engineering effort.",
+      "title": "Complexity",
+      "type": "string"
+    }
+  },
+  "required": [
+    "feature_name",
+    "description"
+  ],
+  "title": "MVPFeature",
+  "type": "object"
+}

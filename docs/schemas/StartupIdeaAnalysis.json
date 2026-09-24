@@ -1,0 +1,78 @@
+{
+  "description": "Structured Pydantic schema for Startup Idea Analyzer output.",
+  "properties": {
+    "summary": {
+      "description": "Concise synthesis summary of the core startup proposal concept.",
+      "minLength": 5,
+      "title": "Summary",
+      "type": "string"
+    },
+    "startup_category": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "Primary industry vertical/category classification if identified.",
+      "title": "Startup Category"
+    },
+    "operational_pillars": {
+      "description": "Core operational/technical pillars required to build the startup.",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1,
+      "title": "Operational Pillars",
+      "type": "array"
+    },
+    "technical_feasibility_score": {
+      "description": "Feasibility score rating from 0 (impossible) to 100 (highly feasible).",
+      "maximum": 100,
+      "minimum": 0,
+      "title": "Technical Feasibility Score",
+      "type": "integer"
+    },
+    "rationale": {
+      "description": "Detailed technical feasibility rationale and explanation.",
+      "minLength": 10,
+      "title": "Rationale",
+      "type": "string"
+    },
+    "key_assumptions": {
+      "description": "Critical underlying assumptions that require market/tech validation.",
+      "items": {
+        "type": "string"
+      },
+      "title": "Key Assumptions",
+      "type": "array"
+    },
+    "strengths": {
+      "description": "Key architectural, technical, or market strengths of the proposal.",
+      "items": {
+        "type": "string"
+      },
+      "title": "Strengths",
+      "type": "array"
+    },
+    "weaknesses": {
+      "description": "Potential operational, data, or technical weaknesses/risks.",
+      "items": {
+        "type": "string"
+      },
+      "title": "Weaknesses",
+      "type": "array"
+    }
+  },
+  "required": [
+    "summary",
+    "operational_pillars",
+    "technical_feasibility_score",
+    "rationale"
+  ],
+  "title": "StartupIdeaAnalysis",
+  "type": "object"
+}

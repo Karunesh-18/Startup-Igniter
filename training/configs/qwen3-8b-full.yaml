@@ -1,0 +1,62 @@
+# Full-parameter SFT, Qwen3-8B, 8xB200 with FSDP (or plain DDP -- see note).
+#
+# Launch:
+#   accelerate launch --config_file training/configs/fsdp_accelerate.yaml \
+#     -m axolotl.cli.train training/configs/qwen3-8b-full.yaml
+
+base_model: Qwen/Qwen3-8B
+model_type: AutoModelForCausalLM
+tokenizer_type: AutoTokenizer
+trust_remote_code: true
+
+adapter: null
+
+datasets:
+  - path: training/data/corpus/idea_validation/train.chat.jsonl
+    type: chat_template
+    field_messages: messages
+val_set_size: 0.0
+test_datasets:
+  - path: training/data/corpus/idea_validation/val.chat.jsonl
+    type: chat_template
+    field_messages: messages
+
+sequence_len: 4096
+sample_packing: true
+pad_to_sequence_len: true
+
+bf16: true
+tf32: true
+flash_attention: true
+
+# 8B full-SFT: ~16 bytes/param * 8B = 128GB -- fits on a SINGLE B200 (180GB)
+# without sharding. FSDP is included here for consistency with the 32B config
+# and because it costs little at this scale, but plain DDP replication across
+# the 8 GPUs (fsdp: null, like the LoRA configs) is a legitimate simpler
+# alternative if profiling shows FSDP's communication overhead isn't worth it
+# at this model size.
+fsdp:
+  - full_shard
+  - auto_wrap
+fsdp_config:
+  fsdp_transformer_layer_cls_to_wrap: Qwen3DecoderLayer
+  fsdp_state_dict_type: FULL_STATE_DICT
+  fsdp_cpu_ram_efficient_loading: true
+  fsdp_sync_module_states: true
+
+micro_batch_size: 4
+gradient_accumulation_steps: 4   # effective batch = 4 * 4 * 8 GPUs = 128
+num_epochs: 2
+learning_rate: 0.00002
+lr_scheduler: cosine
+warmup_ratio: 0.03
+weight_decay: 0.01
+optimizer: adamw_torch_fused
+
+gradient_checkpointing: true
+logging_steps: 10
+eval_steps: 100
+save_steps: 200
+save_total_limit: 2
+
+output_dir: ./training/checkpoints/qwen3-8b-full/idea_validation

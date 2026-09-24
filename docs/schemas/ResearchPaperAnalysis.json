@@ -1,0 +1,81 @@
+{
+  "description": "Schema representing academic research paper & scientific literature analysis.",
+  "properties": {
+    "key_research_papers": {
+      "description": "Foundational and benchmark research papers.",
+      "items": {
+        "type": "string"
+      },
+      "title": "Key Research Papers",
+      "type": "array"
+    },
+    "state_of_the_art_methods": {
+      "description": "State-of-the-art algorithms and models.",
+      "items": {
+        "type": "string"
+      },
+      "title": "State Of The Art Methods",
+      "type": "array"
+    },
+    "academic_innovations": {
+      "description": "Recent theoretical breakthroughs.",
+      "items": {
+        "type": "string"
+      },
+      "title": "Academic Innovations",
+      "type": "array"
+    },
+    "open_problems": {
+      "description": "Unsolved academic research problems.",
+      "items": {
+        "type": "string"
+      },
+      "title": "Open Problems",
+      "type": "array"
+    },
+    "technical_limitations": {
+      "description": "Computational or algorithmic bottlenecks.",
+      "items": {
+        "type": "string"
+      },
+      "title": "Technical Limitations",
+      "type": "array"
+    },
+    "emerging_research_trends": {
+      "description": "Emerging research directions.",
+      "items": {
+        "type": "string"
+      },
+      "title": "Emerging Research Trends",
+      "type": "array"
+    },
+    "academic_novelty_score": {
+      "default": 80.0,
+      "description": "Academic novelty rating (0-100).",
+      "title": "Academic Novelty Score",
+      "type": "number"
+    },
+    "confidence_score": {
+      "default": 0.88,
+      "description": "Confidence score (0.0-1.0).",
+      "title": "Confidence Score",
+      "type": "number"
+    },
+    "reasoning_summary": {
+      "default": "",
+      "description": "Detailed reasoning summary.",
+      "title": "Reasoning Summary",
+      "type": "string"
+    },
+    "recommendations": {
+      "description": "Strategic recommendations.",
+      "items": {
+        "type": "string"
+      },
+      "title": "Recommendations",
+      "type": "array"
+    }
+  },
+  "title": "ResearchPaperAnalysis",
+  "type": "object"
+}

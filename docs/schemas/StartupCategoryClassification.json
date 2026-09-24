@@ -1,0 +1,82 @@
+{
+  "description": "Structured Pydantic schema for StartupCategoryClassifier agent output.",
+  "properties": {
+    "primary_category": {
+      "description": "Primary startup category classification (e.g. AI, HealthTech, SaaS, FinTech).",
+      "minLength": 2,
+      "title": "Primary Category",
+      "type": "string"
+    },
+    "secondary_categories": {
+      "description": "Secondary category tags if applicable.",
+      "items": {
+        "type": "string"
+      },
+      "title": "Secondary Categories",
+      "type": "array"
+    },
+    "industry": {
+      "description": "Primary industry vertical (e.g. Healthcare, Agriculture, Financial Services).",
+      "minLength": 2,
+      "title": "Industry",
+      "type": "string"
+    },
+    "technology_domains": {
+      "description": "Core technology domains involved (e.g. Computer Vision, Deep Learning, Cloud API).",
+      "items": {
+        "type": "string"
+      },
+      "title": "Technology Domains",
+      "type": "array"
+    },
+    "business_model": {
+      "description": "Business model structure (e.g., B2B, B2C, D2C, B2G, Marketplace, Subscription, Platform, Enterprise).",
+      "minLength": 2,
+      "title": "Business Model",
+      "type": "string"
+    },
+    "revenue_model": {
+      "description": "Primary revenue model (e.g., Subscription, Freemium, Transaction Fee, Licensing, Usage Based).",
+      "minLength": 2,
+      "title": "Revenue Model",
+      "type": "string"
+    },
+    "startup_stage": {
+      "description": "Current estimated startup stage (e.g., Idea, MVP, Prototype, Early Revenue, Growth, Scale).",
+      "minLength": 2,
+      "title": "Startup Stage",
+      "type": "string"
+    },
+    "target_market": {
+      "description": "Target customer market segment description.",
+      "minLength": 2,
+      "title": "Target Market",
+      "type": "string"
+    },
+    "confidence_score": {
+      "description": "Classification confidence score rating from 0 to 100.",
+      "maximum": 100,
+      "minimum": 0,
+      "title": "Confidence Score",
+      "type": "integer"
+    },
+    "reasoning": {
+      "description": "Concise rationale explaining the classification decision.",
+      "minLength": 5,
+      "title": "Reasoning",
+      "type": "string"
+    }
+  },
+  "required": [
+    "primary_category",
+    "industry",
+    "business_model",
+    "revenue_model",
+    "startup_stage",
+    "target_market",
+    "confidence_score",
+    "reasoning"
+  ],
+  "title": "StartupCategoryClassification",
+  "type": "object"
+}

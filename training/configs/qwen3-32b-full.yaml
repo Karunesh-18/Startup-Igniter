@@ -1,0 +1,77 @@
+# Full-parameter SFT, Qwen3-32B, 8xB200 with FSDP.
+#
+# Launch:
+#   accelerate launch --config_file training/configs/fsdp_accelerate.yaml \
+#     -m axolotl.cli.train training/configs/qwen3-32b-full.yaml
+#
+# Use this only after LoRA (qwen3-32b-lora.yaml) has been tried and the eval
+# harness (docs/ops/eval.md) shows a ceiling LoRA can't reach -- full-SFT
+# costs materially more compute and iteration time for a task
+# (structured extraction) LoRA is typically already good at. This config
+# exists because the user explicitly asked for both, not because it's the
+# recommended default path.
+
+base_model: Qwen/Qwen3-32B
+model_type: AutoModelForCausalLM
+tokenizer_type: AutoTokenizer
+trust_remote_code: true
+
+adapter: null   # full fine-tune: no adapter, every weight is trainable
+
+datasets:
+  - path: training/data/corpus/idea_validation/train.chat.jsonl
+    type: chat_template
+    field_messages: messages
+val_set_size: 0.0
+test_datasets:
+  - path: training/data/corpus/idea_validation/val.chat.jsonl
+    type: chat_template
+    field_messages: messages
+
+sequence_len: 4096
+sample_packing: true
+pad_to_sequence_len: true
+
+bf16: true
+tf32: true
+flash_attention: true
+
+# --- FSDP: required here, unlike the LoRA configs ---------------------------
+# Full-SFT of a 32B model needs weights + gradients + AdamW optimizer state
+# (m, v) + fp32 master weights sharded across GPUs -- roughly 16 bytes/param
+# in mixed precision (32B * 16B ~= 512GB), which fits across 8xB200's 1.4TB
+# with FSDP full-shard, but would NOT fit replicated (DDP) on any single
+# B200's ~180GB. This is the one config in this repo that requires FSDP.
+fsdp:
+  - full_shard
+  - auto_wrap
+fsdp_config:
+  fsdp_transformer_layer_cls_to_wrap: Qwen3DecoderLayer
+  fsdp_state_dict_type: FULL_STATE_DICT
+  fsdp_cpu_ram_efficient_loading: true
+  fsdp_sync_module_states: true
+
+micro_batch_size: 1
+gradient_accumulation_steps: 16   # effective batch = 1 * 16 * 8 GPUs = 128
+num_epochs: 2                     # full-SFT overfits faster than LoRA on a corpus this size -- fewer epochs
+learning_rate: 0.00001            # an order of magnitude below the LoRA configs -- full-SFT needs a much smaller LR
+lr_scheduler: cosine
+warmup_ratio: 0.03
+weight_decay: 0.01
+optimizer: adamw_torch_fused
+
+gradient_checkpointing: true
+logging_steps: 10
+eval_steps: 100
+save_steps: 200
+save_total_limit: 2   # full checkpoints are the size of the model, not an adapter -- keep fewer
+
+output_dir: ./training/checkpoints/qwen3-32b-full/idea_validation
+
+# --- Expected resource envelope ---
+# VRAM: ~65GB/GPU sharded across 8 GPUs (512GB total / 8, plus activations
+#   and FSDP communication buffers -- leaves meaningful headroom on B200's
+#   180GB/GPU, room to raise micro_batch_size if throughput profiling
+#   supports it).
+# Wall-clock: not pre-validated -- see docs/ops/training.md; track the first
+#   real run's numbers there rather than trusting an estimate here.

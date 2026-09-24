@@ -1,0 +1,55 @@
+{
+  "description": "Unified result container for Master Executive Reporting Crew.",
+  "properties": {
+    "project_id": {
+      "description": "Project UUID string.",
+      "title": "Project Id",
+      "type": "string"
+    },
+    "project_name": {
+      "description": "Startup project title.",
+      "title": "Project Name",
+      "type": "string"
+    },
+    "executive_summary": {
+      "description": "Master multi-phase summary report.",
+      "title": "Executive Summary",
+      "type": "string"
+    },
+    "overall_readiness_score": {
+      "default": 82.0,
+      "description": "Overall startup readiness score (0-100).",
+      "title": "Overall Readiness Score",
+      "type": "number"
+    },
+    "phase_scores": {
+      "additionalProperties": {
+        "type": "number"
+      },
+      "description": "Score map across all phases.",
+      "title": "Phase Scores",
+      "type": "object"
+    },
+    "key_recommendations": {
+      "description": "Actionable founder recommendations.",
+      "items": {
+        "type": "string"
+      },
+      "title": "Key Recommendations",
+      "type": "array"
+    },
+    "confidence_score": {
+      "default": 0.9,
+      "description": "Confidence score (0.0 to 1.0).",
+      "title": "Confidence Score",
+      "type": "number"
+    }
+  },
+  "required": [
+    "project_id",
+    "project_name",
+    "executive_summary"
+  ],
+  "title": "MasterReportResult",
+  "type": "object"
+}

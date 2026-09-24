@@ -99,6 +99,7 @@ class LLMGateway:
                     system_prompt=system_prompt,
                     user_prompt=user_prompt,
                     model=self._model_for(provider, tier),
+                    tier=tier,
                     temperature=temperature,
                     max_tokens=max_tokens,
                     timeout=timeout,

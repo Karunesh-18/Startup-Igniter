@@ -1,0 +1,120 @@
+{
+  "description": "Structured Pydantic schema for CompetitorComparisonAgent output.",
+  "properties": {
+    "startup_position": {
+      "description": "Assessment of the startup's current market position relative to competitors.",
+      "minLength": 5,
+      "title": "Startup Position",
+      "type": "string"
+    },
+    "competitive_advantages": {
+      "description": "Key strategic advantages and unique moats held by the startup.",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1,
+      "title": "Competitive Advantages",
+      "type": "array"
+    },
+    "competitive_weaknesses": {
+      "description": "Key competitive vulnerabilities or gaps relative to established incumbents.",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1,
+      "title": "Competitive Weaknesses",
+      "type": "array"
+    },
+    "feature_comparison": {
+      "description": "High-level comparison points of key feature capabilities vs competitors.",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1,
+      "title": "Feature Comparison",
+      "type": "array"
+    },
+    "technology_comparison": {
+      "description": "Comparison of technological stack, AI depth, and architecture vs competitors.",
+      "title": "Technology Comparison",
+      "type": "string"
+    },
+    "customer_focus_comparison": {
+      "description": "Comparison of target customer segment focus and user alignment vs competitors.",
+      "title": "Customer Focus Comparison",
+      "type": "string"
+    },
+    "pricing_strategy_comparison": {
+      "description": "High-level pricing model and cost structure comparison vs market alternatives.",
+      "title": "Pricing Strategy Comparison",
+      "type": "string"
+    },
+    "innovation_comparison": {
+      "description": "Innovation pace and technological novelty comparison vs incumbents.",
+      "title": "Innovation Comparison",
+      "type": "string"
+    },
+    "market_positioning": {
+      "description": "Strategic positioning statement and value vector relative to existing players.",
+      "title": "Market Positioning",
+      "type": "string"
+    },
+    "competitive_gap": {
+      "description": "Unserved market needs or feature voids left open by existing competitors.",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1,
+      "title": "Competitive Gap",
+      "type": "array"
+    },
+    "differentiation_opportunities": {
+      "description": "Clear opportunities for the startup to carve out a distinct competitive position.",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1,
+      "title": "Differentiation Opportunities",
+      "type": "array"
+    },
+    "overall_competitive_score": {
+      "description": "Overall rating score of the startup's competitive strength from 0.0 to 10.0.",
+      "maximum": 10.0,
+      "minimum": 0.0,
+      "title": "Overall Competitive Score",
+      "type": "number"
+    },
+    "confidence_score": {
+      "description": "Confidence score rating strictly between 0.0 and 1.0.",
+      "maximum": 1.0,
+      "minimum": 0.0,
+      "title": "Confidence Score",
+      "type": "number"
+    },
+    "citations": {
+      "description": "Source URLs backing the claims above, when external research (Tavily/Exa/Zyte) was supplied in the prompt. Optional and defaults empty so this schema stays backward compatible with LLM-only reasoning when no research bundle is available.",
+      "items": {
+        "type": "string"
+      },
+      "title": "Citations",
+      "type": "array"
+    }
+  },
+  "required": [
+    "startup_position",
+    "competitive_advantages",
+    "competitive_weaknesses",
+    "feature_comparison",
+    "technology_comparison",
+    "customer_focus_comparison",
+    "pricing_strategy_comparison",
+    "innovation_comparison",
+    "market_positioning",
+    "competitive_gap",
+    "differentiation_opportunities",
+    "overall_competitive_score",
+    "confidence_score"
+  ],
+  "title": "CompetitorComparison",
+  "type": "object"
+}

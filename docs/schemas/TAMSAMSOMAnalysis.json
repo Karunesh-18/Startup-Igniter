@@ -1,0 +1,67 @@
+{
+  "description": "Structured Pydantic schema for TAMSAMSOMEstimator agent output.",
+  "properties": {
+    "tam_description": {
+      "description": "Detailed description of Total Addressable Market (TAM).",
+      "title": "Tam Description",
+      "type": "string"
+    },
+    "tam_value": {
+      "description": "Estimated monetary value of TAM (e.g. '$45.2 Billion').",
+      "title": "Tam Value",
+      "type": "string"
+    },
+    "sam_description": {
+      "description": "Detailed description of Serviceable Addressable Market (SAM).",
+      "title": "Sam Description",
+      "type": "string"
+    },
+    "sam_value": {
+      "description": "Estimated monetary value of SAM (e.g. '$6.8 Billion').",
+      "title": "Sam Value",
+      "type": "string"
+    },
+    "som_description": {
+      "description": "Detailed description of Serviceable Obtainable Market (SOM).",
+      "title": "Som Description",
+      "type": "string"
+    },
+    "som_value": {
+      "description": "Estimated monetary value of SOM (e.g. '$120 Million').",
+      "title": "Som Value",
+      "type": "string"
+    },
+    "methodology": {
+      "description": "Methodology and assumptions used for market sizing calculation.",
+      "title": "Methodology",
+      "type": "string"
+    },
+    "confidence_score": {
+      "description": "Confidence score rating strictly between 0.0 and 1.0.",
+      "maximum": 1.0,
+      "minimum": 0.0,
+      "title": "Confidence Score",
+      "type": "number"
+    },
+    "citations": {
+      "description": "Source URLs backing the claims above, when external research (Tavily/Exa/Zyte) was supplied in the prompt. Optional and defaults empty so this schema stays backward compatible with LLM-only reasoning when no research bundle is available.",
+      "items": {
+        "type": "string"
+      },
+      "title": "Citations",
+      "type": "array"
+    }
+  },
+  "required": [
+    "tam_description",
+    "tam_value",
+    "sam_description",
+    "sam_value",
+    "som_description",
+    "som_value",
+    "methodology",
+    "confidence_score"
+  ],
+  "title": "TAMSAMSOMAnalysis",
+  "type": "object"
+}

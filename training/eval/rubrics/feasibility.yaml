@@ -1,0 +1,9 @@
+crew: 4
+crew_name: Technical Feasibility
+criteria:
+  - name: risk_specificity
+    description: Are key_risks specific engineering/operational risks for THIS idea, not generic ("scaling is hard") boilerplate?
+  - name: mitigation_actionability
+    description: Does each mitigation strategy map to a specific risk, and is it something an engineering team could actually execute?
+  - name: score_consistency
+    description: Do the three feasibility scores (technical/operational/financial) agree with the qualitative risk narrative?

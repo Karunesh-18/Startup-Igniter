@@ -1,0 +1,93 @@
+# LoRA fine-tune, Qwen3-32B, 8xB200.
+#
+# Framework: axolotl (see docs/ops/training.md for why, over torchtune/raw TRL+FSDP).
+# Launch:
+#   accelerate launch -m axolotl.cli.train training/configs/qwen3-32b-lora.yaml
+#
+# This is the DEFAULT starting point for HEAVY/REASONING tier fine-tuning:
+# cheaper and faster to iterate than full-SFT (qwen3-32b-full.yaml), and per
+# docs/architecture/0003-qwen3-base-models.md, this pipeline's calls are
+# structured-extraction over supplied context, not open-ended generation --
+# a task LoRA typically handles well without needing to move every weight.
+
+base_model: Qwen/Qwen3-32B
+model_type: AutoModelForCausalLM
+tokenizer_type: AutoTokenizer
+trust_remote_code: true
+
+# --- Adapter: per-crew, not per-agent (see ADR 0003) ------------------------
+# Train one adapter per crew by pointing `datasets.path` at that crew's
+# filtered+split training/data/corpus/<crew_dir>/train.jsonl and giving each
+# a distinct `lora_out_dir` / `wandb_run_name`. This file is the TEMPLATE for
+# crew 1 (idea_validation); copy per crew, changing only these two lines and
+# the dataset path.
+adapter: lora
+lora_out_dir: ./training/adapters/qwen3-32b/idea_validation
+lora_r: 32
+lora_alpha: 64
+lora_dropout: 0.05
+lora_target_modules:
+  - q_proj
+  - k_proj
+  - v_proj
+  - o_proj
+  - gate_proj
+  - up_proj
+  - down_proj
+
+# --- Data --------------------------------------------------------------
+datasets:
+  - path: training/data/corpus/idea_validation/train.chat.jsonl
+    type: chat_template
+    field_messages: messages   # see docs/ops/training.md for the {system_prompt,user_prompt,completion} -> messages[] conversion step
+val_set_size: 0.0   # validation uses the separately-split val.jsonl, not an auto carve-out of train
+test_datasets:
+  - path: training/data/corpus/idea_validation/val.chat.jsonl
+    type: chat_template
+    field_messages: messages
+
+sequence_len: 4096       # covers every prompt in ai/prompts/** plus a grounding block (see prompt_formatting.py's _MAX_SOURCES_IN_PROMPT cap) with margin
+sample_packing: true     # multiple short examples per sequence -- most agent I/O here is well under 4096 tokens
+pad_to_sequence_len: true
+
+# --- Precision / hardware ------------------------------------------------
+# B200 (sm_100) supports FP8 and NVFP4 natively; bf16 is the safe default for
+# a first fine-tune -- move to FP8 training only after validating bf16
+# results against docs/ops/eval.md's baseline, per docs/architecture/0003-qwen3-base-models.md's
+# "measure before committing" principle.
+bf16: true
+tf32: true
+flash_attention: true
+
+# 8xB200, LoRA on a 32B model: full model comfortably fits per-GPU with room
+# for a real batch size, no need for FSDP sharding here (unlike the full-SFT
+# config). Use DDP across the 8 GPUs instead.
+deepspeed: null
+fsdp: null
+
+micro_batch_size: 4
+gradient_accumulation_steps: 4   # effective batch = 4 * 4 * 8 GPUs = 128
+num_epochs: 3
+learning_rate: 0.0002
+lr_scheduler: cosine
+warmup_ratio: 0.03
+weight_decay: 0.0
+optimizer: adamw_torch_fused
+
+gradient_checkpointing: true
+logging_steps: 10
+eval_steps: 50
+save_steps: 100
+save_total_limit: 3
+
+output_dir: ./training/checkpoints/qwen3-32b-lora/idea_validation
+
+# --- Expected resource envelope (see docs/ops/training.md for the full table) ---
+# VRAM: ~70GB/GPU (32B bf16 weights ~64GB total + LoRA adapter + activations,
+#   split across 8 GPUs via DDP replication is wasteful of the B200's 180GB --
+#   this config intentionally uses only a fraction of available memory in
+#   exchange for simplicity; revisit with tensor-parallel training if a
+#   larger micro_batch_size is needed).
+# Wall-clock: dependent on final corpus size; docs/ops/training.md tracks the
+#   actual run once one exists -- do not treat this file's numbers as
+#   pre-validated without a real run's logs.

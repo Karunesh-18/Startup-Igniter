@@ -1,0 +1,40 @@
+{
+  "description": "Structured information for an identified competitor entity.",
+  "properties": {
+    "name": {
+      "description": "Formal name of the competitor organization or product.",
+      "minLength": 1,
+      "title": "Name",
+      "type": "string"
+    },
+    "category": {
+      "description": "Competitor category classification (e.g., Direct, Indirect, Emerging, Incumbent).",
+      "title": "Category",
+      "type": "string"
+    },
+    "description": {
+      "description": "Short summary description of the competitor's market position and value prop.",
+      "title": "Description",
+      "type": "string"
+    },
+    "target_market": {
+      "description": "Target customer segment or geographic market served by this competitor.",
+      "title": "Target Market",
+      "type": "string"
+    },
+    "primary_offering": {
+      "description": "Core product, platform, or service offered by this competitor.",
+      "title": "Primary Offering",
+      "type": "string"
+    }
+  },
+  "required": [
+    "name",
+    "category",
+    "description",
+    "target_market",
+    "primary_offering"
+  ],
+  "title": "CompetitorInfo",
+  "type": "object"
+}

@@ -1,0 +1,9 @@
+crew: 7
+crew_name: Legal & Compliance
+criteria:
+  - name: jurisdiction_relevance
+    description: Are compliance_checklist items relevant to the idea's actual sector (FinTech/HealthTech need materially different items than generic SaaS)?
+  - name: disclaimer_presence
+    description: Does every LegalDocumentDraft carry its mandatory disclaimer verbatim, unmodified and unremoved? This is a hard requirement, not a style preference -- see docs/phases/07-legal-and-compliance.md.
+  - name: draft_quality
+    description: Do draft documents read as adapted from real legal-document structure (sections, defined terms), not free-associated prose that merely resembles a contract?

@@ -1,0 +1,109 @@
+{
+  "description": "Structured Pydantic schema for MarketResearchAgent output.",
+  "properties": {
+    "market_overview": {
+      "description": "High-level assessment and overview of the target market landscape.",
+      "minLength": 5,
+      "title": "Market Overview",
+      "type": "string"
+    },
+    "industry_overview": {
+      "description": "Overview of the broader industry vertical and sector dynamics.",
+      "minLength": 5,
+      "title": "Industry Overview",
+      "type": "string"
+    },
+    "market_stage": {
+      "description": "Stage of the market (e.g. Emerging, Growth, Mature, Declining).",
+      "title": "Market Stage",
+      "type": "string"
+    },
+    "market_maturity": {
+      "description": "Maturity level of the market (e.g. Early Stage, Growth Stage, Highly Mature).",
+      "title": "Market Maturity",
+      "type": "string"
+    },
+    "market_size_summary": {
+      "description": "Qualitative summary of market size and growth potential.",
+      "title": "Market Size Summary",
+      "type": "string"
+    },
+    "market_demand": {
+      "description": "Current and projected trajectory of market demand (e.g. High Demand, Accelerating).",
+      "title": "Market Demand",
+      "type": "string"
+    },
+    "market_opportunities": {
+      "description": "Key market opportunities driving potential startup expansion.",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1,
+      "title": "Market Opportunities",
+      "type": "array"
+    },
+    "market_challenges": {
+      "description": "Core operational, regulatory, or structural challenges in this market.",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1,
+      "title": "Market Challenges",
+      "type": "array"
+    },
+    "growth_drivers": {
+      "description": "Primary macro and micro drivers pushing market growth.",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1,
+      "title": "Growth Drivers",
+      "type": "array"
+    },
+    "market_risks": {
+      "description": "Major market and macro risks associated with entering this sector.",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1,
+      "title": "Market Risks",
+      "type": "array"
+    },
+    "future_outlook": {
+      "description": "Future trajectory and 3-5 year outlook for the market.",
+      "title": "Future Outlook",
+      "type": "string"
+    },
+    "confidence_score": {
+      "description": "Confidence score rating strictly between 0.0 and 1.0.",
+      "maximum": 1.0,
+      "minimum": 0.0,
+      "title": "Confidence Score",
+      "type": "number"
+    },
+    "citations": {
+      "description": "Source URLs backing the claims above, when external research (Tavily/Exa/Zyte) was supplied in the prompt. Optional and defaults empty so this schema stays backward compatible with LLM-only reasoning when no research bundle is available.",
+      "items": {
+        "type": "string"
+      },
+      "title": "Citations",
+      "type": "array"
+    }
+  },
+  "required": [
+    "market_overview",
+    "industry_overview",
+    "market_stage",
+    "market_maturity",
+    "market_size_summary",
+    "market_demand",
+    "market_opportunities",
+    "market_challenges",
+    "growth_drivers",
+    "market_risks",
+    "future_outlook",
+    "confidence_score"
+  ],
+  "title": "MarketResearchAnalysis",
+  "type": "object"
+}

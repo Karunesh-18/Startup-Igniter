@@ -49,3 +49,9 @@ docker-compose.override.yml
 *.pptx
 # (only generated exports — keep template files)
 backend/templates/*.pdf
+
+# Generated training corpus / checkpoints (large, regeneratable, never committed)
+training/data/corpus/
+training/checkpoints/
+training/adapters/
+*.jsonl

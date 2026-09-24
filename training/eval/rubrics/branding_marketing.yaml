@@ -1,0 +1,9 @@
+crew: 8
+crew_name: Branding & Marketing
+criteria:
+  - name: name_availability_hedging
+    description: Does the output present brand_name_suggestions as unverified candidates (not cleared names), per docs/phases/08-branding-and-marketing.md's guardrail against implying trademark clearance?
+  - name: positioning_differentiation
+    description: Does brand_positioning stake out a specific, differentiated position, or generic claims ("innovative," "customer-first") any startup could make?
+  - name: channel_fit
+    description: Does launch_channel_strategy match where this idea's actual target customer spends attention (a B2B enterprise tool recommending TikTok ads as primary channel would fail this)?

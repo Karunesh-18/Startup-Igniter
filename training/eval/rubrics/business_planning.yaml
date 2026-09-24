@@ -1,0 +1,9 @@
+crew: 5
+crew_name: Business Planning
+criteria:
+  - name: lean_canvas_coherence
+    description: Do problem/solution/UVP/customer_segments form a coherent story, or do they read as independently generated fields that don't reference each other?
+  - name: pricing_realism
+    description: Is the pricing_model and price_points plausible for the stated category and customer segment (e.g. enterprise B2B priced like a $5/mo consumer app would fail this)?
+  - name: unfair_advantage_specificity
+    description: Is unfair_advantage a real, defensible moat, or a generic claim ("great team," "first mover") that any competitor could equally claim?

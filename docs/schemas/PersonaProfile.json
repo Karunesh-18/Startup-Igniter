@@ -1,0 +1,194 @@
+{
+  "description": "Detailed target customer persona profile.",
+  "properties": {
+    "persona_name": {
+      "description": "Fictional persona identifier name (e.g., Enterprise CTO Elena).",
+      "minLength": 1,
+      "title": "Persona Name",
+      "type": "string"
+    },
+    "persona_type": {
+      "description": "Type category of persona (e.g. Primary Buyer, End User, Decision Maker).",
+      "title": "Persona Type",
+      "type": "string"
+    },
+    "age_range": {
+      "description": "Target age demographic bracket (e.g., 30-45).",
+      "title": "Age Range",
+      "type": "string"
+    },
+    "gender": {
+      "description": "Gender breakdown or 'All / Gender Neutral'.",
+      "title": "Gender",
+      "type": "string"
+    },
+    "occupation": {
+      "description": "Primary job title or professional role.",
+      "title": "Occupation",
+      "type": "string"
+    },
+    "education_level": {
+      "description": "Highest educational attainment.",
+      "title": "Education Level",
+      "type": "string"
+    },
+    "income_range": {
+      "description": "Income bracket or corporate budget range.",
+      "title": "Income Range",
+      "type": "string"
+    },
+    "location": {
+      "description": "Geographic region or urbanization environment.",
+      "title": "Location",
+      "type": "string"
+    },
+    "digital_literacy": {
+      "description": "Digital literacy level (e.g., High, Moderate, Expert).",
+      "title": "Digital Literacy",
+      "type": "string"
+    },
+    "technical_skill_level": {
+      "description": "Technical proficiency and software adoption skill level.",
+      "title": "Technical Skill Level",
+      "type": "string"
+    },
+    "goals": {
+      "description": "Primary professional or personal goals.",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1,
+      "title": "Goals",
+      "type": "array"
+    },
+    "motivations": {
+      "description": "Core driving motivations for seeking a solution.",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1,
+      "title": "Motivations",
+      "type": "array"
+    },
+    "pain_points": {
+      "description": "Key frustrations and operational pain points experienced.",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1,
+      "title": "Pain Points",
+      "type": "array"
+    },
+    "challenges": {
+      "description": "Main obstacles blocking goal achievement.",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1,
+      "title": "Challenges",
+      "type": "array"
+    },
+    "daily_activities": {
+      "description": "Typical daily workflow and operational activities.",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1,
+      "title": "Daily Activities",
+      "type": "array"
+    },
+    "buying_behavior": {
+      "description": "Purchasing habits, evaluation speed, and approval process.",
+      "title": "Buying Behavior",
+      "type": "string"
+    },
+    "decision_factors": {
+      "description": "Key criteria influencing purchasing decision (e.g., ROI, Ease of Use, Security).",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1,
+      "title": "Decision Factors",
+      "type": "array"
+    },
+    "preferred_platforms": {
+      "description": "Preferred software platforms, OS, and ecosystems.",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1,
+      "title": "Preferred Platforms",
+      "type": "array"
+    },
+    "communication_channels": {
+      "description": "Preferred channels for marketing and support (e.g., Email, LinkedIn, Slack).",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1,
+      "title": "Communication Channels",
+      "type": "array"
+    },
+    "device_usage": {
+      "description": "Primary hardware devices used (e.g., Desktop Mac/PC, Mobile iOS).",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1,
+      "title": "Device Usage",
+      "type": "array"
+    },
+    "expected_features": {
+      "description": "Must-have product capabilities expected by this persona.",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1,
+      "title": "Expected Features",
+      "type": "array"
+    },
+    "price_sensitivity": {
+      "description": "Price sensitivity rating (e.g., Low - Value Driven, Moderate, High - Budget Constrained).",
+      "title": "Price Sensitivity",
+      "type": "string"
+    },
+    "adoption_readiness": {
+      "description": "Readiness to adopt new technology (e.g., Innovator, Early Adopter, Pragmatist).",
+      "title": "Adoption Readiness",
+      "type": "string"
+    },
+    "customer_lifetime_value": {
+      "description": "Estimated qualitative or quantitative Customer Lifetime Value (CLV) potential.",
+      "title": "Customer Lifetime Value",
+      "type": "string"
+    }
+  },
+  "required": [
+    "persona_name",
+    "persona_type",
+    "age_range",
+    "gender",
+    "occupation",
+    "education_level",
+    "income_range",
+    "location",
+    "digital_literacy",
+    "technical_skill_level",
+    "goals",
+    "motivations",
+    "pain_points",
+    "challenges",
+    "daily_activities",
+    "buying_behavior",
+    "decision_factors",
+    "preferred_platforms",
+    "communication_channels",
+    "device_usage",
+    "expected_features",
+    "price_sensitivity",
+    "adoption_readiness",
+    "customer_lifetime_value"
+  ],
+  "title": "PersonaProfile",
+  "type": "object"
+}

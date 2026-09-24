@@ -1,0 +1,79 @@
+# Docker Compose shape for the two vLLM servers (see vllm_up.sh for the
+# equivalent bare-metal launch and docs/ops/serving.md for the full topology
+# rationale). Prefer vllm_up.sh directly on the DGX for the first bring-up --
+# this file is for once the serving setup is stable enough to want restart
+# policies, log rotation, and a fixed router in front of it.
+#
+# Requires the NVIDIA Container Toolkit on the host. Confirm CUDA 12.8+ /
+# driver compatibility with B200 (sm_100) BEFORE building this image --
+# see docs/ops/dgx-runbook.md's capability check, step 1.
+
+services:
+  vllm-heavy:
+    image: vllm/vllm-openai:latest   # pin an exact tag once sm_100 support is confirmed -- see dgx-runbook.md
+    runtime: nvidia
+    environment:
+      - CUDA_VISIBLE_DEVICES=0,1
+    command:
+      - --model=${LLM_MODEL_HEAVY:-Qwen/Qwen3-32B}
+      - --tensor-parallel-size=2
+      - --dtype=bfloat16
+      - --max-model-len=8192
+      - --gpu-memory-utilization=0.90
+      - --guided-decoding-backend=xgrammar
+      - --enable-lora
+      - --lora-modules=idea_validation=/adapters/qwen3-32b/idea_validation
+      - --lora-modules=market_research=/adapters/qwen3-32b/market_research
+      - --lora-modules=research_patent=/adapters/qwen3-32b/research_patent
+      - --max-lora-rank=32
+      - --port=8001
+    ports:
+      - "8001:8001"
+    volumes:
+      - ../adapters:/adapters:ro
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 300s   # 32B model load time -- do not set this too low
+
+  vllm-fast:
+    image: vllm/vllm-openai:latest
+    runtime: nvidia
+    environment:
+      - CUDA_VISIBLE_DEVICES=2
+    command:
+      - --model=${LLM_MODEL_FAST:-Qwen/Qwen3-8B}
+      - --tensor-parallel-size=1
+      - --dtype=bfloat16
+      - --max-model-len=8192
+      - --gpu-memory-utilization=0.90
+      - --guided-decoding-backend=xgrammar
+      - --enable-lora
+      - --lora-modules=idea_validation=/adapters/qwen3-8b/idea_validation
+      - --lora-modules=market_research=/adapters/qwen3-8b/market_research
+      - --lora-modules=research_patent=/adapters/qwen3-8b/research_patent
+      - --max-lora-rank=16
+      - --port=8002
+    ports:
+      - "8002:8002"
+    volumes:
+      - ../adapters:/adapters:ro
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8002/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 120s
+
+# No router needed: the gateway (ai/llm/settings.py) targets each tier's
+# server directly via two env vars --
+#   LLM_BASE_URL=http://<dgx-host>:8001/v1       (HEAVY/REASONING, Qwen3-32B)
+#   LLM_BASE_URL_FAST=http://<dgx-host>:8002/v1  (FAST, Qwen3-8B)
+# A single request body's "model" field isn't something a plain reverse
+# proxy can route on without scripting, so picking the URL per tier in the
+# gateway itself (see LLMSettings.selfhosted_base_url_for_tier) is simpler
+# and needs no extra moving part in front of vLLM.

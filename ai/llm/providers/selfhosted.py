@@ -37,6 +37,7 @@ class SelfHostedProvider(BaseLLMProvider):
         system_prompt: str,
         user_prompt: str,
         model: str,
+        tier: Any = None,
         temperature: float = 0.2,
         max_tokens: Optional[int] = 4096,
         timeout: float = 60.0,
@@ -58,8 +59,10 @@ class SelfHostedProvider(BaseLLMProvider):
         if schema_class is not None and self.settings.llm_guided_decoding:
             response_format = build_json_schema_response_format(schema_class)
 
+        base_url = self.settings.selfhosted_base_url_for_tier(tier) if tier is not None else self.settings.llm_base_url
+
         text = chat_completion(
-            base_url=self.settings.llm_base_url,  # type: ignore[arg-type]
+            base_url=base_url,  # type: ignore[arg-type]
             headers=headers,
             model=model,
             system_prompt=system_prompt,

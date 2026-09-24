@@ -1,0 +1,76 @@
+{
+  "description": "Structured Pydantic schema for ProblemStatementAnalyzer output.",
+  "properties": {
+    "problem_statement": {
+      "description": "Clear, concise formulation of the core problem being analyzed.",
+      "minLength": 10,
+      "title": "Problem Statement",
+      "type": "string"
+    },
+    "affected_users": {
+      "description": "User groups or personas impacted by this problem.",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1,
+      "title": "Affected Users",
+      "type": "array"
+    },
+    "root_causes": {
+      "description": "Underlying root causes giving rise to the problem.",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1,
+      "title": "Root Causes",
+      "type": "array"
+    },
+    "existing_solutions": {
+      "description": "Current manual workarounds or existing solutions employed today.",
+      "items": {
+        "type": "string"
+      },
+      "title": "Existing Solutions",
+      "type": "array"
+    },
+    "solution_gaps": {
+      "description": "Deficiencies, gaps, or limitations in current solutions.",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1,
+      "title": "Solution Gaps",
+      "type": "array"
+    },
+    "problem_severity": {
+      "description": "Severity level of the pain point ('low', 'medium', 'high', 'critical').",
+      "title": "Problem Severity",
+      "type": "string"
+    },
+    "urgency_score": {
+      "description": "Market urgency score rating from 0 (nice-to-have) to 100 (critical hair-on-fire).",
+      "maximum": 100,
+      "minimum": 0,
+      "title": "Urgency Score",
+      "type": "integer"
+    },
+    "confidence_score": {
+      "description": "Analysis confidence rating score between 0.00 and 1.00.",
+      "maximum": 1.0,
+      "minimum": 0.0,
+      "title": "Confidence Score",
+      "type": "number"
+    }
+  },
+  "required": [
+    "problem_statement",
+    "affected_users",
+    "root_causes",
+    "solution_gaps",
+    "problem_severity",
+    "urgency_score",
+    "confidence_score"
+  ],
+  "title": "ProblemStatementAnalysis",
+  "type": "object"
+}

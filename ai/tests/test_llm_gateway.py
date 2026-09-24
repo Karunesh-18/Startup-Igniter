@@ -70,6 +70,80 @@ def test_falls_through_to_groq_when_selfhosted_unreachable(httpx_mock):
     assert result == '{"served_by": "groq"}'
 
 
+def test_fast_tier_uses_separate_base_url_when_configured(httpx_mock):
+    """Qwen3-32B and Qwen3-8B run as two separate vLLM servers (one base
+    model per process) -- LLM_BASE_URL_FAST routes FAST-tier calls to the
+    8B server while HEAVY/REASONING stay on the primary URL."""
+    settings = LLMSettings(
+        LLM_BASE_URL="http://dgx-b200:8001/v1",
+        LLM_BASE_URL_FAST="http://dgx-b200:8002/v1",
+    )
+    httpx_mock.add_response(
+        url="http://dgx-b200:8001/v1/chat/completions", json=_openai_response('{"served_by": "heavy"}')
+    )
+    httpx_mock.add_response(
+        url="http://dgx-b200:8002/v1/chat/completions", json=_openai_response('{"served_by": "fast"}')
+    )
+
+    gw = LLMGateway(settings=settings)
+    heavy_result = gw.invoke(system_prompt="sys", user_prompt="user", tier=ModelTier.HEAVY)
+    fast_result = gw.invoke(system_prompt="sys", user_prompt="user", tier=ModelTier.FAST)
+
+    assert heavy_result == '{"served_by": "heavy"}'
+    assert fast_result == '{"served_by": "fast"}'
+
+
+def test_fast_tier_falls_back_to_primary_url_when_no_separate_one_configured(httpx_mock):
+    """A single-server setup (no LLM_BASE_URL_FAST) keeps working unchanged --
+    both tiers hit the same base_url."""
+    settings = LLMSettings(LLM_BASE_URL="http://dgx-b200:8000/v1", LLM_BASE_URL_FAST=None)
+    httpx_mock.add_response(
+        url="http://dgx-b200:8000/v1/chat/completions", json=_openai_response('{"ok": true}')
+    )
+
+    gw = LLMGateway(settings=settings)
+    result = gw.invoke(system_prompt="sys", user_prompt="user", tier=ModelTier.FAST)
+
+    assert result == '{"ok": true}'
+
+
+def test_401_fails_fast_without_retrying(httpx_mock):
+    """A 401 (invalid/revoked key) must not be retried -- retrying can never
+    succeed, and doing it anyway wastes ~12s of exponential backoff on every
+    single call (found while smoke-testing the training corpus generator
+    against a real, since-revoked Groq key)."""
+    settings = LLMSettings(LLM_BASE_URL=None, GROQ_API_KEY="gsk_invalid", LLM_MAX_RETRIES=4)
+    httpx_mock.add_response(
+        url="https://api.groq.com/openai/v1/chat/completions",
+        status_code=401,
+        json={"error": {"message": "Invalid API Key"}},
+    )
+
+    gw = LLMGateway(settings=settings)
+    result = gw.invoke(system_prompt="sys", user_prompt="user")  # falls through to mock
+
+    assert result  # mock provider answered
+    # Exactly one request was made -- no retries on a 401.
+    assert len(httpx_mock.get_requests()) == 1
+
+
+def test_429_still_retries_with_backoff(httpx_mock):
+    """429 (rate limit) is the case retrying legitimately helps -- must not
+    be caught by the same fast-fail path as 401/403/404/422."""
+    settings = LLMSettings(LLM_BASE_URL=None, GROQ_API_KEY="gsk_test", LLM_MAX_RETRIES=2)
+    httpx_mock.add_response(url="https://api.groq.com/openai/v1/chat/completions", status_code=429)
+    httpx_mock.add_response(
+        url="https://api.groq.com/openai/v1/chat/completions",
+        json=_openai_response('{"ok": true}'),
+    )
+
+    gw = LLMGateway(settings=settings)
+    result = gw.invoke(system_prompt="sys", user_prompt="user", max_retries=2)
+
+    assert result == '{"ok": true}'
+    assert len(httpx_mock.get_requests()) == 2
+
+
 def test_falls_through_to_mock_when_nothing_configured():
     """No selfhosted, no fallback keys -> mock provider answers rather than crashing."""
     settings = LLMSettings(LLM_BASE_URL=None, GROQ_API_KEY=None, OPENROUTER_API_KEY=None)
