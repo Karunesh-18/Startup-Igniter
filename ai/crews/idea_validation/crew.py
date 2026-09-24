@@ -33,14 +33,6 @@ from ai.agents.idea_validation.value_proposition_analyzer import (
 )
 from ai.config import get_ai_settings
 from ai.crews.idea_validation.config import IdeaValidationCrewConfig
-from ai.crews.idea_validation.tasks import (
-    create_category_classification_task,
-    create_customer_identification_task,
-    create_innovation_scoring_task,
-    create_problem_statement_analysis_task,
-    create_startup_idea_analysis_task,
-    create_value_proposition_analysis_task,
-)
 from ai.memory.project_memory import ProjectMemoryManager
 from ai.schemas.customer_identifier import CustomerIdentification
 from ai.schemas.idea_validation import IdeaValidationResult, StartupIdeaAnalysis
@@ -49,15 +41,6 @@ from ai.schemas.problem_statement import ProblemStatementAnalysis
 from ai.schemas.startup_category import StartupCategoryClassification
 from ai.schemas.value_proposition import ValuePropositionAnalysis
 from ai.shared.logger import ai_logger
-
-# Optional CrewAI Crew import check with type safety
-try:
-    from crewai import Crew as CrewAICrew, Process  # type: ignore
-    HAS_CREWAI = True
-except ImportError:
-    HAS_CREWAI = False
-    CrewAICrew = None
-    Process = None
 
 
 # Legacy response model alias for backward compatibility
@@ -81,8 +64,14 @@ def _call_live_groq_llm(
     temperature: float = 0.1,
     timeout: float = 45.0,
     max_retries: int = 6,
+    schema_class: Optional[type] = None,
 ) -> str:
-    """Execute live LLM completion call using OpenRouter (primary) or Groq."""
+    """Execute a live LLM completion via the gateway (selfhosted -> Groq/OpenRouter -> mock).
+
+    `schema_class`, when given, lets the self-hosted vLLM path grammar-constrain
+    generation to the target Pydantic schema instead of relying solely on the
+    field list spelled out in the prompt text below.
+    """
     from ai.shared.llm_provider import call_live_llm
     return call_live_llm(
         system_prompt=system_prompt,
@@ -91,6 +80,7 @@ def _call_live_groq_llm(
         temperature=temperature,
         timeout=timeout,
         max_retries=max_retries,
+        schema_class=schema_class,
     )
 
 
@@ -254,6 +244,7 @@ class IdeaValidationCrew:
             system_prompt=self._get_backstory(self.idea_agent),
             user_prompt=idea_user_prompt,
             model_name=settings.groq_model_heavy,
+            schema_class=StartupIdeaAnalysis,
         )
         idea_model = validate_idea_output(raw_idea_text)
         self.memory_manager.write_memory(
@@ -285,6 +276,7 @@ class IdeaValidationCrew:
             system_prompt=self._get_backstory(self.problem_agent),
             user_prompt=problem_user_prompt,
             model_name=settings.groq_model_heavy,
+            schema_class=ProblemStatementAnalysis,
         )
         problem_model = validate_problem_output(raw_problem_text)
         self.memory_manager.write_memory(
@@ -311,6 +303,7 @@ class IdeaValidationCrew:
             system_prompt=self._get_backstory(self.customer_agent),
             user_prompt=customer_user_prompt,
             model_name=settings.groq_model_heavy,
+            schema_class=CustomerIdentification,
         )
         customer_model = validate_customer_output(raw_customer_text)
         self.memory_manager.write_memory(
@@ -336,6 +329,7 @@ class IdeaValidationCrew:
             system_prompt=self._get_backstory(self.value_agent),
             user_prompt=value_user_prompt,
             model_name=settings.groq_model_heavy,
+            schema_class=ValuePropositionAnalysis,
         )
         value_model = validate_value_output(raw_value_text)
         self.memory_manager.write_memory(
@@ -360,6 +354,7 @@ class IdeaValidationCrew:
             system_prompt=self._get_backstory(self.category_agent),
             user_prompt=category_user_prompt,
             model_name=settings.groq_model_fast,
+            schema_class=StartupCategoryClassification,
         )
         category_model = validate_category_output(raw_category_text)
         self.memory_manager.write_memory(
@@ -386,6 +381,7 @@ class IdeaValidationCrew:
             system_prompt=self._get_backstory(self.innovation_agent),
             user_prompt=innovation_user_prompt,
             model_name=settings.groq_model_heavy,
+            schema_class=InnovationScoreAnalysis,
         )
         innovation_model = validate_innovation_output(raw_innovation_text)
         self.memory_manager.write_memory(

@@ -18,15 +18,6 @@ from ai.schemas.context import MarketResearchContext
 from ai.schemas.market_research import MarketResearchResult
 from ai.shared.logger import ai_logger
 
-# Optional CrewAI Crew import check with type safety
-try:
-    from crewai import Crew as CrewAICrew, Process  # type: ignore
-    HAS_CREWAI = True
-except ImportError:
-    HAS_CREWAI = False
-    CrewAICrew = None
-    Process = None
-
 
 class MarketResearchCrew:
     """Production orchestration engine for the Market Research Crew.

@@ -12,17 +12,8 @@ from ai.schemas.idea_validation import IdeaValidationResult
 from ai.schemas.market_research import MarketResearchResult
 from ai.schemas.research_patent import PatentAnalysis
 from ai.shared.constants import ModelTier
-from ai.shared.llm_provider import LLMFactory
 from ai.shared.logger import ai_logger
 from ai.shared.output_validator import validate_output
-
-# Optional CrewAI import check with type safety
-try:
-    from crewai import Agent as CrewAIAgent  # type: ignore
-    HAS_CREWAI = True
-except ImportError:
-    HAS_CREWAI = False
-    CrewAIAgent = None
 
 
 def load_agent_prompt(filename: str = "patent_search.md") -> str:
@@ -71,7 +62,7 @@ def get_patent_search_agent(
         mock_mode: If True, operates in simulation mode without network LLM calls.
 
     Returns:
-        CrewAI Agent object if HAS_CREWAI is True, otherwise agent configuration dictionary.
+        Agent configuration dictionary.
     """
     role = "Patent & Intellectual Property Research Specialist"
     goal = (
@@ -83,26 +74,13 @@ def get_patent_search_agent(
         "(USPTO, EPO, WIPO), prior art analysis, technological white space identification, and FTO risk mitigation."
     )
 
-    llm = LLMFactory.get_llm(tier=model_tier, temperature=temp, mock_mode=mock_mode)
     agent_tools: list[Any] = []
-
-    if HAS_CREWAI and CrewAIAgent is not None:
-        return CrewAIAgent(
-            role=role,
-            goal=goal,
-            backstory=backstory,
-            verbose=True,
-            allow_delegation=False,
-            tools=agent_tools,
-            llm=llm,
-        )
 
     return {
         "agent_name": "patent_search_agent",
         "role": role,
         "goal": goal,
         "backstory": backstory,
-        "llm": llm,
         "tools": agent_tools,
         "mock_mode": mock_mode,
         "schema_class": PatentAnalysis,
@@ -222,6 +200,7 @@ def run_patent_search_agent(
             user_prompt=user_prompt,
             model_name=get_ai_settings().openrouter_model_heavy,
             temperature=0.2,
+            schema_class=PatentAnalysis,
         )
 
     validated_analysis = validate_agent_output(raw_output)

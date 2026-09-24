@@ -20,8 +20,8 @@ async def test_research_patent_crew():
     crew = get_research_patent_crew(mock_mode=True)
     res = crew.run(project_id="test_proj_2", idea_text="Autonomous AI Agents", mock_mode=True)
     assert res.project_id == "test_proj_2"
-    assert res.patent_number != ""
-    assert len(res.key_claims) > 0
+    assert res.patent_analysis.existing_patent_summary != ""
+    assert res.patent_analysis.patentability_assessment != ""
 
 
 @pytest.mark.asyncio

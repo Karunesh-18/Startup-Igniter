@@ -47,6 +47,17 @@ class VectorMemoryConfig(BaseModel):
         default=3600,
         description="TTL for memory cache items in seconds.",
     )
+    use_real_embeddings: bool = Field(
+        default=False,
+        description=(
+            "If True, ProjectMemoryManager loads a real sentence-transformers model "
+            "(downloads ~80MB from Hugging Face on first use if not already cached). "
+            "Defaults to False so test suites and offline dev stay deterministic and "
+            "network-free; the deterministic ai.memory.project_memory.generate_mock_embedding "
+            "fallback is used instead. Flip on via AI_USE_REAL_EMBEDDINGS=true once a model "
+            "cache/network path is confirmed available (see docs/ops for the grounding runbook)."
+        ),
+    )
 
     def validate_dimension(self) -> None:
         """Validate embedding dimension matches expected table schema."""

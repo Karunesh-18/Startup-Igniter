@@ -12,14 +12,6 @@ from ai.agents.idea_validation import (
     get_value_proposition_analyzer_agent,
 )
 from ai.crews.idea_validation.crew import IdeaValidationCrew, get_idea_validation_crew
-from ai.crews.idea_validation.tasks import (
-    create_category_classification_task,
-    create_customer_identification_task,
-    create_innovation_scoring_task,
-    create_problem_statement_analysis_task,
-    create_startup_idea_analysis_task,
-    create_value_proposition_analysis_task,
-)
 from ai.memory.project_memory import ProjectMemoryManager
 from ai.schemas.idea_validation import IdeaValidationResult
 
@@ -42,25 +34,6 @@ class TestIdeaValidationCrewLiveExecution(unittest.TestCase):
         self.assertIsNotNone(value_agent)
         self.assertIsNotNone(category_agent)
         self.assertIsNotNone(innovation_agent)
-
-    def test_task_creation_functions(self):
-        """Test task creation for all 6 agents."""
-        idea_agent = get_startup_idea_analyzer_agent(mock_mode=False)
-        idea_text = "Personalized learning platform for engineering students using adaptive AI."
-
-        idea_task = create_startup_idea_analysis_task(idea_agent, idea_text)
-        prob_task = create_problem_statement_analysis_task(idea_agent, idea_text)
-        cust_task = create_customer_identification_task(idea_agent, idea_text)
-        val_task = create_value_proposition_analysis_task(idea_agent, idea_text)
-        cat_task = create_category_classification_task(idea_agent, idea_text)
-        innov_task = create_innovation_scoring_task(idea_agent, idea_text)
-
-        self.assertIsNotNone(idea_task)
-        self.assertIsNotNone(prob_task)
-        self.assertIsNotNone(cust_task)
-        self.assertIsNotNone(val_task)
-        self.assertIsNotNone(cat_task)
-        self.assertIsNotNone(innov_task)
 
     def test_idea_validation_service_instantiation(self):
         """Test instantiation and initialization of IdeaValidationService."""

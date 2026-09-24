@@ -9,7 +9,6 @@ from ai.memory.project_memory import ProjectMemoryManager
 from ai.schemas.context import ResearchPatentContext
 from ai.schemas.research_patent import ResearchPatentResult
 from ai.shared.constants import ModelTier
-from ai.shared.llm_provider import LLMFactory
 from ai.shared.logger import ai_logger
 from ai.shared.output_validator import validate_output
 
@@ -93,26 +92,13 @@ def get_research_patent_summary_agent(
         "patent, and commercial analysis into executive decision frameworks for founders and investors."
     )
 
-    llm = LLMFactory.get_llm(tier=model_tier, temperature=temp, mock_mode=mock_mode)
     agent_tools: list[Any] = []
-
-    if HAS_CREWAI and CrewAIAgent is not None:
-        return CrewAIAgent(
-            role=role,
-            goal=goal,
-            backstory=backstory,
-            verbose=True,
-            allow_delegation=False,
-            tools=agent_tools,
-            llm=llm,
-        )
 
     return {
         "agent_name": "research_patent_summary_agent",
         "role": role,
         "goal": goal,
         "backstory": backstory,
-        "llm": llm,
         "tools": agent_tools,
         "mock_mode": mock_mode,
         "schema_class": ResearchPatentResult,

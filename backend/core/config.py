@@ -5,14 +5,35 @@ All settings have safe defaults for local development. In production every
 value MUST be supplied via environment or a .env file (never hardcoded).
 """
 
+import sys
 from functools import lru_cache
+from pathlib import Path
 from typing import Any, Literal
 
 from pydantic import AnyHttpUrl, Field, field_validator
-from pydantic_settings import BaseSettings, SettingsConfigDict
+from pydantic_settings import SettingsConfigDict
+
+# `ai/` is a sibling package at the repo root, not inside `backend/`, so it is
+# not on sys.path when backend runs standalone (uvicorn, arq, pytest from
+# within backend/). backend/api/routers/analysis.py already carried this exact
+# fix locally; it now lives here too since core.config is imported earlier
+# than that router, by nearly everything.
+_repo_root = Path(__file__).resolve().parents[2]
+if str(_repo_root) not in sys.path:
+    sys.path.insert(0, str(_repo_root))
+
+from ai.llm.settings import LLMSettings  # noqa: E402
 
 
-class Settings(BaseSettings):
+class Settings(LLMSettings):
+    """Core application configuration.
+
+    Inherits LLM_*/GROQ_*/OPENROUTER_* fields from ai.llm.settings.LLMSettings
+    rather than re-declaring them -- this class used to keep its own separate
+    GROQ_* copies that had drifted from ai/config.py::AISettings (OPENROUTER_*
+    was the primary provider in code but was never declared here at all).
+    """
+
     model_config = SettingsConfigDict(
         env_file=".env",
         env_file_encoding="utf-8",
@@ -53,11 +74,6 @@ class Settings(BaseSettings):
     # ── Redis (Upstash) ───────────────────────────────────────────────────
     UPSTASH_REDIS_REST_URL: str = ""
     UPSTASH_REDIS_REST_TOKEN: str = ""
-
-    # ── Groq ──────────────────────────────────────────────────────────────
-    GROQ_API_KEY: str = ""
-    GROQ_MODEL_HEAVY: str = "llama-3.3-70b-versatile"
-    GROQ_MODEL_FAST: str = "llama-3.1-8b-instant"
 
     # ── Search ────────────────────────────────────────────────────────────
     TAVILY_API_KEY: str = ""

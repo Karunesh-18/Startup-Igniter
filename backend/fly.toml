@@ -4,6 +4,12 @@
 app = "startup-os-api"
 primary_region = "bom"  # Mumbai — closest to India
 
+# NOTE: the Dockerfile needs the sibling `ai/` package (repo root, one level
+# up from this file) to be inside the build context — deploy from the REPO
+# ROOT, not from backend/:
+#   fly deploy --config backend/fly.toml --dockerfile backend/Dockerfile .
+# Running `fly deploy` from inside backend/ scopes the build context to
+# backend/ alone and `ai/` will be silently missing from the image.
 [build]
 dockerfile = "Dockerfile"
 target = "app"

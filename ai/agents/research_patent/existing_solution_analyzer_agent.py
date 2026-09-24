@@ -9,7 +9,6 @@ from ai.memory.project_memory import ProjectMemoryManager
 from ai.schemas.context import ResearchPatentContext
 from ai.schemas.research_patent import ExistingSolutionAnalysis
 from ai.shared.constants import ModelTier
-from ai.shared.llm_provider import LLMFactory
 from ai.shared.logger import ai_logger
 from ai.shared.output_validator import validate_output
 
@@ -62,26 +61,13 @@ def get_existing_solution_analyzer_agent(
         "open-source ecosystem mapping, and technical solution gap analysis."
     )
 
-    llm = LLMFactory.get_llm(tier=model_tier, temperature=temp, mock_mode=mock_mode)
     agent_tools: list[Any] = []
-
-    if HAS_CREWAI and CrewAIAgent is not None:
-        return CrewAIAgent(
-            role=role,
-            goal=goal,
-            backstory=backstory,
-            verbose=True,
-            allow_delegation=False,
-            tools=agent_tools,
-            llm=llm,
-        )
 
     return {
         "agent_name": "existing_solution_analyzer_agent",
         "role": role,
         "goal": goal,
         "backstory": backstory,
-        "llm": llm,
         "tools": agent_tools,
         "mock_mode": mock_mode,
         "schema_class": ExistingSolutionAnalysis,
@@ -175,6 +161,7 @@ def run_existing_solution_analyzer_agent(
             user_prompt=user_prompt,
             model_name=get_ai_settings().openrouter_model_heavy,
             temperature=0.2,
+            schema_class=ExistingSolutionAnalysis,
         )
 
     validated_analysis = validate_agent_output(raw_output)

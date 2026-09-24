@@ -62,6 +62,7 @@ class ResearchPatentCrew:
             pid = project_id or "proj-default"
             from ai.schemas.idea_validation import IdeaValidationResult, StartupIdeaAnalysis
             from ai.schemas.problem_statement import ProblemStatementAnalysis
+            from ai.schemas.customer_identifier import CustomerIdentification
             from ai.schemas.value_proposition import ValuePropositionAnalysis
             from ai.schemas.startup_category import StartupCategoryClassification
             from ai.schemas.innovation_score import InnovationScoreAnalysis
@@ -69,11 +70,61 @@ class ResearchPatentCrew:
             mock_val = IdeaValidationResult(
                 project_id=pid,
                 idea_text=idea_text or "Default startup idea",
-                idea_analysis=StartupIdeaAnalysis(summary="Default summary", startup_category="SaaS"),
-                problem_analysis=ProblemStatementAnalysis(problem_statement="Default problem"),
-                value_proposition=ValuePropositionAnalysis(core_value_proposition="Default value"),
-                category_classification=StartupCategoryClassification(primary_category="SaaS"),
-                innovation_scoring=InnovationScoreAnalysis(overall_innovation_score=80.0),
+                idea_analysis=StartupIdeaAnalysis(
+                    summary="Default summary",
+                    startup_category="SaaS",
+                    operational_pillars=["Product", "Go-to-market"],
+                    technical_feasibility_score=70,
+                    rationale="Default rationale for standalone mock-mode execution.",
+                ),
+                problem_analysis=ProblemStatementAnalysis(
+                    problem_statement="Default problem statement for standalone mock-mode execution.",
+                    affected_users=["Early adopters"],
+                    root_causes=["Fragmented tooling"],
+                    solution_gaps=["No unified workflow"],
+                    problem_severity="medium",
+                    urgency_score=60,
+                    confidence_score=0.6,
+                ),
+                customer_identification=CustomerIdentification(
+                    primary_customers=["Small business owners"],
+                    customer_segments=["SMB"],
+                    customer_needs=["Faster workflows"],
+                    willingness_to_pay="medium",
+                    confidence_score=70,
+                ),
+                value_proposition=ValuePropositionAnalysis(
+                    core_value_proposition="Default value proposition for standalone mock-mode execution.",
+                    unique_selling_proposition="Default unique selling proposition.",
+                    functional_benefits=["Saves time"],
+                    customer_outcomes=["Faster delivery"],
+                    value_clarity_score=70,
+                    customer_value_score=70,
+                    confidence_score=70,
+                ),
+                category_classification=StartupCategoryClassification(
+                    primary_category="SaaS",
+                    industry="Technology",
+                    business_model="B2B",
+                    revenue_model="Subscription",
+                    startup_stage="Idea",
+                    target_market="Small businesses",
+                    confidence_score=70,
+                    reasoning="Default classification rationale for standalone mock-mode execution.",
+                ),
+                innovation_scoring=InnovationScoreAnalysis(
+                    overall_innovation_score=80,
+                    innovation_level="Moderate",
+                    novelty_score=70,
+                    technology_innovation_score=70,
+                    business_model_innovation_score=70,
+                    problem_originality_score=70,
+                    differentiation_score=70,
+                    strengths=["Clear value proposition"],
+                    reasoning="Default innovation rationale for standalone mock-mode execution.",
+                    confidence_score=70,
+                ),
+                overall_validation_score=70.0,
             )
             context = ResearchPatentContext(project_id=pid, idea_validation=mock_val)
 

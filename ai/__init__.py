@@ -19,15 +19,17 @@ from ai.shared.errors import (
     MissingAPIKeyError,
     StartupOSAIError,
 )
-from ai.shared.llm_provider import LLMConfig, LLMFactory
+from ai.llm.gateway import LLMGateway, get_gateway
+from ai.shared.llm_provider import call_live_llm
 from ai.shared.logger import get_ai_logger, setup_ai_logger
 from ai.shared.memory_config import VectorMemoryConfig
 
 __all__ = [
     "AISettings",
     "get_ai_settings",
-    "LLMFactory",
-    "LLMConfig",
+    "LLMGateway",
+    "get_gateway",
+    "call_live_llm",
     "VectorMemoryConfig",
     "setup_ai_logger",
     "get_ai_logger",

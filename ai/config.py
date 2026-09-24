@@ -18,6 +18,7 @@ from ai.shared.constants import (
     StartupCategory,
     StartupPhase,
 )
+from ai.llm.settings import LLMSettings
 from ai.shared.errors import ConfigurationError, MissingAPIKeyError
 from ai.shared.logger import setup_ai_logger
 from ai.shared.memory_config import VectorMemoryConfig
@@ -38,8 +39,15 @@ def find_env_file() -> Optional[str]:
     return None
 
 
-class AISettings(BaseSettings):
-    """Central configuration for Startup Igniter AI Engine."""
+class AISettings(LLMSettings):
+    """Central configuration for Startup Igniter AI Engine.
+
+    Inherits every LLM_*/GROQ_*/OPENROUTER_* field from ai.llm.settings.LLMSettings
+    instead of re-declaring them — this is the fix for the pre-migration drift where
+    this class and backend/core/config.py::Settings each kept their own copy and
+    disagreed (OPENROUTER_* was primary in code but missing from
+    backend/core/config.py and backend/.env.example entirely).
+    """
 
     model_config = SettingsConfigDict(
         env_file=find_env_file(),
@@ -51,24 +59,6 @@ class AISettings(BaseSettings):
     # --- Environment & App Settings ---
     environment: str = Field(default="development", alias="ENVIRONMENT")
     log_level: str = Field(default="INFO", alias="LOG_LEVEL")
-
-    # --- Groq LLM Provider ---
-    groq_api_key: Optional[str] = Field(default=None, alias="GROQ_API_KEY")
-    groq_model_heavy: str = Field(
-        default="llama-3.3-70b-versatile", alias="GROQ_MODEL_HEAVY"
-    )
-    groq_model_fast: str = Field(
-        default="llama-3.1-8b-instant", alias="GROQ_MODEL_FAST"
-    )
-
-    # --- OpenRouter LLM Provider ---
-    openrouter_api_key: Optional[str] = Field(default=None, alias="OPENROUTER_API_KEY")
-    openrouter_model_heavy: str = Field(
-        default="meta-llama/llama-3.3-70b-instruct", alias="OPENROUTER_MODEL_HEAVY"
-    )
-    openrouter_model_fast: str = Field(
-        default="meta-llama/llama-3.1-8b-instruct", alias="OPENROUTER_MODEL_FAST"
-    )
 
     # --- Search & Scraping APIs ---
     tavily_api_key: Optional[str] = Field(default=None, alias="TAVILY_API_KEY")
@@ -111,36 +101,54 @@ class AISettings(BaseSettings):
     memory_config: VectorMemoryConfig = Field(
         default_factory=VectorMemoryConfig
     )
+    ai_use_real_embeddings: bool = Field(
+        default=False,
+        alias="AI_USE_REAL_EMBEDDINGS",
+        description=(
+            "Gate for ProjectMemoryManager loading a real sentence-transformers model "
+            "instead of the deterministic offline mock embedder. See "
+            "VectorMemoryConfig.use_real_embeddings for the full rationale."
+        ),
+    )
 
     def validate_api_keys(self, raise_on_missing: bool = False) -> Dict[str, bool]:
-        """Audit status of configured API keys.
+        """Audit status of configured API keys/endpoints.
 
         Args:
-            raise_on_missing: If True, raises MissingAPIKeyError for required Groq key.
+            raise_on_missing: If True, raises MissingAPIKeyError when no LLM
+                backend at all is configured (neither self-hosted nor a
+                fallback provider) -- the gateway would otherwise silently
+                degrade to the mock provider.
 
         Returns:
             Dict mapping key name to presence status boolean.
         """
         status = {
-            "GROQ_API_KEY": bool(self.groq_api_key and self.groq_api_key != "your-groq-api-key"),
+            "LLM_BASE_URL": self.has_selfhosted,
+            "GROQ_API_KEY": self.has_groq,
+            "OPENROUTER_API_KEY": self.has_openrouter,
             "TAVILY_API_KEY": bool(self.tavily_api_key),
             "EXA_API_KEY": bool(self.exa_api_key),
             "ZYTE_API_KEY": bool(self.zyte_api_key),
             "SUPABASE_URL": bool(self.supabase_url),
         }
 
-        if raise_on_missing and not status["GROQ_API_KEY"]:
+        if raise_on_missing and not any(
+            (status["LLM_BASE_URL"], status["GROQ_API_KEY"], status["OPENROUTER_API_KEY"])
+        ):
             raise MissingAPIKeyError(
-                key_name="GROQ_API_KEY",
-                provider_name="Groq",
+                key_name="LLM_BASE_URL, GROQ_API_KEY, or OPENROUTER_API_KEY",
+                provider_name="LLM gateway",
             )
 
         return status
 
     def setup_environment(self) -> None:
-        """Apply AI environment variables to OS process level (e.g. for CrewAI/LiteLLM)."""
+        """Apply AI environment variables to OS process level."""
         if self.groq_api_key:
             os.environ["GROQ_API_KEY"] = self.groq_api_key
+        if self.openrouter_api_key:
+            os.environ["OPENROUTER_API_KEY"] = self.openrouter_api_key
         if self.tavily_api_key:
             os.environ["TAVILY_API_KEY"] = self.tavily_api_key
         if self.crewai_telemetry_opt_out:

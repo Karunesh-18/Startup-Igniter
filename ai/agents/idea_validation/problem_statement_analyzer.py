@@ -5,17 +5,8 @@ from typing import Any, Dict, List, Optional
 
 from ai.schemas.problem_statement import ProblemStatementAnalysis
 from ai.shared.constants import ModelTier
-from ai.shared.llm_provider import LLMFactory
 from ai.shared.logger import ai_logger
 from ai.shared.output_validator import validate_output
-
-# Optional CrewAI import check with type safety
-try:
-    from crewai import Agent as CrewAIAgent  # type: ignore
-    HAS_CREWAI = True
-except ImportError:
-    HAS_CREWAI = False
-    CrewAIAgent = None
 
 
 def load_agent_prompt(filename: str = "problem_statement.md") -> str:
@@ -57,7 +48,7 @@ def get_problem_statement_analyzer_agent(
     mock_mode: bool = False,
     tools: Optional[List[Any]] = None,
 ) -> Any:
-    """Returns a configured CrewAI Agent instance for Problem Statement Analysis.
+    """Returns an agent configuration dictionary for Problem Statement Analysis.
 
     Args:
         model_tier: Execution model tier (default: HEAVY for deep analysis).
@@ -67,17 +58,10 @@ def get_problem_statement_analyzer_agent(
         tools: Optional list of tools to attach to agent.
 
     Returns:
-        Configured CrewAI Agent instance (or dictionary agent container in fallback mode).
+        Agent configuration dictionary consumed by the crew orchestrator.
     """
     ai_logger.info(
         f"Initializing ProblemStatementAnalyzerAgent: tier={model_tier}, temp={temperature}, mock={mock_mode}"
-    )
-
-    llm = LLMFactory.get_llm(
-        model_tier=model_tier,
-        temperature=temperature,
-        api_key=api_key,
-        mock_mode=mock_mode,
     )
 
     prompt_text = load_agent_prompt("problem_statement.md")
@@ -90,24 +74,12 @@ def get_problem_statement_analyzer_agent(
     )
     backstory = prompt_text
 
-    if HAS_CREWAI and CrewAIAgent is not None and not mock_mode:
-        return CrewAIAgent(
-            role=role,
-            goal=goal,
-            backstory=backstory,
-            verbose=True,
-            allow_delegation=False,
-            llm=llm,
-            tools=agent_tools,
-        )
-
     # Reusable fallback agent dictionary for offline & unit testing
     return {
         "agent_name": "problem_statement_analyzer",
         "role": role,
         "goal": goal,
         "backstory": backstory,
-        "llm": llm,
         "tools": agent_tools,
         "mock_mode": mock_mode,
         "schema_class": ProblemStatementAnalysis,

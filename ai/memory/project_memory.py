@@ -67,8 +67,17 @@ class ProjectMemoryManager:
         self._mock_db: Dict[str, List[MemoryEntry]] = {}
 
     @classmethod
-    def get_embedder(cls, model_name: str = "sentence-transformers/all-MiniLM-L6-v2") -> Any:
-        """Lazy load sentence-transformer model instance."""
+    def get_embedder(cls, model_name: str = "sentence-transformers/all-MiniLM-L6-v2", use_real: bool = False) -> Any:
+        """Lazy load sentence-transformer model instance.
+
+        Gated behind `use_real` (AISettings.ai_use_real_embeddings / AI_USE_REAL_EMBEDDINGS)
+        even when sentence-transformers IS installed: loading it downloads ~80MB from
+        Hugging Face on first use if not already cached, which makes test suites and
+        offline dev network-dependent and non-deterministic by surprise. Off by default;
+        see VectorMemoryConfig.use_real_embeddings.
+        """
+        if not use_real:
+            return None
         if cls._embedder_instance is None and HAS_SENTENCE_TRANSFORMERS and SentenceTransformer is not None:
             try:
                 ai_logger.info(f"Loading local embedding model: {model_name}")
@@ -87,7 +96,7 @@ class ProjectMemoryManager:
         Returns:
             List of 384 float vector values.
         """
-        embedder = self.get_embedder(self.config.embedding_model_name)
+        embedder = self.get_embedder(self.config.embedding_model_name, use_real=self.settings.ai_use_real_embeddings)
         if embedder is not None:
             try:
                 vec = embedder.encode(text, convert_to_numpy=True).tolist()

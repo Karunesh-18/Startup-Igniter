@@ -11,17 +11,8 @@ from ai.memory.project_memory import ProjectMemoryManager
 from ai.schemas.context import MarketResearchContext
 from ai.schemas.market_research import TrendAnalysis
 from ai.shared.constants import ModelTier
-from ai.shared.llm_provider import LLMFactory
 from ai.shared.logger import ai_logger
 from ai.shared.output_validator import validate_output
-
-# Optional CrewAI import check with type safety
-try:
-    from crewai import Agent as CrewAIAgent  # type: ignore
-    HAS_CREWAI = True
-except ImportError:
-    HAS_CREWAI = False
-    CrewAIAgent = None
 
 
 def load_agent_prompt(filename: str = "trend_analysis.md") -> str:
@@ -63,8 +54,9 @@ def _call_live_groq_llm(
     temperature: float = 0.2,
     timeout: float = 45.0,
     max_retries: int = 8,
+    schema_class: Optional[type] = None,
 ) -> str:
-    """Execute live LLM completion call using OpenRouter (primary) or Groq."""
+    """Execute a live LLM completion via the gateway (selfhosted -> Groq/OpenRouter -> mock)."""
     from ai.shared.llm_provider import call_live_llm
     return call_live_llm(
         system_prompt=system_prompt,
@@ -73,6 +65,7 @@ def _call_live_groq_llm(
         temperature=temperature,
         timeout=timeout,
         max_retries=max_retries,
+        schema_class=schema_class,
     )
 
 
@@ -83,7 +76,7 @@ def get_trend_analysis_agent(
     mock_mode: bool = False,
     tools: Optional[List[Any]] = None,
 ) -> Any:
-    """Returns a configured CrewAI Agent instance for Trend Analysis.
+    """Returns an agent configuration dictionary for Trend Analysis.
 
     Args:
         model_tier: Model execution tier (default: HEAVY).
@@ -93,17 +86,10 @@ def get_trend_analysis_agent(
         tools: Optional list of tools to attach.
 
     Returns:
-        Configured CrewAI Agent instance (or dictionary agent container in fallback mode).
+        Agent configuration dictionary consumed by the crew orchestrator.
     """
     ai_logger.info(
         f"Initializing TrendAnalysisAgent: tier={model_tier}, temp={temperature}, mock={mock_mode}"
-    )
-
-    llm = LLMFactory.get_llm(
-        model_tier=model_tier,
-        temperature=temperature,
-        api_key=api_key,
-        mock_mode=mock_mode,
     )
 
     prompt_text = load_agent_prompt("trend_analysis.md")
@@ -116,24 +102,12 @@ def get_trend_analysis_agent(
     )
     backstory = prompt_text
 
-    if HAS_CREWAI and CrewAIAgent is not None and not mock_mode:
-        return CrewAIAgent(
-            role=role,
-            goal=goal,
-            backstory=backstory,
-            verbose=True,
-            allow_delegation=False,
-            llm=llm,
-            tools=agent_tools,
-        )
-
     # Reusable fallback agent dictionary for offline & unit testing
     return {
         "agent_name": "trend_analysis_agent",
         "role": role,
         "goal": goal,
         "backstory": backstory,
-        "llm": llm,
         "tools": agent_tools,
         "mock_mode": mock_mode,
         "schema_class": TrendAnalysis,
@@ -256,6 +230,7 @@ def run_trend_analysis_agent(
             user_prompt=user_prompt,
             model_name=settings.groq_model_heavy,
             temperature=0.2,
+            schema_class=TrendAnalysis,
         )
 
     validated_analysis = validate_agent_output(raw_output)

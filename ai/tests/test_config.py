@@ -22,7 +22,8 @@ from ai.shared.errors import (
     MissingAPIKeyError,
     StartupOSAIError,
 )
-from ai.shared.llm_provider import LLMConfig, LLMFactory
+from ai.llm.gateway import LLMGateway
+from ai.llm.settings import LLMSettings
 from ai.shared.logger import mask_sensitive_data
 from ai.shared.memory_config import VectorMemoryConfig
 
@@ -43,47 +44,37 @@ class TestAIConfig(unittest.TestCase):
         self.assertAlmostEqual(total_weight, 1.0, places=4)
         self.assertNotIn(ScoreDimension.OVERALL, DEFAULT_SCORE_WEIGHTS)
 
-    def test_llm_factory_model_name_resolution(self):
-        """Test resolution of Groq model strings for each model tier."""
-        heavy_model = LLMFactory.get_model_name(ModelTier.HEAVY)
-        self.assertEqual(heavy_model, "groq/llama-3.3-70b-versatile")
-
-        fast_model = LLMFactory.get_model_name(ModelTier.FAST)
-        self.assertEqual(fast_model, "groq/llama-3.1-8b-instant")
-
-        custom_model = LLMFactory.get_model_name(ModelTier.HEAVY, custom_model="mixtral-8x7b-32768")
-        self.assertEqual(custom_model, "groq/mixtral-8x7b-32768")
-
-    def test_llm_factory_mock_mode(self):
-        """Test instantiating LLM in mock mode without requiring live API keys."""
-        llm_config = LLMFactory.get_llm(
-            model_tier=ModelTier.FAST,
-            temperature=0.3,
-            mock_mode=True,
+    def test_gateway_model_resolution_per_provider(self):
+        """Each backend gets its OWN correctly-named model for a given tier —
+        the fix for the pre-migration bug where research_patent agents hardcoded
+        settings.openrouter_model_heavy while idea_validation/market_research
+        hardcoded settings.groq_model_heavy, regardless of which was configured."""
+        settings = LLMSettings(
+            LLM_BASE_URL="http://localhost:9999/v1",
+            GROQ_API_KEY="gsk_test",
+            OPENROUTER_API_KEY="or_test",
         )
-        self.assertIsInstance(llm_config, LLMConfig)
-        self.assertEqual(llm_config.model_name, "groq/llama-3.1-8b-instant")
-        self.assertEqual(llm_config.temperature, 0.3)
+        gw = LLMGateway(settings=settings)
+        self.assertEqual(gw._model_for(gw._selfhosted, ModelTier.HEAVY), settings.llm_model_heavy)
+        self.assertEqual(gw._model_for(gw._selfhosted, ModelTier.FAST), settings.llm_model_fast)
+        self.assertEqual(gw._model_for(gw._groq, ModelTier.HEAVY), settings.groq_model_heavy)
+        self.assertEqual(gw._model_for(gw._openrouter, ModelTier.FAST), settings.openrouter_model_fast)
 
-    def test_llm_factory_missing_api_key(self):
-        """Test raising MissingAPIKeyError when GROQ_API_KEY is missing."""
-        original_key = os.environ.pop("GROQ_API_KEY", None)
-        settings = get_ai_settings()
-        original_settings_key = settings.groq_api_key
-        settings.groq_api_key = None
-        try:
-            with self.assertRaises(MissingAPIKeyError) as ctx:
-                LLMFactory.get_llm(
-                    model_tier=ModelTier.HEAVY,
-                    api_key=None,
-                    mock_mode=False,
-                )
-            self.assertIn("GROQ_API_KEY", str(ctx.exception))
-        finally:
-            settings.groq_api_key = original_settings_key
-            if original_key:
-                os.environ["GROQ_API_KEY"] = original_key
-                os.environ["GROQ_API_KEY"] = original_key
+    def test_gateway_mock_fallback_when_nothing_configured(self):
+        """With no backend configured, the gateway falls through to the mock
+        provider rather than crashing local dev/CI with MissingAPIKeyError."""
+        settings = LLMSettings(LLM_BASE_URL=None, GROQ_API_KEY=None, OPENROUTER_API_KEY=None)
+        gw = LLMGateway(settings=settings)
+        result = gw.invoke(system_prompt="sys", user_prompt="user", tier=ModelTier.FAST)
+        self.assertTrue(result)  # mock provider always returns valid (non-empty) JSON text
+
+    def test_gateway_raises_when_mock_disabled_and_nothing_configured(self):
+        """With mock explicitly disabled and nothing else configured, the
+        gateway still raises MissingAPIKeyError — same contract as before."""
+        settings = LLMSettings(LLM_BASE_URL=None, GROQ_API_KEY=None, OPENROUTER_API_KEY=None)
+        gw = LLMGateway(settings=settings)
+        with self.assertRaises(MissingAPIKeyError):
+            gw.invoke(system_prompt="sys", user_prompt="user", allow_mock_fallback=False)
 
     def test_sensitive_data_logging_mask(self):
         """Test masking of sensitive API keys in log text."""
