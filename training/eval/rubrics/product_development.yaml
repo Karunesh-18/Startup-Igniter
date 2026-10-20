@@ -1,0 +1,9 @@
+crew: 6
+crew_name: Product Development
+criteria:
+  - name: mvp_scope_discipline
+    description: Are mvp_features genuinely minimal (an MVP, not a full product), with priority/complexity ratings that reflect real trade-offs rather than everything marked "Must Have"?
+  - name: tech_stack_fit
+    description: Does the recommended stack fit the idea's actual technical requirements and likely team size/budget, not a reflexive "Next.js + FastAPI + Postgres" regardless of fit?
+  - name: architecture_specificity
+    description: Does architecture_overview describe THIS product's actual components and data flow, not a generic three-tier-architecture description?

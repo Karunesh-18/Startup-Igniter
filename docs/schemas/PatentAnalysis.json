@@ -1,0 +1,181 @@
+{
+  "description": "Schema representing patent research and prior-art analysis.",
+  "properties": {
+    "project_id": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "Project UUID string.",
+      "title": "Project Id"
+    },
+    "patent_number": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "Patent or application number.",
+      "title": "Patent Number"
+    },
+    "title": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": "Prior-Art Patent Analysis",
+      "description": "Title of patent or prior art.",
+      "title": "Title"
+    },
+    "abstract": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "Abstract summary.",
+      "title": "Abstract"
+    },
+    "similarity_score": {
+      "default": 0.0,
+      "description": "Prior-art similarity score.",
+      "title": "Similarity Score",
+      "type": "number"
+    },
+    "inventors": {
+      "description": "List of inventors.",
+      "items": {
+        "type": "string"
+      },
+      "title": "Inventors",
+      "type": "array"
+    },
+    "key_claims": {
+      "description": "Key patent claims.",
+      "items": {
+        "type": "string"
+      },
+      "title": "Key Claims",
+      "type": "array"
+    },
+    "existing_patent_summary": {
+      "default": "",
+      "description": "Summary of existing patents and prior art.",
+      "title": "Existing Patent Summary",
+      "type": "string"
+    },
+    "patent_landscape": {
+      "default": "",
+      "description": "Overview of patent density and filing volume.",
+      "title": "Patent Landscape",
+      "type": "string"
+    },
+    "major_patent_holders": {
+      "description": "Top enterprise and academic assignees.",
+      "items": {
+        "type": "string"
+      },
+      "title": "Major Patent Holders",
+      "type": "array"
+    },
+    "related_technology_domains": {
+      "description": "IPC/CPC Technical classification domains.",
+      "items": {
+        "type": "string"
+      },
+      "title": "Related Technology Domains",
+      "type": "array"
+    },
+    "patent_activity_level": {
+      "default": "High",
+      "description": "Activity level (Low, Moderate, High).",
+      "title": "Patent Activity Level",
+      "type": "string"
+    },
+    "potential_patent_conflicts": {
+      "description": "Identified IP conflict observations.",
+      "items": {
+        "type": "string"
+      },
+      "title": "Potential Patent Conflicts",
+      "type": "array"
+    },
+    "white_space_opportunities": {
+      "description": "Unclaimed technological white spaces.",
+      "items": {
+        "type": "string"
+      },
+      "title": "White Space Opportunities",
+      "type": "array"
+    },
+    "patentability_assessment": {
+      "default": "",
+      "description": "Evaluation of concept patentability.",
+      "title": "Patentability Assessment",
+      "type": "string"
+    },
+    "freedom_to_operate_observations": {
+      "description": "Freedom to operate observations.",
+      "items": {
+        "type": "string"
+      },
+      "title": "Freedom To Operate Observations",
+      "type": "array"
+    },
+    "innovation_opportunities": {
+      "description": "Actionable differentiation vectors.",
+      "items": {
+        "type": "string"
+      },
+      "title": "Innovation Opportunities",
+      "type": "array"
+    },
+    "patent_risks": {
+      "description": "Identified IP risks or patent thicket threats.",
+      "items": {
+        "type": "string"
+      },
+      "title": "Patent Risks",
+      "type": "array"
+    },
+    "novelty_assessment": {
+      "default": "",
+      "description": "Qualitative assessment of technical novelty.",
+      "title": "Novelty Assessment",
+      "type": "string"
+    },
+    "confidence_score": {
+      "default": 0.85,
+      "description": "Confidence score (0.0-1.0).",
+      "title": "Confidence Score",
+      "type": "number"
+    },
+    "citations": {
+      "description": "Source URLs backing the analysis above, when external patent-office scrapes were supplied.",
+      "items": {
+        "type": "string"
+      },
+      "title": "Citations",
+      "type": "array"
+    }
+  },
+  "title": "PatentAnalysis",
+  "type": "object"
+}

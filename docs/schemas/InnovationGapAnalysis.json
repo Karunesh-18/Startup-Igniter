@@ -1,0 +1,81 @@
+{
+  "description": "Schema representing technical, product, customer, and market gap identification.",
+  "properties": {
+    "technical_gaps": {
+      "description": "Engineering or algorithmic capability gaps.",
+      "items": {
+        "type": "string"
+      },
+      "title": "Technical Gaps",
+      "type": "array"
+    },
+    "product_gaps": {
+      "description": "Product workflow or UI/UX gaps.",
+      "items": {
+        "type": "string"
+      },
+      "title": "Product Gaps",
+      "type": "array"
+    },
+    "customer_gaps": {
+      "description": "Underserved customer segment pain points.",
+      "items": {
+        "type": "string"
+      },
+      "title": "Customer Gaps",
+      "type": "array"
+    },
+    "market_gaps": {
+      "description": "Unexploited business model market gaps.",
+      "items": {
+        "type": "string"
+      },
+      "title": "Market Gaps",
+      "type": "array"
+    },
+    "innovation_opportunities": {
+      "description": "High-leverage technical innovation opportunities.",
+      "items": {
+        "type": "string"
+      },
+      "title": "Innovation Opportunities",
+      "type": "array"
+    },
+    "differentiation_opportunities": {
+      "description": "Defensible differentiation moats.",
+      "items": {
+        "type": "string"
+      },
+      "title": "Differentiation Opportunities",
+      "type": "array"
+    },
+    "overall_gap_score": {
+      "default": 85.0,
+      "description": "Innovation gap score (0-100).",
+      "title": "Overall Gap Score",
+      "type": "number"
+    },
+    "confidence_score": {
+      "default": 0.89,
+      "description": "Confidence score (0.0-1.0).",
+      "title": "Confidence Score",
+      "type": "number"
+    },
+    "reasoning_summary": {
+      "default": "",
+      "description": "Rationale synthesizing all gaps.",
+      "title": "Reasoning Summary",
+      "type": "string"
+    },
+    "recommendations": {
+      "description": "Actionable product and moat recommendations.",
+      "items": {
+        "type": "string"
+      },
+      "title": "Recommendations",
+      "type": "array"
+    }
+  },
+  "title": "InnovationGapAnalysis",
+  "type": "object"
+}

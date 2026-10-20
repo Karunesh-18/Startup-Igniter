@@ -1,0 +1,46 @@
+{
+  "description": "Individual legal compliance checklist item.",
+  "properties": {
+    "category": {
+      "description": "Registration, Tax, IP, or Sectoral.",
+      "title": "Category",
+      "type": "string"
+    },
+    "title": {
+      "description": "Checklist item title.",
+      "title": "Title",
+      "type": "string"
+    },
+    "description": {
+      "description": "Detailed compliance requirement.",
+      "title": "Description",
+      "type": "string"
+    },
+    "is_mandatory": {
+      "default": true,
+      "description": "Whether required by law.",
+      "title": "Is Mandatory",
+      "type": "boolean"
+    },
+    "regulatory_body": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "e.g., MCA, GSTN, DPIIT.",
+      "title": "Regulatory Body"
+    }
+  },
+  "required": [
+    "category",
+    "title",
+    "description"
+  ],
+  "title": "ComplianceItem",
+  "type": "object"
+}

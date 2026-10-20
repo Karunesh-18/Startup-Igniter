@@ -1,0 +1,62 @@
+{
+  "description": "Schema representing financial projections and pricing strategy.",
+  "properties": {
+    "pricing_model": {
+      "description": "Subscription, pay-per-use, or freemium model.",
+      "title": "Pricing Model",
+      "type": "string"
+    },
+    "price_points": {
+      "additionalProperties": {
+        "type": "string"
+      },
+      "description": "Tiered pricing breakdown.",
+      "title": "Price Points",
+      "type": "object"
+    },
+    "estimated_cac": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "Estimated Customer Acquisition Cost.",
+      "title": "Estimated Cac"
+    },
+    "estimated_ltv": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "Estimated Customer Lifetime Value.",
+      "title": "Estimated Ltv"
+    },
+    "year_1_revenue_projection": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "Year 1 revenue target.",
+      "title": "Year 1 Revenue Projection"
+    }
+  },
+  "required": [
+    "pricing_model"
+  ],
+  "title": "FinancialModel",
+  "type": "object"
+}

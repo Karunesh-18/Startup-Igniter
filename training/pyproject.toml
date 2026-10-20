@@ -1,0 +1,45 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "startup-igniter-training"
+version = "0.1.0"
+description = "Synthetic data generation, fine-tuning configs, and eval harness for the self-hosted Qwen3 models (see docs/architecture/0003-qwen3-base-models.md)."
+requires-python = ">=3.11"
+dependencies = [
+    # Shared with ai/ for corpus generation (reuses ai.llm.gateway, ai.schemas, ai.prompts)
+    "pydantic>=2.7.0",
+    "pydantic-settings>=2.3.0",
+    "httpx>=0.27.0",
+    "structlog>=24.1.0",
+    "tenacity>=8.3.0",
+
+    # Corpus tooling
+    "datasketch>=1.6.4",   # MinHash near-duplicate detection (training/data/filter.py)
+    "pyyaml>=6.0.1",       # config + rubric files
+
+    # Training (installed only where actual training runs -- the DGX, not
+    # this dev machine; kept as a declared dependency set so the versions
+    # are pinned somewhere before the first training job, not discovered then)
+    "torch>=2.4.0",              # CUDA 12.8+ build required for B200 (sm_100) -- see docs/ops/dgx-runbook.md
+    "transformers>=4.44.0",
+    "peft>=0.12.0",               # LoRA/QLoRA
+    "trl>=0.9.6",                 # SFT trainer
+    "accelerate>=0.33.0",
+    "bitsandbytes>=0.43.3",       # QLoRA quantization
+    "deepspeed>=0.15.0",          # full-SFT multi-GPU (alternative to FSDP, see configs/)
+    "datasets>=2.20.0",
+]
+
+[project.optional-dependencies]
+serve = [
+    "vllm>=0.6.0",   # pinned precisely in docs/ops/dgx-runbook.md once B200 driver/CUDA versions are confirmed
+]
+eval = [
+    "pytest>=8.2.0",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"

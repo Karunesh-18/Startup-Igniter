@@ -1,0 +1,136 @@
+{
+  "$defs": {
+    "CompetitorInfo": {
+      "description": "Structured information for an identified competitor entity.",
+      "properties": {
+        "name": {
+          "description": "Formal name of the competitor organization or product.",
+          "minLength": 1,
+          "title": "Name",
+          "type": "string"
+        },
+        "category": {
+          "description": "Competitor category classification (e.g., Direct, Indirect, Emerging, Incumbent).",
+          "title": "Category",
+          "type": "string"
+        },
+        "description": {
+          "description": "Short summary description of the competitor's market position and value prop.",
+          "title": "Description",
+          "type": "string"
+        },
+        "target_market": {
+          "description": "Target customer segment or geographic market served by this competitor.",
+          "title": "Target Market",
+          "type": "string"
+        },
+        "primary_offering": {
+          "description": "Core product, platform, or service offered by this competitor.",
+          "title": "Primary Offering",
+          "type": "string"
+        }
+      },
+      "required": [
+        "name",
+        "category",
+        "description",
+        "target_market",
+        "primary_offering"
+      ],
+      "title": "CompetitorInfo",
+      "type": "object"
+    }
+  },
+  "description": "Structured Pydantic schema for CompetitorDiscoveryAgent output.",
+  "properties": {
+    "direct_competitors": {
+      "description": "List of direct competitors offering similar core solutions.",
+      "items": {
+        "$ref": "#/$defs/CompetitorInfo"
+      },
+      "minItems": 1,
+      "title": "Direct Competitors",
+      "type": "array"
+    },
+    "indirect_competitors": {
+      "description": "List of indirect competitors solving similar problems through alternative methods.",
+      "items": {
+        "$ref": "#/$defs/CompetitorInfo"
+      },
+      "title": "Indirect Competitors",
+      "type": "array"
+    },
+    "emerging_competitors": {
+      "description": "List of early-stage startups or emerging market entrants.",
+      "items": {
+        "$ref": "#/$defs/CompetitorInfo"
+      },
+      "title": "Emerging Competitors",
+      "type": "array"
+    },
+    "market_leaders": {
+      "description": "Established market leaders and dominant industry incumbents.",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1,
+      "title": "Market Leaders",
+      "type": "array"
+    },
+    "startup_challengers": {
+      "description": "High-growth startup challengers disrupting the sector.",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1,
+      "title": "Startup Challengers",
+      "type": "array"
+    },
+    "alternative_solutions": {
+      "description": "Non-software, manual, or legacy alternative solutions used by customers.",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1,
+      "title": "Alternative Solutions",
+      "type": "array"
+    },
+    "competition_intensity": {
+      "description": "Overall market competition intensity (e.g. Low, Moderate, High, Fierce).",
+      "title": "Competition Intensity",
+      "type": "string"
+    },
+    "major_competitor_count": {
+      "description": "Estimated count of major active competitors in the primary segment.",
+      "minimum": 0,
+      "title": "Major Competitor Count",
+      "type": "integer"
+    },
+    "confidence_score": {
+      "description": "Confidence score rating strictly between 0.0 and 1.0.",
+      "maximum": 1.0,
+      "minimum": 0.0,
+      "title": "Confidence Score",
+      "type": "number"
+    },
+    "citations": {
+      "description": "Source URLs backing the claims above, when external research (Tavily/Exa/Zyte) was supplied in the prompt. Optional and defaults empty so this schema stays backward compatible with LLM-only reasoning when no research bundle is available.",
+      "items": {
+        "type": "string"
+      },
+      "title": "Citations",
+      "type": "array"
+    }
+  },
+  "required": [
+    "direct_competitors",
+    "market_leaders",
+    "startup_challengers",
+    "alternative_solutions",
+    "competition_intensity",
+    "major_competitor_count",
+    "confidence_score"
+  ],
+  "title": "CompetitorDiscovery",
+  "type": "object"
+}

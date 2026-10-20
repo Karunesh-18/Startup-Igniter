@@ -1,0 +1,9 @@
+crew: 10
+crew_name: Growth & Scaling
+criteria:
+  - name: channel_specificity
+    description: Are primary_acquisition_channels specific and justified for this customer segment, not a generic list of every acquisition channel that exists?
+  - name: mechanic_plausibility
+    description: Is viral_loop_mechanic a mechanic that could plausibly work for this product (a B2B infrastructure tool proposing a consumer-style referral loop would fail this)?
+  - name: kpi_relevance
+    description: Are target_kpis the metrics that actually matter for this business model (e.g. a marketplace should track liquidity/match-rate, not just raw signups)?

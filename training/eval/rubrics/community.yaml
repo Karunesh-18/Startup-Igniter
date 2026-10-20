@@ -1,0 +1,9 @@
+crew: 11
+crew_name: Community & Ecosystem
+criteria:
+  - name: data_honesty
+    description: Does peer_review_scorecard avoid implying real peer feedback exists when none was collected -- see docs/phases/11-community-and-ecosystem.md's flag that this field needs a real data source before it means anything.
+  - name: mentor_relevance
+    description: Are recommended_mentors profiles (not necessarily named individuals) relevant to the idea's actual sector and stage?
+  - name: recency_awareness
+    description: Does the output avoid presenting accelerator/program details as current when they weren't grounded in a live search -- these change yearly and a fine-tuned model's training-time knowledge will be stale.

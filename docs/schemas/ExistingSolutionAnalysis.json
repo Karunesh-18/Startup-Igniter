@@ -1,0 +1,81 @@
+{
+  "description": "Schema representing commercial product, startup, and open-source landscape evaluation.",
+  "properties": {
+    "existing_startups": {
+      "description": "Relevant venture-backed startups.",
+      "items": {
+        "type": "string"
+      },
+      "title": "Existing Startups",
+      "type": "array"
+    },
+    "commercial_products": {
+      "description": "Established commercial products.",
+      "items": {
+        "type": "string"
+      },
+      "title": "Commercial Products",
+      "type": "array"
+    },
+    "enterprise_software": {
+      "description": "Legacy enterprise suites.",
+      "items": {
+        "type": "string"
+      },
+      "title": "Enterprise Software",
+      "type": "array"
+    },
+    "open_source_projects": {
+      "description": "Key open-source projects / repos.",
+      "items": {
+        "type": "string"
+      },
+      "title": "Open Source Projects",
+      "type": "array"
+    },
+    "existing_technologies": {
+      "description": "Core technologies / stacks.",
+      "items": {
+        "type": "string"
+      },
+      "title": "Existing Technologies",
+      "type": "array"
+    },
+    "market_maturity": {
+      "default": "Growing",
+      "description": "Market maturity stage.",
+      "title": "Market Maturity",
+      "type": "string"
+    },
+    "solution_gaps": {
+      "description": "Deficiencies and functional gaps in current solutions.",
+      "items": {
+        "type": "string"
+      },
+      "title": "Solution Gaps",
+      "type": "array"
+    },
+    "confidence_score": {
+      "default": 0.9,
+      "description": "Confidence score (0.0-1.0).",
+      "title": "Confidence Score",
+      "type": "number"
+    },
+    "reasoning_summary": {
+      "default": "",
+      "description": "Summary of product landscape analysis.",
+      "title": "Reasoning Summary",
+      "type": "string"
+    },
+    "recommendations": {
+      "description": "Strategic product positioning recommendations.",
+      "items": {
+        "type": "string"
+      },
+      "title": "Recommendations",
+      "type": "array"
+    }
+  },
+  "title": "ExistingSolutionAnalysis",
+  "type": "object"
+}

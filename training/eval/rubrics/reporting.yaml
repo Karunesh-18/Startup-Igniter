@@ -1,0 +1,9 @@
+crew: 12
+crew_name: Executive Reporting
+criteria:
+  - name: score_provenance
+    description: Is overall_readiness_score/phase_scores presented as derived from the actual upstream phase outputs (deterministic weighted sum, per the guardrail in docs/phases/12-executive-reporting.md), never as a number the model appears to have free-generated?
+  - name: coverage_honesty
+    description: Does the report explicitly flag which phases were unavailable/ungrounded rather than presenting full-pipeline coverage it can't back up (relevant while crews 4-11 remain unbuilt)?
+  - name: recommendation_actionability
+    description: Are key_recommendations specific and prioritized, not generic startup advice restated from the executive_summary?

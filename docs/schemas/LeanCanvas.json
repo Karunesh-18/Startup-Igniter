@@ -1,0 +1,71 @@
+{
+  "description": "Schema representing Lean Canvas business model data.",
+  "properties": {
+    "problem": {
+      "description": "Top 3 problems being addressed.",
+      "title": "Problem",
+      "type": "string"
+    },
+    "solution": {
+      "description": "Top 3 features offering solutions.",
+      "title": "Solution",
+      "type": "string"
+    },
+    "unique_value_proposition": {
+      "description": "Clear, compelling message explaining uniqueness.",
+      "title": "Unique Value Proposition",
+      "type": "string"
+    },
+    "unfair_advantage": {
+      "description": "Thing that cannot be easily copied or bought.",
+      "title": "Unfair Advantage",
+      "type": "string"
+    },
+    "customer_segments": {
+      "description": "Target customers and early adopters.",
+      "title": "Customer Segments",
+      "type": "string"
+    },
+    "key_metrics": {
+      "description": "Key activities measured.",
+      "items": {
+        "type": "string"
+      },
+      "title": "Key Metrics",
+      "type": "array"
+    },
+    "channels": {
+      "description": "Pathways to reach customers.",
+      "items": {
+        "type": "string"
+      },
+      "title": "Channels",
+      "type": "array"
+    },
+    "cost_structure": {
+      "description": "Fixed and variable costs.",
+      "items": {
+        "type": "string"
+      },
+      "title": "Cost Structure",
+      "type": "array"
+    },
+    "revenue_streams": {
+      "description": "Revenue models and pricing.",
+      "items": {
+        "type": "string"
+      },
+      "title": "Revenue Streams",
+      "type": "array"
+    }
+  },
+  "required": [
+    "problem",
+    "solution",
+    "unique_value_proposition",
+    "unfair_advantage",
+    "customer_segments"
+  ],
+  "title": "LeanCanvas",
+  "type": "object"
+}

@@ -1,0 +1,83 @@
+{
+  "description": "Structured Pydantic schema for ValuePropositionAnalyzer agent output.",
+  "properties": {
+    "core_value_proposition": {
+      "description": "Clear, 1-2 sentence core value proposition statement.",
+      "minLength": 5,
+      "title": "Core Value Proposition",
+      "type": "string"
+    },
+    "unique_selling_proposition": {
+      "description": "Unique selling proposition (USP) highlighting the primary differentiator.",
+      "minLength": 5,
+      "title": "Unique Selling Proposition",
+      "type": "string"
+    },
+    "functional_benefits": {
+      "description": "Tangible functional benefits (e.g., faster diagnostic speed, automated reporting).",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1,
+      "title": "Functional Benefits",
+      "type": "array"
+    },
+    "emotional_benefits": {
+      "description": "Psychological or emotional benefits (e.g., peace of mind, confidence in decisions).",
+      "items": {
+        "type": "string"
+      },
+      "title": "Emotional Benefits",
+      "type": "array"
+    },
+    "customer_outcomes": {
+      "description": "Quantifiable customer outcomes and results (e.g. 50% faster diagnosis time).",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1,
+      "title": "Customer Outcomes",
+      "type": "array"
+    },
+    "differentiators": {
+      "description": "Key competitive differentiators and value moats.",
+      "items": {
+        "type": "string"
+      },
+      "title": "Differentiators",
+      "type": "array"
+    },
+    "value_clarity_score": {
+      "description": "Clarity rating of the value proposition from 0 (confusing) to 100 (crystal clear).",
+      "maximum": 100,
+      "minimum": 0,
+      "title": "Value Clarity Score",
+      "type": "integer"
+    },
+    "customer_value_score": {
+      "description": "Estimated customer value rating score from 0 to 100.",
+      "maximum": 100,
+      "minimum": 0,
+      "title": "Customer Value Score",
+      "type": "integer"
+    },
+    "confidence_score": {
+      "description": "Analysis confidence rating score from 0 to 100.",
+      "maximum": 100,
+      "minimum": 0,
+      "title": "Confidence Score",
+      "type": "integer"
+    }
+  },
+  "required": [
+    "core_value_proposition",
+    "unique_selling_proposition",
+    "functional_benefits",
+    "customer_outcomes",
+    "value_clarity_score",
+    "customer_value_score",
+    "confidence_score"
+  ],
+  "title": "ValuePropositionAnalysis",
+  "type": "object"
+}

@@ -1,0 +1,125 @@
+{
+  "description": "Structured Pydantic schema for CustomerIdentifier agent output.",
+  "properties": {
+    "primary_customers": {
+      "description": "Primary target customers who buy or pay for the solution.",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1,
+      "title": "Primary Customers",
+      "type": "array"
+    },
+    "secondary_customers": {
+      "description": "Secondary target customers or secondary buyer personas.",
+      "items": {
+        "type": "string"
+      },
+      "title": "Secondary Customers",
+      "type": "array"
+    },
+    "end_users": {
+      "description": "Actual end users who use the product day-to-day.",
+      "items": {
+        "type": "string"
+      },
+      "title": "End Users",
+      "type": "array"
+    },
+    "decision_makers": {
+      "description": "Key decision makers involved in purchasing or procurement.",
+      "items": {
+        "type": "string"
+      },
+      "title": "Decision Makers",
+      "type": "array"
+    },
+    "customer_segments": {
+      "description": "Core customer segment categories (e.g. B2B Hospitals, Private Clinics).",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1,
+      "title": "Customer Segments",
+      "type": "array"
+    },
+    "demographics": {
+      "description": "Demographic or firmographic characteristics of target users.",
+      "items": {
+        "type": "string"
+      },
+      "title": "Demographics",
+      "type": "array"
+    },
+    "geographic_markets": {
+      "description": "Primary geographic markets or regional focus areas.",
+      "items": {
+        "type": "string"
+      },
+      "title": "Geographic Markets",
+      "type": "array"
+    },
+    "industries": {
+      "description": "Target industry verticals or sectors.",
+      "items": {
+        "type": "string"
+      },
+      "title": "Industries",
+      "type": "array"
+    },
+    "pain_points": {
+      "description": "Core pain points experienced by target customers.",
+      "items": {
+        "type": "string"
+      },
+      "title": "Pain Points",
+      "type": "array"
+    },
+    "customer_needs": {
+      "description": "Essential customer needs and requirements.",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1,
+      "title": "Customer Needs",
+      "type": "array"
+    },
+    "motivations": {
+      "description": "Key purchasing motivations and value drivers.",
+      "items": {
+        "type": "string"
+      },
+      "title": "Motivations",
+      "type": "array"
+    },
+    "adoption_barriers": {
+      "description": "Potential barriers to customer adoption or purchase.",
+      "items": {
+        "type": "string"
+      },
+      "title": "Adoption Barriers",
+      "type": "array"
+    },
+    "willingness_to_pay": {
+      "description": "Estimated willingness to pay rating or level ('low', 'medium', 'high', or detailed description).",
+      "title": "Willingness To Pay",
+      "type": "string"
+    },
+    "confidence_score": {
+      "description": "Confidence score rating from 0 to 100.",
+      "maximum": 100,
+      "minimum": 0,
+      "title": "Confidence Score",
+      "type": "integer"
+    }
+  },
+  "required": [
+    "primary_customers",
+    "customer_segments",
+    "customer_needs",
+    "willingness_to_pay",
+    "confidence_score"
+  ],
+  "title": "CustomerIdentification",
+  "type": "object"
+}

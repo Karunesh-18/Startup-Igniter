@@ -1,0 +1,41 @@
+{
+  "description": "Recommended tech stack components.",
+  "properties": {
+    "frontend": {
+      "description": "Recommended frontend framework (e.g. Next.js / React).",
+      "title": "Frontend",
+      "type": "string"
+    },
+    "backend": {
+      "description": "Recommended backend framework (e.g. FastAPI / Node.js).",
+      "title": "Backend",
+      "type": "string"
+    },
+    "database": {
+      "description": "Recommended database (e.g. PostgreSQL / Supabase).",
+      "title": "Database",
+      "type": "string"
+    },
+    "hosting": {
+      "description": "Recommended hosting cloud (e.g. Vercel / GCP).",
+      "title": "Hosting",
+      "type": "string"
+    },
+    "ai_ml_tools": {
+      "description": "AI models or frameworks.",
+      "items": {
+        "type": "string"
+      },
+      "title": "Ai Ml Tools",
+      "type": "array"
+    }
+  },
+  "required": [
+    "frontend",
+    "backend",
+    "database",
+    "hosting"
+  ],
+  "title": "TechStackRecommendation",
+  "type": "object"
+}

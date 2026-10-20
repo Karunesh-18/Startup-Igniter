@@ -1,0 +1,96 @@
+{
+  "description": "Structured Pydantic schema for InnovationScoringAgent output.",
+  "properties": {
+    "overall_innovation_score": {
+      "description": "Composite overall innovation rating score from 0 to 100.",
+      "maximum": 100,
+      "minimum": 0,
+      "title": "Overall Innovation Score",
+      "type": "integer"
+    },
+    "innovation_level": {
+      "description": "Categorical innovation level ('Very Low', 'Low', 'Moderate', 'High', 'Exceptional').",
+      "title": "Innovation Level",
+      "type": "string"
+    },
+    "novelty_score": {
+      "description": "Core concept novelty rating score from 0 to 100.",
+      "maximum": 100,
+      "minimum": 0,
+      "title": "Novelty Score",
+      "type": "integer"
+    },
+    "technology_innovation_score": {
+      "description": "Technical and architectural innovation score from 0 to 100.",
+      "maximum": 100,
+      "minimum": 0,
+      "title": "Technology Innovation Score",
+      "type": "integer"
+    },
+    "business_model_innovation_score": {
+      "description": "Business and revenue model innovation rating from 0 to 100.",
+      "maximum": 100,
+      "minimum": 0,
+      "title": "Business Model Innovation Score",
+      "type": "integer"
+    },
+    "problem_originality_score": {
+      "description": "Originality score of the target problem being solved from 0 to 100.",
+      "maximum": 100,
+      "minimum": 0,
+      "title": "Problem Originality Score",
+      "type": "integer"
+    },
+    "differentiation_score": {
+      "description": "Competitive differentiation and moat score from 0 to 100.",
+      "maximum": 100,
+      "minimum": 0,
+      "title": "Differentiation Score",
+      "type": "integer"
+    },
+    "strengths": {
+      "description": "Key innovation strengths of the proposal.",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1,
+      "title": "Strengths",
+      "type": "array"
+    },
+    "improvement_opportunities": {
+      "description": "Areas where innovation or differentiation could be enhanced.",
+      "items": {
+        "type": "string"
+      },
+      "title": "Improvement Opportunities",
+      "type": "array"
+    },
+    "reasoning": {
+      "description": "Detailed rationale explaining score allocations and innovation breakdown.",
+      "minLength": 5,
+      "title": "Reasoning",
+      "type": "string"
+    },
+    "confidence_score": {
+      "description": "Analysis confidence rating score from 0 to 100.",
+      "maximum": 100,
+      "minimum": 0,
+      "title": "Confidence Score",
+      "type": "integer"
+    }
+  },
+  "required": [
+    "overall_innovation_score",
+    "innovation_level",
+    "novelty_score",
+    "technology_innovation_score",
+    "business_model_innovation_score",
+    "problem_originality_score",
+    "differentiation_score",
+    "strengths",
+    "reasoning",
+    "confidence_score"
+  ],
+  "title": "InnovationScoreAnalysis",
+  "type": "object"
+}

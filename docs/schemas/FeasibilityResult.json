@@ -1,0 +1,61 @@
+{
+  "description": "Unified result container for Feasibility Crew.",
+  "properties": {
+    "project_id": {
+      "description": "Project UUID string.",
+      "title": "Project Id",
+      "type": "string"
+    },
+    "technical_feasibility_score": {
+      "default": 80.0,
+      "description": "Technical feasibility score (0-100).",
+      "title": "Technical Feasibility Score",
+      "type": "number"
+    },
+    "operational_feasibility_score": {
+      "default": 85.0,
+      "description": "Operational feasibility score (0-100).",
+      "title": "Operational Feasibility Score",
+      "type": "number"
+    },
+    "financial_feasibility_score": {
+      "default": 75.0,
+      "description": "Financial feasibility score (0-100).",
+      "title": "Financial Feasibility Score",
+      "type": "number"
+    },
+    "key_risks": {
+      "description": "Key feasibility risk factors.",
+      "items": {
+        "type": "string"
+      },
+      "title": "Key Risks",
+      "type": "array"
+    },
+    "mitigation_strategies": {
+      "description": "Risk mitigation strategies.",
+      "items": {
+        "type": "string"
+      },
+      "title": "Mitigation Strategies",
+      "type": "array"
+    },
+    "executive_summary": {
+      "description": "Feasibility summary text.",
+      "title": "Executive Summary",
+      "type": "string"
+    },
+    "confidence_score": {
+      "default": 0.88,
+      "description": "Confidence score (0.0 to 1.0).",
+      "title": "Confidence Score",
+      "type": "number"
+    }
+  },
+  "required": [
+    "project_id",
+    "executive_summary"
+  ],
+  "title": "FeasibilityResult",
+  "type": "object"
+}

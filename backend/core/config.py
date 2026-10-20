@@ -1,0 +1,103 @@
+"""
+Core application configuration — reads from environment variables.
+
+All settings have safe defaults for local development. In production every
+value MUST be supplied via environment or a .env file (never hardcoded).
+"""
+
+import sys
+from functools import lru_cache
+from pathlib import Path
+from typing import Any, Literal
+
+from pydantic import AnyHttpUrl, Field, field_validator
+from pydantic_settings import SettingsConfigDict
+
+# `ai/` is a sibling package at the repo root, not inside `backend/`, so it is
+# not on sys.path when backend runs standalone (uvicorn, arq, pytest from
+# within backend/). backend/api/routers/analysis.py already carried this exact
+# fix locally; it now lives here too since core.config is imported earlier
+# than that router, by nearly everything.
+_repo_root = Path(__file__).resolve().parents[2]
+if str(_repo_root) not in sys.path:
+    sys.path.insert(0, str(_repo_root))
+
+from ai.llm.settings import LLMSettings  # noqa: E402
+
+
+class Settings(LLMSettings):
+    """Core application configuration.
+
+    Inherits LLM_* fields from ai.llm.settings.LLMSettings rather than
+    re-declaring them, so this and ai/config.py::AISettings can't drift.
+    """
+
+    model_config = SettingsConfigDict(
+        env_file=".env",
+        env_file_encoding="utf-8",
+        case_sensitive=False,
+        extra="ignore",
+    )
+
+    # ── App ──────────────────────────────────────────────────────────────
+    APP_NAME: str = "Startup OS API"
+    APP_VERSION: str = "0.1.0"
+    ENVIRONMENT: Literal["development", "staging", "production"] = "development"
+    SECRET_KEY: str = Field(default="dev-insecure-secret-change-me", min_length=32)
+    ALLOWED_ORIGINS: Any = ["http://localhost:5173", "http://localhost:3000"]
+
+    @field_validator("ALLOWED_ORIGINS", mode="before")
+    @classmethod
+    def parse_origins(cls, v: str | list) -> list[str]:
+        if isinstance(v, str):
+            v = v.strip()
+            if v.startswith("[") and v.endswith("]"):
+                import json
+                try:
+                    return json.loads(v)
+                except Exception:
+                    pass
+            return [origin.strip() for origin in v.split(",") if origin.strip()]
+        return v
+
+    # ── Database (Supabase / PostgreSQL) ─────────────────────────────────
+    SUPABASE_URL: str = ""
+    SUPABASE_PUBLISHABLE_KEY: str = ""
+    SUPABASE_SECRET_KEY: str = ""
+    SUPABASE_JWKS_URL: str = ""
+    SUPABASE_SERVICE_ROLE_KEY: str = ""
+    DATABASE_URL: str = ""          # asyncpg DSN
+    DATABASE_URL_SYNC: str = ""     # psycopg2 DSN (Alembic only)
+
+    # ── Redis (Upstash) ───────────────────────────────────────────────────
+    UPSTASH_REDIS_REST_URL: str = ""
+    UPSTASH_REDIS_REST_TOKEN: str = ""
+
+    # ── Research APIs ─────────────────────────────────────────────────────
+    SEMANTIC_SCHOLAR_API_KEY: str = ""
+    OPENALEX_EMAIL: str = ""
+
+    # ── Storage ───────────────────────────────────────────────────────────
+    STORAGE_BUCKET: str = "documents"
+
+    # ── Rate Limiting ─────────────────────────────────────────────────────
+    # Maximum AI pipeline invocations per project per 24 h
+    AI_CALL_BUDGET_PER_PROJECT: int = 10
+
+    # ── Redis cache TTLs (seconds) ────────────────────────────────────────
+    CACHE_MARKET_TTL: int = 60 * 60 * 72   # 3 days
+    CACHE_COMPETITOR_TTL: int = 60 * 60 * 24  # 1 day
+
+    @property
+    def is_production(self) -> bool:
+        return self.ENVIRONMENT == "production"
+
+    @property
+    def is_development(self) -> bool:
+        return self.ENVIRONMENT == "development"
+
+
+@lru_cache
+def get_settings() -> Settings:
+    """Return a cached singleton Settings instance."""
+    return Settings()

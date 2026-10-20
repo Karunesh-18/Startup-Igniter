@@ -1,0 +1,9 @@
+crew: 9
+crew_name: Funding Readiness
+criteria:
+  - name: valuation_hedging
+    description: Does estimated_valuation_range read as a rough band with appropriate caveats, never a precise figure presented with false confidence? See docs/phases/09-funding-readiness.md's guardrail.
+  - name: investor_type_fit
+    description: Are investor_types appropriate for the idea's actual stage and sector (e.g. recommending late-stage growth equity for a pre-seed idea would fail this)?
+  - name: recommendation_not_promise
+    description: Does the output read as recommendation/fit-scoring, never implying an actual introduction or guaranteed match -- see the original spec's explicit distinction.

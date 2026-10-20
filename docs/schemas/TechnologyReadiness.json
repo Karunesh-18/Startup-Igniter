@@ -1,0 +1,85 @@
+{
+  "description": "Schema representing Technology Readiness Level (TRL) and feasibility assessment.",
+  "properties": {
+    "trl_level": {
+      "default": 3,
+      "description": "TRL rating from 1 to 9.",
+      "title": "Trl Level",
+      "type": "integer"
+    },
+    "trl_stage_name": {
+      "default": "TRL 3: Proof of Concept",
+      "description": "Human-readable TRL stage name.",
+      "title": "Trl Stage Name",
+      "type": "string"
+    },
+    "technical_feasibility_assessment": {
+      "default": "",
+      "description": "Feasibility evaluation.",
+      "title": "Technical Feasibility Assessment",
+      "type": "string"
+    },
+    "infrastructure_complexity": {
+      "default": "Moderate",
+      "description": "Complexity level (Low, Moderate, High, Extreme).",
+      "title": "Infrastructure Complexity",
+      "type": "string"
+    },
+    "engineering_complexity": {
+      "default": "High",
+      "description": "Engineering complexity (Low, Moderate, High, Extreme).",
+      "title": "Engineering Complexity",
+      "type": "string"
+    },
+    "technology_dependencies": {
+      "description": "Third-party frameworks and infrastructure dependencies.",
+      "items": {
+        "type": "string"
+      },
+      "title": "Technology Dependencies",
+      "type": "array"
+    },
+    "scalability_assessment": {
+      "default": "",
+      "description": "Assessment of system scalability bottlenecks.",
+      "title": "Scalability Assessment",
+      "type": "string"
+    },
+    "development_risks": {
+      "description": "Key technical execution risks.",
+      "items": {
+        "type": "string"
+      },
+      "title": "Development Risks",
+      "type": "array"
+    },
+    "estimated_time_to_mvp_months": {
+      "default": 4,
+      "description": "Estimated months to functional MVP.",
+      "title": "Estimated Time To Mvp Months",
+      "type": "integer"
+    },
+    "confidence_score": {
+      "default": 0.88,
+      "description": "Confidence score (0.0-1.0).",
+      "title": "Confidence Score",
+      "type": "number"
+    },
+    "reasoning_summary": {
+      "default": "",
+      "description": "Detailed technical rationale.",
+      "title": "Reasoning Summary",
+      "type": "string"
+    },
+    "recommendations": {
+      "description": "Engineering and infrastructure derisking recommendations.",
+      "items": {
+        "type": "string"
+      },
+      "title": "Recommendations",
+      "type": "array"
+    }
+  },
+  "title": "TechnologyReadiness",
+  "type": "object"
+}

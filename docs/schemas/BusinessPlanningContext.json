@@ -1,0 +1,625 @@
+{
+  "$defs": {
+    "CustomerIdentification": {
+      "description": "Structured Pydantic schema for CustomerIdentifier agent output.",
+      "properties": {
+        "primary_customers": {
+          "description": "Primary target customers who buy or pay for the solution.",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Primary Customers",
+          "type": "array"
+        },
+        "secondary_customers": {
+          "description": "Secondary target customers or secondary buyer personas.",
+          "items": {
+            "type": "string"
+          },
+          "title": "Secondary Customers",
+          "type": "array"
+        },
+        "end_users": {
+          "description": "Actual end users who use the product day-to-day.",
+          "items": {
+            "type": "string"
+          },
+          "title": "End Users",
+          "type": "array"
+        },
+        "decision_makers": {
+          "description": "Key decision makers involved in purchasing or procurement.",
+          "items": {
+            "type": "string"
+          },
+          "title": "Decision Makers",
+          "type": "array"
+        },
+        "customer_segments": {
+          "description": "Core customer segment categories (e.g. B2B Hospitals, Private Clinics).",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Customer Segments",
+          "type": "array"
+        },
+        "demographics": {
+          "description": "Demographic or firmographic characteristics of target users.",
+          "items": {
+            "type": "string"
+          },
+          "title": "Demographics",
+          "type": "array"
+        },
+        "geographic_markets": {
+          "description": "Primary geographic markets or regional focus areas.",
+          "items": {
+            "type": "string"
+          },
+          "title": "Geographic Markets",
+          "type": "array"
+        },
+        "industries": {
+          "description": "Target industry verticals or sectors.",
+          "items": {
+            "type": "string"
+          },
+          "title": "Industries",
+          "type": "array"
+        },
+        "pain_points": {
+          "description": "Core pain points experienced by target customers.",
+          "items": {
+            "type": "string"
+          },
+          "title": "Pain Points",
+          "type": "array"
+        },
+        "customer_needs": {
+          "description": "Essential customer needs and requirements.",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Customer Needs",
+          "type": "array"
+        },
+        "motivations": {
+          "description": "Key purchasing motivations and value drivers.",
+          "items": {
+            "type": "string"
+          },
+          "title": "Motivations",
+          "type": "array"
+        },
+        "adoption_barriers": {
+          "description": "Potential barriers to customer adoption or purchase.",
+          "items": {
+            "type": "string"
+          },
+          "title": "Adoption Barriers",
+          "type": "array"
+        },
+        "willingness_to_pay": {
+          "description": "Estimated willingness to pay rating or level ('low', 'medium', 'high', or detailed description).",
+          "title": "Willingness To Pay",
+          "type": "string"
+        },
+        "confidence_score": {
+          "description": "Confidence score rating from 0 to 100.",
+          "maximum": 100,
+          "minimum": 0,
+          "title": "Confidence Score",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "primary_customers",
+        "customer_segments",
+        "customer_needs",
+        "willingness_to_pay",
+        "confidence_score"
+      ],
+      "title": "CustomerIdentification",
+      "type": "object"
+    },
+    "IdeaValidationResult": {
+      "description": "Combined structured Pydantic schema for full Idea Validation Crew results.",
+      "properties": {
+        "project_id": {
+          "description": "Unique project identifier.",
+          "title": "Project Id",
+          "type": "string"
+        },
+        "idea_text": {
+          "description": "Original raw startup proposal text.",
+          "title": "Idea Text",
+          "type": "string"
+        },
+        "idea_analysis": {
+          "$ref": "#/$defs/StartupIdeaAnalysis"
+        },
+        "problem_analysis": {
+          "$ref": "#/$defs/ProblemStatementAnalysis"
+        },
+        "customer_identification": {
+          "$ref": "#/$defs/CustomerIdentification"
+        },
+        "value_proposition": {
+          "$ref": "#/$defs/ValuePropositionAnalysis"
+        },
+        "category_classification": {
+          "$ref": "#/$defs/StartupCategoryClassification"
+        },
+        "innovation_scoring": {
+          "$ref": "#/$defs/InnovationScoreAnalysis"
+        },
+        "overall_validation_score": {
+          "description": "Weighted composite validation score from 0.0 to 100.0.",
+          "maximum": 100.0,
+          "minimum": 0.0,
+          "title": "Overall Validation Score",
+          "type": "number"
+        }
+      },
+      "required": [
+        "project_id",
+        "idea_text",
+        "idea_analysis",
+        "problem_analysis",
+        "customer_identification",
+        "value_proposition",
+        "category_classification",
+        "innovation_scoring",
+        "overall_validation_score"
+      ],
+      "title": "IdeaValidationResult",
+      "type": "object"
+    },
+    "InnovationScoreAnalysis": {
+      "description": "Structured Pydantic schema for InnovationScoringAgent output.",
+      "properties": {
+        "overall_innovation_score": {
+          "description": "Composite overall innovation rating score from 0 to 100.",
+          "maximum": 100,
+          "minimum": 0,
+          "title": "Overall Innovation Score",
+          "type": "integer"
+        },
+        "innovation_level": {
+          "description": "Categorical innovation level ('Very Low', 'Low', 'Moderate', 'High', 'Exceptional').",
+          "title": "Innovation Level",
+          "type": "string"
+        },
+        "novelty_score": {
+          "description": "Core concept novelty rating score from 0 to 100.",
+          "maximum": 100,
+          "minimum": 0,
+          "title": "Novelty Score",
+          "type": "integer"
+        },
+        "technology_innovation_score": {
+          "description": "Technical and architectural innovation score from 0 to 100.",
+          "maximum": 100,
+          "minimum": 0,
+          "title": "Technology Innovation Score",
+          "type": "integer"
+        },
+        "business_model_innovation_score": {
+          "description": "Business and revenue model innovation rating from 0 to 100.",
+          "maximum": 100,
+          "minimum": 0,
+          "title": "Business Model Innovation Score",
+          "type": "integer"
+        },
+        "problem_originality_score": {
+          "description": "Originality score of the target problem being solved from 0 to 100.",
+          "maximum": 100,
+          "minimum": 0,
+          "title": "Problem Originality Score",
+          "type": "integer"
+        },
+        "differentiation_score": {
+          "description": "Competitive differentiation and moat score from 0 to 100.",
+          "maximum": 100,
+          "minimum": 0,
+          "title": "Differentiation Score",
+          "type": "integer"
+        },
+        "strengths": {
+          "description": "Key innovation strengths of the proposal.",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Strengths",
+          "type": "array"
+        },
+        "improvement_opportunities": {
+          "description": "Areas where innovation or differentiation could be enhanced.",
+          "items": {
+            "type": "string"
+          },
+          "title": "Improvement Opportunities",
+          "type": "array"
+        },
+        "reasoning": {
+          "description": "Detailed rationale explaining score allocations and innovation breakdown.",
+          "minLength": 5,
+          "title": "Reasoning",
+          "type": "string"
+        },
+        "confidence_score": {
+          "description": "Analysis confidence rating score from 0 to 100.",
+          "maximum": 100,
+          "minimum": 0,
+          "title": "Confidence Score",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "overall_innovation_score",
+        "innovation_level",
+        "novelty_score",
+        "technology_innovation_score",
+        "business_model_innovation_score",
+        "problem_originality_score",
+        "differentiation_score",
+        "strengths",
+        "reasoning",
+        "confidence_score"
+      ],
+      "title": "InnovationScoreAnalysis",
+      "type": "object"
+    },
+    "ProblemStatementAnalysis": {
+      "description": "Structured Pydantic schema for ProblemStatementAnalyzer output.",
+      "properties": {
+        "problem_statement": {
+          "description": "Clear, concise formulation of the core problem being analyzed.",
+          "minLength": 10,
+          "title": "Problem Statement",
+          "type": "string"
+        },
+        "affected_users": {
+          "description": "User groups or personas impacted by this problem.",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Affected Users",
+          "type": "array"
+        },
+        "root_causes": {
+          "description": "Underlying root causes giving rise to the problem.",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Root Causes",
+          "type": "array"
+        },
+        "existing_solutions": {
+          "description": "Current manual workarounds or existing solutions employed today.",
+          "items": {
+            "type": "string"
+          },
+          "title": "Existing Solutions",
+          "type": "array"
+        },
+        "solution_gaps": {
+          "description": "Deficiencies, gaps, or limitations in current solutions.",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Solution Gaps",
+          "type": "array"
+        },
+        "problem_severity": {
+          "description": "Severity level of the pain point ('low', 'medium', 'high', 'critical').",
+          "title": "Problem Severity",
+          "type": "string"
+        },
+        "urgency_score": {
+          "description": "Market urgency score rating from 0 (nice-to-have) to 100 (critical hair-on-fire).",
+          "maximum": 100,
+          "minimum": 0,
+          "title": "Urgency Score",
+          "type": "integer"
+        },
+        "confidence_score": {
+          "description": "Analysis confidence rating score between 0.00 and 1.00.",
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Confidence Score",
+          "type": "number"
+        }
+      },
+      "required": [
+        "problem_statement",
+        "affected_users",
+        "root_causes",
+        "solution_gaps",
+        "problem_severity",
+        "urgency_score",
+        "confidence_score"
+      ],
+      "title": "ProblemStatementAnalysis",
+      "type": "object"
+    },
+    "StartupCategoryClassification": {
+      "description": "Structured Pydantic schema for StartupCategoryClassifier agent output.",
+      "properties": {
+        "primary_category": {
+          "description": "Primary startup category classification (e.g. AI, HealthTech, SaaS, FinTech).",
+          "minLength": 2,
+          "title": "Primary Category",
+          "type": "string"
+        },
+        "secondary_categories": {
+          "description": "Secondary category tags if applicable.",
+          "items": {
+            "type": "string"
+          },
+          "title": "Secondary Categories",
+          "type": "array"
+        },
+        "industry": {
+          "description": "Primary industry vertical (e.g. Healthcare, Agriculture, Financial Services).",
+          "minLength": 2,
+          "title": "Industry",
+          "type": "string"
+        },
+        "technology_domains": {
+          "description": "Core technology domains involved (e.g. Computer Vision, Deep Learning, Cloud API).",
+          "items": {
+            "type": "string"
+          },
+          "title": "Technology Domains",
+          "type": "array"
+        },
+        "business_model": {
+          "description": "Business model structure (e.g., B2B, B2C, D2C, B2G, Marketplace, Subscription, Platform, Enterprise).",
+          "minLength": 2,
+          "title": "Business Model",
+          "type": "string"
+        },
+        "revenue_model": {
+          "description": "Primary revenue model (e.g., Subscription, Freemium, Transaction Fee, Licensing, Usage Based).",
+          "minLength": 2,
+          "title": "Revenue Model",
+          "type": "string"
+        },
+        "startup_stage": {
+          "description": "Current estimated startup stage (e.g., Idea, MVP, Prototype, Early Revenue, Growth, Scale).",
+          "minLength": 2,
+          "title": "Startup Stage",
+          "type": "string"
+        },
+        "target_market": {
+          "description": "Target customer market segment description.",
+          "minLength": 2,
+          "title": "Target Market",
+          "type": "string"
+        },
+        "confidence_score": {
+          "description": "Classification confidence score rating from 0 to 100.",
+          "maximum": 100,
+          "minimum": 0,
+          "title": "Confidence Score",
+          "type": "integer"
+        },
+        "reasoning": {
+          "description": "Concise rationale explaining the classification decision.",
+          "minLength": 5,
+          "title": "Reasoning",
+          "type": "string"
+        }
+      },
+      "required": [
+        "primary_category",
+        "industry",
+        "business_model",
+        "revenue_model",
+        "startup_stage",
+        "target_market",
+        "confidence_score",
+        "reasoning"
+      ],
+      "title": "StartupCategoryClassification",
+      "type": "object"
+    },
+    "StartupIdeaAnalysis": {
+      "description": "Structured Pydantic schema for Startup Idea Analyzer output.",
+      "properties": {
+        "summary": {
+          "description": "Concise synthesis summary of the core startup proposal concept.",
+          "minLength": 5,
+          "title": "Summary",
+          "type": "string"
+        },
+        "startup_category": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Primary industry vertical/category classification if identified.",
+          "title": "Startup Category"
+        },
+        "operational_pillars": {
+          "description": "Core operational/technical pillars required to build the startup.",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Operational Pillars",
+          "type": "array"
+        },
+        "technical_feasibility_score": {
+          "description": "Feasibility score rating from 0 (impossible) to 100 (highly feasible).",
+          "maximum": 100,
+          "minimum": 0,
+          "title": "Technical Feasibility Score",
+          "type": "integer"
+        },
+        "rationale": {
+          "description": "Detailed technical feasibility rationale and explanation.",
+          "minLength": 10,
+          "title": "Rationale",
+          "type": "string"
+        },
+        "key_assumptions": {
+          "description": "Critical underlying assumptions that require market/tech validation.",
+          "items": {
+            "type": "string"
+          },
+          "title": "Key Assumptions",
+          "type": "array"
+        },
+        "strengths": {
+          "description": "Key architectural, technical, or market strengths of the proposal.",
+          "items": {
+            "type": "string"
+          },
+          "title": "Strengths",
+          "type": "array"
+        },
+        "weaknesses": {
+          "description": "Potential operational, data, or technical weaknesses/risks.",
+          "items": {
+            "type": "string"
+          },
+          "title": "Weaknesses",
+          "type": "array"
+        }
+      },
+      "required": [
+        "summary",
+        "operational_pillars",
+        "technical_feasibility_score",
+        "rationale"
+      ],
+      "title": "StartupIdeaAnalysis",
+      "type": "object"
+    },
+    "ValuePropositionAnalysis": {
+      "description": "Structured Pydantic schema for ValuePropositionAnalyzer agent output.",
+      "properties": {
+        "core_value_proposition": {
+          "description": "Clear, 1-2 sentence core value proposition statement.",
+          "minLength": 5,
+          "title": "Core Value Proposition",
+          "type": "string"
+        },
+        "unique_selling_proposition": {
+          "description": "Unique selling proposition (USP) highlighting the primary differentiator.",
+          "minLength": 5,
+          "title": "Unique Selling Proposition",
+          "type": "string"
+        },
+        "functional_benefits": {
+          "description": "Tangible functional benefits (e.g., faster diagnostic speed, automated reporting).",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Functional Benefits",
+          "type": "array"
+        },
+        "emotional_benefits": {
+          "description": "Psychological or emotional benefits (e.g., peace of mind, confidence in decisions).",
+          "items": {
+            "type": "string"
+          },
+          "title": "Emotional Benefits",
+          "type": "array"
+        },
+        "customer_outcomes": {
+          "description": "Quantifiable customer outcomes and results (e.g. 50% faster diagnosis time).",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Customer Outcomes",
+          "type": "array"
+        },
+        "differentiators": {
+          "description": "Key competitive differentiators and value moats.",
+          "items": {
+            "type": "string"
+          },
+          "title": "Differentiators",
+          "type": "array"
+        },
+        "value_clarity_score": {
+          "description": "Clarity rating of the value proposition from 0 (confusing) to 100 (crystal clear).",
+          "maximum": 100,
+          "minimum": 0,
+          "title": "Value Clarity Score",
+          "type": "integer"
+        },
+        "customer_value_score": {
+          "description": "Estimated customer value rating score from 0 to 100.",
+          "maximum": 100,
+          "minimum": 0,
+          "title": "Customer Value Score",
+          "type": "integer"
+        },
+        "confidence_score": {
+          "description": "Analysis confidence rating score from 0 to 100.",
+          "maximum": 100,
+          "minimum": 0,
+          "title": "Confidence Score",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "core_value_proposition",
+        "unique_selling_proposition",
+        "functional_benefits",
+        "customer_outcomes",
+        "value_clarity_score",
+        "customer_value_score",
+        "confidence_score"
+      ],
+      "title": "ValuePropositionAnalysis",
+      "type": "object"
+    }
+  },
+  "description": "Context container passed through Business Planning Crew execution.",
+  "properties": {
+    "project_id": {
+      "description": "Unique project UUID string identifier.",
+      "title": "Project Id",
+      "type": "string"
+    },
+    "idea_validation": {
+      "$ref": "#/$defs/IdeaValidationResult",
+      "description": "Validated IdeaValidationResult output from Crew 1."
+    },
+    "business_plan": {
+      "anyOf": [
+        {},
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Business Plan"
+    }
+  },
+  "required": [
+    "project_id",
+    "idea_validation"
+  ],
+  "title": "BusinessPlanningContext",
+  "type": "object"
+}

@@ -1,0 +1,51 @@
+{
+  "description": "Unified result container for Growth & Scaling Crew.",
+  "properties": {
+    "project_id": {
+      "description": "Project UUID string.",
+      "title": "Project Id",
+      "type": "string"
+    },
+    "primary_acquisition_channels": {
+      "description": "Primary customer acquisition channels.",
+      "items": {
+        "type": "string"
+      },
+      "title": "Primary Acquisition Channels",
+      "type": "array"
+    },
+    "viral_loop_mechanic": {
+      "description": "Referral or viral growth mechanic.",
+      "title": "Viral Loop Mechanic",
+      "type": "string"
+    },
+    "retention_playbook": {
+      "description": "User retention strategies.",
+      "items": {
+        "type": "string"
+      },
+      "title": "Retention Playbook",
+      "type": "array"
+    },
+    "target_kpis": {
+      "description": "Target growth metrics.",
+      "items": {
+        "type": "string"
+      },
+      "title": "Target Kpis",
+      "type": "array"
+    },
+    "confidence_score": {
+      "default": 0.88,
+      "description": "Confidence score (0.0 to 1.0).",
+      "title": "Confidence Score",
+      "type": "number"
+    }
+  },
+  "required": [
+    "project_id",
+    "viral_loop_mechanic"
+  ],
+  "title": "GrowthScalingResult",
+  "type": "object"
+}

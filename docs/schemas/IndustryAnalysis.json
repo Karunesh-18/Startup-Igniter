@@ -1,0 +1,123 @@
+{
+  "description": "Structured Pydantic schema for IndustryAnalysisAgent output.",
+  "properties": {
+    "industry_name": {
+      "description": "Formal name of the industry vertical.",
+      "minLength": 2,
+      "title": "Industry Name",
+      "type": "string"
+    },
+    "industry_description": {
+      "description": "Detailed description of the industry landscape.",
+      "minLength": 5,
+      "title": "Industry Description",
+      "type": "string"
+    },
+    "industry_classification": {
+      "description": "Standard industry classification taxonomy or sector grouping.",
+      "title": "Industry Classification",
+      "type": "string"
+    },
+    "industry_lifecycle_stage": {
+      "description": "Lifecycle stage of the industry (e.g. Emerging, Growth, Mature, Consolidation).",
+      "title": "Industry Lifecycle Stage",
+      "type": "string"
+    },
+    "industry_maturity": {
+      "description": "Maturity level rating of the overall industry.",
+      "title": "Industry Maturity",
+      "type": "string"
+    },
+    "industry_growth_rate": {
+      "description": "Estimated qualitative or quantitative industry CAGR/growth rate trajectory.",
+      "title": "Industry Growth Rate",
+      "type": "string"
+    },
+    "industry_drivers": {
+      "description": "Core macro and technological drivers spurring industry progression.",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1,
+      "title": "Industry Drivers",
+      "type": "array"
+    },
+    "industry_challenges": {
+      "description": "Structural or economic challenges facing companies in this industry.",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1,
+      "title": "Industry Challenges",
+      "type": "array"
+    },
+    "entry_barriers": {
+      "description": "Key barriers to entry for new market entrants.",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1,
+      "title": "Entry Barriers",
+      "type": "array"
+    },
+    "regulatory_environment": {
+      "description": "Overview of regulatory complexity, compliance requirements, and government oversight.",
+      "title": "Regulatory Environment",
+      "type": "string"
+    },
+    "technology_adoption": {
+      "description": "Level and speed of modern technology adoption across industry incumbents.",
+      "title": "Technology Adoption",
+      "type": "string"
+    },
+    "innovation_level": {
+      "description": "Current innovation intensity and rate of technological disruption.",
+      "title": "Innovation Level",
+      "type": "string"
+    },
+    "investment_activity": {
+      "description": "Venture capital, private equity, and corporate M&A investment activity level.",
+      "title": "Investment Activity",
+      "type": "string"
+    },
+    "future_outlook": {
+      "description": "Comprehensive 3-5 year future industry outlook.",
+      "title": "Future Outlook",
+      "type": "string"
+    },
+    "confidence_score": {
+      "description": "Confidence score rating strictly between 0.0 and 1.0.",
+      "maximum": 1.0,
+      "minimum": 0.0,
+      "title": "Confidence Score",
+      "type": "number"
+    },
+    "citations": {
+      "description": "Source URLs backing the claims above, when external research (Tavily/Exa/Zyte) was supplied in the prompt. Optional and defaults empty so this schema stays backward compatible with LLM-only reasoning when no research bundle is available.",
+      "items": {
+        "type": "string"
+      },
+      "title": "Citations",
+      "type": "array"
+    }
+  },
+  "required": [
+    "industry_name",
+    "industry_description",
+    "industry_classification",
+    "industry_lifecycle_stage",
+    "industry_maturity",
+    "industry_growth_rate",
+    "industry_drivers",
+    "industry_challenges",
+    "entry_barriers",
+    "regulatory_environment",
+    "technology_adoption",
+    "innovation_level",
+    "investment_activity",
+    "future_outlook",
+    "confidence_score"
+  ],
+  "title": "IndustryAnalysis",
+  "type": "object"
+}
