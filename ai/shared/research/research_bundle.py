@@ -9,7 +9,7 @@ class ResearchBundle(BaseModel):
 
     Architecture Note:
         Version 1: Default instance with empty collections (LLM-only reasoning).
-        Version 2: Populated by ResearchManager using Tavily, Exa, and Zyte APIs.
+        Version 2: Populated by ResearchManager via keyless web search (web_provider.py).
     """
 
     market_articles: List[Dict[str, Any]] = Field(
@@ -46,7 +46,7 @@ class ResearchBundle(BaseModel):
     )
     scraped_pages: List[Dict[str, Any]] = Field(
         default_factory=list,
-        description="Raw structured content scraped from web pages via Zyte.",
+        description="Raw structured content scraped from web pages.",
     )
     citations: List[Dict[str, Any]] = Field(
         default_factory=list,
@@ -58,8 +58,7 @@ class ResearchBundle(BaseModel):
     )
 
     def merge(self, other: "ResearchBundle") -> "ResearchBundle":
-        """Combine this bundle with another (e.g. Tavily + Exa + Zyte results for
-        the same query), concatenating every list field and merging metadata."""
+        """Combine this bundle with another (e.g. market + competitor results), concatenating every list field and merging metadata."""
         merged = ResearchBundle()
         for field_name in type(self).model_fields:
             if field_name == "metadata":

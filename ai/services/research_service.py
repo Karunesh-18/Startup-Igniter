@@ -1,18 +1,16 @@
-"""Unified Research Service orchestrating Tavily, Exa, Semantic Scholar, OpenAlex, PatentsView, HF embeddings, and Upstash caching."""
+"""Unified Research Service: keyless web search, Semantic Scholar, OpenAlex, PatentsView, HF embeddings, Upstash caching."""
 
 from typing import Any, Dict, List, Optional
 
 from ai.tools import (
-    ExaSearchTool,
     HFEmbeddingsTool,
     OpenAlexTool,
     PatentsViewTool,
     SemanticScholarTool,
-    TavilySearchTool,
     UpstashRedisCache,
-    ZyteScraperTool,
 )
 from ai.shared.logger import ai_logger
+from ai.shared.research.web_provider import WebResearchProvider
 
 
 class ResearchService:
@@ -21,36 +19,23 @@ class ResearchService:
     def __init__(self, mock_mode: bool = False) -> None:
         """Initialize all research tool instances."""
         self.mock_mode = mock_mode
-        self.tavily = TavilySearchTool()
-        self.exa = ExaSearchTool()
+        self.web = WebResearchProvider()
         self.semantic_scholar = SemanticScholarTool()
         self.openalex = OpenAlexTool()
         self.patents = PatentsViewTool()
         self.embeddings = HFEmbeddingsTool()
         self.cache = UpstashRedisCache()
-        self.zyte = ZyteScraperTool()
 
-    def search_web(self, query: str, use_exa_fallback: bool = True) -> Dict[str, Any]:
-        """Perform grounded web search using Tavily with Exa fallback & Redis caching."""
+    def search_web(self, query: str) -> Dict[str, Any]:
+        """Grounded web search (DuckDuckGo + page extraction) with Redis caching."""
         cache_key = f"cache:web:{hash(query)}"
         cached = self.cache.get(cache_key)
         if cached:
             ai_logger.info(f"[CACHE HIT] Returning cached web search results for '{query}'")
             return cached
 
-        try:
-            tav_res = self.tavily.search(query, mock_mode=self.mock_mode)
-            results = [r.model_dump() for r in tav_res.results]
-            payload = {"source": "tavily", "query": query, "results": results}
-        except Exception as e:
-            ai_logger.warning(f"Tavily search failed ({e}). Trying Exa fallback...")
-            if use_exa_fallback:
-                exa_res = self.exa.search(query, mock_mode=self.mock_mode)
-                results = [r.model_dump() for r in exa_res.results]
-                payload = {"source": "exa", "query": query, "results": results}
-            else:
-                payload = {"source": "none", "query": query, "results": []}
-
+        bundle = self.web.search_market(query, mock_mode=self.mock_mode)
+        payload = {"source": "web", "query": query, "results": bundle.market_articles}
         self.cache.set(cache_key, payload, ttl_seconds=86400)
         return payload
 

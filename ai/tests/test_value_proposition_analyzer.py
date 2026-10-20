@@ -23,31 +23,18 @@ if sys.platform == "win32" and hasattr(sys.stdout, "reconfigure"):
     except Exception:
         pass
 
-try:
-    from crewai import Agent as CrewAIAgent, Crew, Process, Task  # type: ignore
-    HAS_CREWAI = True
-except ImportError:
-    HAS_CREWAI = False
-    CrewAIAgent = None
-    Crew = None
-    Task = None
 
 
 # Sample test input
 SAMPLE_STARTUP_IDEA = "An AI-powered platform that helps doctor detect disease."
 
 
-def execute_live_groq_agent_call(
+def execute_live_llm_agent_call(
     agent: Any,
     idea_text: str,
     timeout: float = 30.0,
 ) -> str:
-    """Execute live LLM reasoning against Groq API when CrewAI is not yet installed."""
-    settings = get_ai_settings()
-    api_key = settings.groq_api_key or os.getenv("GROQ_API_KEY")
-    if not api_key:
-        raise ValueError("GROQ_API_KEY is not configured in environment.")
-
+    """Execute live LLM reasoning via the self-hosted gateway."""
     system_prompt = (
         agent.get("backstory", "")
         if isinstance(agent, dict)
@@ -60,38 +47,10 @@ def execute_live_groq_agent_call(
         "customer_outcomes, differentiators, value_clarity_score, customer_value_score, confidence_score."
     )
 
-    url = "https://api.groq.com/openai/v1/chat/completions"
-    headers = {
-        "Authorization": f"Bearer {api_key}",
-        "Content-Type": "application/json",
-    }
-    payload = {
-        "model": settings.groq_model_heavy,
-        "messages": [
-            {"role": "system", "content": system_prompt},
-            {"role": "user", "content": user_prompt},
-        ],
-        "temperature": 0.1,
-        "max_tokens": 2048,
-        "response_format": {"type": "json_object"},
-    }
+    from ai.shared.constants import ModelTier
+    from ai.shared.llm_provider import call_live_llm
 
-    httpx_timeout = httpx.Timeout(timeout, connect=15.0)
-    for attempt in range(5):
-        try:
-            with httpx.Client(timeout=httpx_timeout) as client:
-                res = client.post(url, headers=headers, json=payload)
-                if res.status_code == 429 or res.status_code >= 500:
-                    time.sleep(2.0 ** attempt)
-                    continue
-                res.raise_for_status()
-                data = res.json()
-                return data["choices"][0]["message"]["content"]
-        except (httpx.RequestError, httpx.HTTPStatusError) as exc:
-            if attempt == 4:
-                raise
-            time.sleep(2.0 ** attempt)
-    return ""
+    return call_live_llm(system_prompt, user_prompt, temperature=0.1, timeout=timeout, tier=ModelTier.HEAVY)
 
 
 def run_single_agent_test(
@@ -104,7 +63,7 @@ def run_single_agent_test(
     Args:
         agent_factory_fn: Agent factory function.
         idea_text: Startup proposal input string.
-        mock_mode: If True, runs mock simulation. If False, runs live Groq API call.
+        mock_mode: If True, runs mock simulation. If False, runs live LLM call.
 
     Returns:
         Tuple of (report_dict, validated_pydantic_object).
@@ -131,7 +90,7 @@ def run_single_agent_test(
         )
         report["agent_name"] = agent_name
 
-        mode_label = "MOCK MODE" if mock_mode else "LIVE GROQ LLM"
+        mode_label = "MOCK MODE" if mock_mode else "LIVE LLM"
         print("\n==================================================")
         print(f"[TESTING SINGLE AGENT] {agent_name} ({mode_label})")
         print("==================================================")
@@ -145,25 +104,10 @@ def run_single_agent_test(
             "Valid JSON string matching ValuePropositionAnalysis Pydantic schema."
         )
 
-        # Step 2: Execute Agent via CrewAI or Live Groq LLM
-        if HAS_CREWAI and Crew is not None and not mock_mode:
-            print("[RUNNING] Executing Crew.kickoff() with native CrewAI...")
-            task = Task(
-                description=task_description,
-                expected_output=expected_output,
-                agent=agent,
-            )
-            crew = Crew(
-                agents=[agent],
-                tasks=[task],
-                process=Process.sequential,
-                verbose=True,
-            )
-            kickoff_result = crew.kickoff()
-            raw_response_text = str(kickoff_result)
-        elif not mock_mode:
-            print("[RUNNING] Executing Live Groq LLM call (llama-3.3-70b-versatile)...")
-            raw_response_text = execute_live_groq_agent_call(agent, idea_text)
+        # Step 2: Execute Agent via live LLM
+        if not mock_mode:
+            print("[RUNNING] Executing live self-hosted LLM call...")
+            raw_response_text = execute_live_llm_agent_call(agent, idea_text)
         else:
             print("[RUNNING] Executing Agent task reasoning (mock simulation)...")
             raw_response_text = json.dumps({
@@ -226,11 +170,11 @@ class TestValuePropositionAnalyzerSingleAgent(unittest.TestCase):
     """Unittest test case wrapper for ValuePropositionAnalyzer single-agent test."""
 
     def test_value_proposition_analyzer_live_pydantic_execution(self):
-        """Verify agent executes against live Groq LLM and returns validated ValuePropositionAnalysis model."""
+        """Verify agent executes against live LLM and returns validated ValuePropositionAnalysis model."""
         report, model = run_single_agent_test(
             agent_factory_fn=get_value_proposition_analyzer_agent,
             idea_text=SAMPLE_STARTUP_IDEA,
-            mock_mode=False,  # LIVE GROQ LLM CALL
+            mock_mode=False,  # LIVE LLM CALL
         )
 
         # Verification Checklist Requirements

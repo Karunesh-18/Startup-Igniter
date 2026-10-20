@@ -105,7 +105,7 @@ def create_sample_validation_result(
 
 
 class TestCustomerPersonaGeneratorAgent(unittest.TestCase):
-    """Live integration tests for CustomerPersonaGenerator running against real Groq LLM API."""
+    """Live integration tests for CustomerPersonaGenerator running against real self-hosted LLM."""
 
     def tearDown(self):
         """Brief pause between live LLM tests to respect API rate limits."""
@@ -137,7 +137,7 @@ class TestCustomerPersonaGeneratorAgent(unittest.TestCase):
         analysis = run_customer_persona_generator_agent(
             context=context,
             memory_manager=memory_mgr,
-            mock_mode=False,  # LIVE GROQ LLM EXECUTION
+            mock_mode=False,  # LIVE LLM EXECUTION
         )
 
         # Context Object Population Verification

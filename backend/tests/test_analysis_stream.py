@@ -11,8 +11,15 @@ import json
 import pytest
 
 
+CREW_KEYS = [
+    "idea_validation", "market_research", "research_patent", "feasibility", "business_planning",
+    "product_development", "legal_compliance", "branding_marketing", "funding", "growth_scaling",
+    "community", "reporting",
+]
+
+
 @pytest.mark.asyncio
-async def test_stream_yields_started_then_three_crew_events_then_result(client):
+async def test_stream_yields_started_then_twelve_crew_events_then_result(client):
     events = []
     async with client.stream(
         "POST",
@@ -26,20 +33,22 @@ async def test_stream_yields_started_then_three_crew_events_then_result(client):
                 events.append(json.loads(line))
 
     types = [e["type"] for e in events]
-    assert types == ["started", "crew_complete", "crew_complete", "crew_complete", "result"]
+    assert types == ["started"] + ["crew_complete"] * 12 + ["result"]
 
     crew_events = [e for e in events if e["type"] == "crew_complete"]
-    assert [e["crew"] for e in crew_events] == ["idea_validation", "market_research", "research_patent"]
+    assert [e["crew"] for e in crew_events] == CREW_KEYS
+    assert all(e["result"] and e["label"] for e in crew_events)
 
-    result_event = events[-1]
-    assert result_event["result"]["status"] == "success"
-    assert "idea_validation" in result_event["result"]
-    assert "market_research" in result_event["result"]
-    assert "research_patent" in result_event["result"]
+    result = events[-1]["result"]
+    assert result["status"] == "success"
+    for key in CREW_KEYS:
+        assert result[key], key
+    assert result["funding"] == crew_events[CREW_KEYS.index("funding")]["result"]
+    assert 0 < result["overall_readiness_score"] <= 100
 
 
 @pytest.mark.asyncio
-async def test_stream_started_event_lists_all_three_crew_labels(client):
+async def test_stream_started_event_lists_all_twelve_crew_labels(client):
     async with client.stream(
         "POST",
         "/api/v1/analysis/run/stream",
@@ -49,7 +58,11 @@ async def test_stream_started_event_lists_all_three_crew_labels(client):
 
     started = json.loads(first_line)
     assert started["type"] == "started"
-    assert started["crews"] == ["Idea Validation", "Market Research", "Research & Patent"]
+    assert started["crews"] == [
+        "Idea Validation", "Market Research", "Research & Patent", "Technical Feasibility",
+        "Business Planning", "Product Development", "Legal & Compliance", "Branding & Marketing",
+        "Funding Readiness", "Growth & Scaling", "Community & Ecosystem", "Executive Reporting",
+    ]
     assert started["project_id"]
 
 

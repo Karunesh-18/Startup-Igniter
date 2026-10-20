@@ -4,20 +4,13 @@ import os
 from pathlib import Path
 from typing import Any, Dict, Optional, Union
 
-from ai.config import get_ai_settings
 from ai.memory.project_memory import ProjectMemoryManager
 from ai.schemas.context import ResearchPatentContext
 from ai.schemas.research_patent import ExistingSolutionAnalysis
 from ai.shared.constants import ModelTier
+from ai.shared.research.prompt_formatting import grounding_prompt_suffix
 from ai.shared.logger import ai_logger
 from ai.shared.output_validator import validate_output
-
-try:
-    from crewai import Agent as CrewAIAgent  # type: ignore
-    HAS_CREWAI = True
-except ImportError:
-    HAS_CREWAI = False
-    CrewAIAgent = None
 
 
 def load_agent_prompt(filename: str = "existing_solution_analyzer.md") -> str:
@@ -89,9 +82,6 @@ def run_existing_solution_analyzer_agent(
         f"Initializing ExistingSolutionAnalyzerAgent: tier={ModelTier.HEAVY}, temp=0.2, mock={mock_mode}"
     )
 
-    if context.research_bundle:
-        ai_logger.debug("ExistingSolutionAnalyzerAgent: Optional research_bundle present in context.")
-
     ai_logger.info(f"Running ExistingSolutionAnalyzerAgent for project '{project_id}'...")
 
     category = idea_val.category_classification.primary_category
@@ -114,6 +104,7 @@ def run_existing_solution_analyzer_agent(
         "existing_startups, commercial_products, enterprise_software, open_source_projects, "
         "existing_technologies, market_maturity, solution_gaps, confidence_score, reasoning_summary, recommendations."
     )
+    user_prompt += grounding_prompt_suffix(context.research_bundle, has_citations_field=False)
 
     if mock_mode:
         raw_output = f"""{{
@@ -154,12 +145,12 @@ def run_existing_solution_analyzer_agent(
             ]
         }}"""
     else:
-        ai_logger.info(f"Initializing LLM: model=openrouter/{get_ai_settings().openrouter_model_heavy}, temp=0.2, mock=False")
+        ai_logger.info("Initializing LLM: tier=heavy, temp=0.2, mock=False")
         from ai.shared.llm_provider import call_live_llm
         raw_output = call_live_llm(
             system_prompt=system_prompt,
             user_prompt=user_prompt,
-            model_name=get_ai_settings().openrouter_model_heavy,
+            tier=ModelTier.HEAVY,
             temperature=0.2,
             schema_class=ExistingSolutionAnalysis,
         )

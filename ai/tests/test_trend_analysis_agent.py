@@ -1,4 +1,4 @@
-"""Integration test suite for TrendAnalysisAgent running against live Groq LLM API."""
+"""Integration test suite for TrendAnalysisAgent running against live self-hosted LLM."""
 
 import unittest
 
@@ -106,7 +106,7 @@ def create_sample_validation_result(
 
 
 class TestTrendAnalysisAgent(unittest.TestCase):
-    """Live integration tests for TrendAnalysisAgent running against real Groq LLM API."""
+    """Live integration tests for TrendAnalysisAgent running against real self-hosted LLM."""
 
     def test_agent_factory_instantiation(self):
         """Test instantiation of TrendAnalysisAgent factory."""
@@ -134,7 +134,7 @@ class TestTrendAnalysisAgent(unittest.TestCase):
         analysis = run_trend_analysis_agent(
             context=context,
             memory_manager=memory_mgr,
-            mock_mode=False,  # LIVE GROQ LLM EXECUTION
+            mock_mode=False,  # LIVE LLM EXECUTION
         )
 
         # Context Object Population Verification

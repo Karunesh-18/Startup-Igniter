@@ -66,7 +66,7 @@ class MarketResearchAnalysis(BaseModel):
     citations: List[str] = Field(
         default_factory=list,
         description=(
-            "Source URLs backing the claims above, when external research (Tavily/Exa/Zyte) "
+            "Source URLs backing the claims above, when external web research "
             "was supplied in the prompt. Optional and defaults empty so this schema stays "
             "backward compatible with LLM-only reasoning when no research bundle is available."
         ),
@@ -189,7 +189,7 @@ class IndustryAnalysis(BaseModel):
     citations: List[str] = Field(
         default_factory=list,
         description=(
-            "Source URLs backing the claims above, when external research (Tavily/Exa/Zyte) "
+            "Source URLs backing the claims above, when external web research "
             "was supplied in the prompt. Optional and defaults empty so this schema stays "
             "backward compatible with LLM-only reasoning when no research bundle is available."
         ),
@@ -308,7 +308,7 @@ class TrendAnalysis(BaseModel):
     citations: List[str] = Field(
         default_factory=list,
         description=(
-            "Source URLs backing the claims above, when external research (Tavily/Exa/Zyte) "
+            "Source URLs backing the claims above, when external web research "
             "was supplied in the prompt. Optional and defaults empty so this schema stays "
             "backward compatible with LLM-only reasoning when no research bundle is available."
         ),
@@ -442,7 +442,7 @@ class CompetitorDiscovery(BaseModel):
     citations: List[str] = Field(
         default_factory=list,
         description=(
-            "Source URLs backing the claims above, when external research (Tavily/Exa/Zyte) "
+            "Source URLs backing the claims above, when external web research "
             "was supplied in the prompt. Optional and defaults empty so this schema stays "
             "backward compatible with LLM-only reasoning when no research bundle is available."
         ),
@@ -547,7 +547,7 @@ class CompetitorComparison(BaseModel):
     citations: List[str] = Field(
         default_factory=list,
         description=(
-            "Source URLs backing the claims above, when external research (Tavily/Exa/Zyte) "
+            "Source URLs backing the claims above, when external web research "
             "was supplied in the prompt. Optional and defaults empty so this schema stays "
             "backward compatible with LLM-only reasoning when no research bundle is available."
         ),
@@ -785,7 +785,7 @@ class CustomerPersona(BaseModel):
     citations: List[str] = Field(
         default_factory=list,
         description=(
-            "Source URLs backing the claims above, when external research (Tavily/Exa/Zyte) "
+            "Source URLs backing the claims above, when external web research "
             "was supplied in the prompt. Optional and defaults empty so this schema stays "
             "backward compatible with LLM-only reasoning when no research bundle is available."
         ),
@@ -844,7 +844,7 @@ class TAMSAMSOMAnalysis(BaseModel):
     citations: List[str] = Field(
         default_factory=list,
         description=(
-            "Source URLs backing the claims above, when external research (Tavily/Exa/Zyte) "
+            "Source URLs backing the claims above, when external web research "
             "was supplied in the prompt. Optional and defaults empty so this schema stays "
             "backward compatible with LLM-only reasoning when no research bundle is available."
         ),

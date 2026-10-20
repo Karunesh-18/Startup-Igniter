@@ -7,7 +7,6 @@ import os
 import unittest
 from ai.config import AISettings, get_ai_settings
 from ai.shared.constants import (
-    DEFAULT_GROQ_MODELS,
     DEFAULT_SCORE_WEIGHTS,
     ModelTier,
     ScoreDimension,
@@ -44,26 +43,17 @@ class TestAIConfig(unittest.TestCase):
         self.assertAlmostEqual(total_weight, 1.0, places=4)
         self.assertNotIn(ScoreDimension.OVERALL, DEFAULT_SCORE_WEIGHTS)
 
-    def test_gateway_model_resolution_per_provider(self):
-        """Each backend gets its OWN correctly-named model for a given tier —
-        the fix for the pre-migration bug where research_patent agents hardcoded
-        settings.openrouter_model_heavy while idea_validation/market_research
-        hardcoded settings.groq_model_heavy, regardless of which was configured."""
-        settings = LLMSettings(
-            LLM_BASE_URL="http://localhost:9999/v1",
-            GROQ_API_KEY="gsk_test",
-            OPENROUTER_API_KEY="or_test",
-        )
+    def test_gateway_model_resolution_per_tier(self):
+        """Each tier resolves to the right self-hosted model name."""
+        settings = LLMSettings(LLM_BASE_URL="http://localhost:9999/v1")
         gw = LLMGateway(settings=settings)
-        self.assertEqual(gw._model_for(gw._selfhosted, ModelTier.HEAVY), settings.llm_model_heavy)
-        self.assertEqual(gw._model_for(gw._selfhosted, ModelTier.FAST), settings.llm_model_fast)
-        self.assertEqual(gw._model_for(gw._groq, ModelTier.HEAVY), settings.groq_model_heavy)
-        self.assertEqual(gw._model_for(gw._openrouter, ModelTier.FAST), settings.openrouter_model_fast)
+        self.assertEqual(gw._model_for(ModelTier.HEAVY), settings.llm_model_heavy)
+        self.assertEqual(gw._model_for(ModelTier.FAST), settings.llm_model_fast)
 
     def test_gateway_mock_fallback_when_nothing_configured(self):
         """With no backend configured, the gateway falls through to the mock
         provider rather than crashing local dev/CI with MissingAPIKeyError."""
-        settings = LLMSettings(LLM_BASE_URL=None, GROQ_API_KEY=None, OPENROUTER_API_KEY=None)
+        settings = LLMSettings(LLM_BASE_URL=None, LLM_ALLOW_MOCK=True)
         gw = LLMGateway(settings=settings)
         result = gw.invoke(system_prompt="sys", user_prompt="user", tier=ModelTier.FAST)
         self.assertTrue(result)  # mock provider always returns valid (non-empty) JSON text
@@ -71,7 +61,7 @@ class TestAIConfig(unittest.TestCase):
     def test_gateway_raises_when_mock_disabled_and_nothing_configured(self):
         """With mock explicitly disabled and nothing else configured, the
         gateway still raises MissingAPIKeyError — same contract as before."""
-        settings = LLMSettings(LLM_BASE_URL=None, GROQ_API_KEY=None, OPENROUTER_API_KEY=None)
+        settings = LLMSettings(LLM_BASE_URL=None, LLM_ALLOW_MOCK=True)
         gw = LLMGateway(settings=settings)
         with self.assertRaises(MissingAPIKeyError):
             gw.invoke(system_prompt="sys", user_prompt="user", allow_mock_fallback=False)

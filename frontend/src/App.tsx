@@ -1,140 +1,72 @@
-import { useEffect, useState } from 'react';
+import { lazy, Suspense, useEffect } from 'react';
+import { Navigate, Route, Routes, useLocation, useNavigate, useParams } from 'react-router-dom';
 import Landing from '@/components/Landing';
 import AnalysisPage from '@/components/AnalysisPage';
-import ResultsPage from '@/components/ResultsPage';
 import PhaseListPage from '@/components/PhaseListPage';
 import PhaseDetailPage from '@/components/PhaseDetailPage';
 import AgentListPage from '@/components/AgentListPage';
 import AgentDetailPage from '@/components/AgentDetailPage';
 import Nav from '@/components/Nav';
-import type { AnalysisResult } from '@/lib/types';
+import ErrorBoundary from '@/components/ErrorBoundary';
 
-type View = 'landing' | 'analysis' | 'results' | 'phases' | 'phase-detail' | 'agents' | 'agent-detail';
+// Recharts lives only in the report, so keep it out of the main chunk.
+const ResultsPage = lazy(() => import('@/components/results/ResultsPage'));
 
-function App() {
-  const [view, setView] = useState<View>('landing');
-  const [analysisResult, setAnalysisResult] = useState<AnalysisResult | null>(null);
-  const [selectedCrew, setSelectedCrew] = useState<number>(1);
-  const [selectedAgent, setSelectedAgent] = useState<number>(1);
+// Thin adapters from route params to the explorer pages' existing callback props.
+function PhasesRoute() {
+  const navigate = useNavigate();
+  return <PhaseListPage onBack={() => navigate('/')} onSelectPhase={(id) => navigate(`/phases/${id}`)} onAgents={() => navigate('/agents')} />;
+}
 
-  useEffect(() => {
-    window.scrollTo(0, 0);
-  }, [view]);
-
-  // Pages that don't show the landing Nav
-  const standaloneViews: View[] = ['analysis', 'results'];
-  const showNav = !standaloneViews.includes(view);
-
-  const nav = showNav ? (
-    <Nav
-      onLaunch={() => setView('analysis')}
-      onHome={() => setView('landing')}
-      onPhases={() => setView('phases')}
-      onAgents={() => setView('agents')}
-    />
-  ) : null;
-
-  if (view === 'results' && analysisResult) {
-    return (
-      <ResultsPage
-        result={analysisResult}
-        onBack={() => setView('landing')}
-        onNewMission={() => {
-          setAnalysisResult(null);
-          setView('analysis');
-        }}
-      />
-    );
-  }
-
-  if (view === 'analysis') {
-    return (
-      <AnalysisPage
-        onBack={() => setView('landing')}
-        onComplete={(result) => {
-          setAnalysisResult(result);
-          setView('results');
-        }}
-      />
-    );
-  }
-
-  if (view === 'phase-detail') {
-    return (
-      <>
-        {nav}
-        <PhaseDetailPage
-          crewId={selectedCrew}
-          onBack={() => setView('phases')}
-          onSelectAgent={(id) => {
-            setSelectedAgent(id);
-            setView('agent-detail');
-          }}
-          onLaunch={() => setView('analysis')}
-        />
-      </>
-    );
-  }
-
-  if (view === 'phases') {
-    return (
-      <>
-        {nav}
-        <PhaseListPage
-          onBack={() => setView('landing')}
-          onSelectPhase={(id) => {
-            setSelectedCrew(id);
-            setView('phase-detail');
-          }}
-          onAgents={() => setView('agents')}
-        />
-      </>
-    );
-  }
-
-  if (view === 'agent-detail') {
-    return (
-      <>
-        {nav}
-        <AgentDetailPage
-          agentId={selectedAgent}
-          onBack={() => setView('agents')}
-          onSelectPhase={(id) => {
-            setSelectedCrew(id);
-            setView('phase-detail');
-          }}
-        />
-      </>
-    );
-  }
-
-  if (view === 'agents') {
-    return (
-      <>
-        {nav}
-        <AgentListPage
-          onBack={() => setView('landing')}
-          onSelectAgent={(id) => {
-            setSelectedAgent(id);
-            setView('agent-detail');
-          }}
-          onPhases={() => setView('phases')}
-        />
-      </>
-    );
-  }
-
-  // Landing (default)
+function PhaseRoute() {
+  const navigate = useNavigate();
+  const id = Number(useParams().id);
   return (
-    <>
-      {nav}
-      <Landing
-        onLaunch={() => setView('analysis')}
-        onPhases={() => setView('phases')}
-        onAgents={() => setView('agents')}
-      />
-    </>
+    <PhaseDetailPage
+      crewId={id}
+      onBack={() => navigate('/phases')}
+      onSelectAgent={(a) => navigate(`/agents/${a}`)}
+      onLaunch={() => navigate('/analyze')}
+    />
   );
 }
 
-export default App;
+function AgentsRoute() {
+  const navigate = useNavigate();
+  return <AgentListPage onBack={() => navigate('/')} onSelectAgent={(id) => navigate(`/agents/${id}`)} onPhases={() => navigate('/phases')} />;
+}
+
+function AgentRoute() {
+  return <AgentDetailPage agentId={Number(useParams().id)} />;
+}
+
+const FULLSCREEN = ['/analyze', '/results'];
+
+export default function App() {
+  const { pathname } = useLocation();
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [pathname]);
+  const showNav = !FULLSCREEN.some((p) => pathname.startsWith(p));
+
+  return (
+    <>
+      {showNav && <Nav />}
+      {/* Keyed by path so an error on one page clears when you navigate away. */}
+      <ErrorBoundary key={pathname}>
+        <Suspense fallback={<div className="min-h-screen bg-void" />}>
+          <Routes>
+            <Route path="/" element={<Landing />} />
+            <Route path="/analyze" element={<AnalysisPage />} />
+            <Route path="/results/:id" element={<ResultsPage />} />
+            <Route path="/phases" element={<PhasesRoute />} />
+            <Route path="/phases/:id" element={<PhaseRoute />} />
+            <Route path="/agents" element={<AgentsRoute />} />
+            <Route path="/agents/:id" element={<AgentRoute />} />
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
+        </Suspense>
+      </ErrorBoundary>
+    </>
+  );
+}

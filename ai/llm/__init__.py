@@ -1,11 +1,9 @@
 """Provider-agnostic LLM gateway.
 
-Replaces the single hardcoded Groq/OpenRouter call path in
-``ai.shared.llm_provider`` with a resolvable chain of providers:
+Provider chain:
 
     selfhosted (DGX B200 / vLLM, OpenAI-compatible)
-        -> fallback (Groq or OpenRouter, OpenAI-compatible)
-        -> mock (offline, deterministic)
+        -> mock (offline, deterministic; only if LLM_ALLOW_MOCK=true)
 
 See ``ai/llm/gateway.py`` for the public entry point.
 """

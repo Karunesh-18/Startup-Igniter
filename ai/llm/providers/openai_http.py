@@ -1,6 +1,6 @@
 """Shared OpenAI-compatible chat-completions client.
 
-Self-hosted vLLM, Groq, and OpenRouter all speak the same `/chat/completions`
+Self-hosted vLLM (and any OpenAI-compatible server) speaks the `/chat/completions`
 shape. This is the one retry ladder every real provider uses, so fixing a bug
 here (timeout handling, retry backoff, empty-content detection) fixes it
 everywhere instead of in three copy-pasted implementations.

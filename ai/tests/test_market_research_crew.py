@@ -1,4 +1,4 @@
-"""Integration test suite for the complete MarketResearchCrew running against live Groq LLM API."""
+"""Integration test suite for the complete MarketResearchCrew running against live self-hosted LLM."""
 
 import time
 import unittest
@@ -105,7 +105,7 @@ def create_sample_validation_result(
 
 
 class TestMarketResearchCrew(unittest.TestCase):
-    """Live integration tests for the full MarketResearchCrew running against real Groq LLM API."""
+    """Live integration tests for the full MarketResearchCrew running against real self-hosted LLM."""
 
     def tearDown(self):
         """Brief pause between live LLM tests to respect API rate limits."""
@@ -128,7 +128,7 @@ class TestMarketResearchCrew(unittest.TestCase):
         result = service.run_market_research(
             idea_validation=edtech_val,
             project_id=proj_id,
-            mock_mode=False,  # LIVE GROQ LLM EXECUTION
+            mock_mode=False,  # LIVE LLM EXECUTION
         )
 
         # Schema & Instance Assertions

@@ -1,9 +1,6 @@
-"""Unit tests for AI tools (Tavily, Zyte) and Project Memory Manager."""
+"""Unit tests for Project Memory Manager."""
 
 import unittest
-from ai.shared.errors import MissingAPIKeyError
-from ai.tools.tavily_search import TavilySearchTool, TavilySearchOutput
-from ai.tools.zyte_scraper import ZyteScraperTool, strip_html_tags
 from ai.memory.project_memory import (
     MemoryEntry,
     ProjectMemoryManager,
@@ -13,37 +10,7 @@ from ai.memory.project_memory import (
 
 
 class TestToolsAndMemory(unittest.TestCase):
-    """Test suite for Tavily, Zyte, and ProjectMemoryManager."""
-
-    def test_strip_html_tags(self):
-        """Test HTML tag cleaner utility."""
-        raw_html = "<html><body><h1>Title</h1><p>Paragraph text.</p><script>var x = 1;</script></body></html>"
-        clean = strip_html_tags(raw_html)
-        self.assertNotIn("<html>", clean)
-        self.assertNotIn("<script>", clean)
-        self.assertIn("Title Paragraph text.", clean)
-
-    def test_tavily_search_mock_mode(self):
-        """Test Tavily search tool in mock mode."""
-        tool = TavilySearchTool()
-        result = tool.search(query="AI SaaS market size", mock_mode=True)
-        self.assertIsInstance(result, TavilySearchOutput)
-        self.assertEqual(result.query, "AI SaaS market size")
-        self.assertTrue(len(result.results) > 0)
-        self.assertIn("Mock Result", result.results[0].title)
-
-    def test_tavily_missing_key_error(self):
-        """Test raising MissingAPIKeyError when Tavily API key is missing."""
-        tool = TavilySearchTool(api_key="")
-        with self.assertRaises(MissingAPIKeyError):
-            tool.search(query="healthtech market", mock_mode=False)
-
-    def test_zyte_scraper_mock_mode(self):
-        """Test Zyte web scraper tool in mock mode."""
-        scraper = ZyteScraperTool()
-        result = scraper.scrape_url("https://patents.google.com/patent/US12345", mock_mode=True)
-        self.assertEqual(result.status_code, 200)
-        self.assertIn("Mock patent document", result.clean_text)
+    """Test suite for ProjectMemoryManager."""
 
     def test_cosine_similarity(self):
         """Test cosine similarity math utility."""

@@ -42,11 +42,8 @@ def find_env_file() -> Optional[str]:
 class AISettings(LLMSettings):
     """Central configuration for Startup Igniter AI Engine.
 
-    Inherits every LLM_*/GROQ_*/OPENROUTER_* field from ai.llm.settings.LLMSettings
-    instead of re-declaring them — this is the fix for the pre-migration drift where
-    this class and backend/core/config.py::Settings each kept their own copy and
-    disagreed (OPENROUTER_* was primary in code but missing from
-    backend/core/config.py and backend/.env.example entirely).
+    Inherits every LLM_* field from ai.llm.settings.LLMSettings instead of
+    re-declaring them, so this and backend/core/config.py::Settings can't drift.
     """
 
     model_config = SettingsConfigDict(
@@ -59,12 +56,6 @@ class AISettings(LLMSettings):
     # --- Environment & App Settings ---
     environment: str = Field(default="development", alias="ENVIRONMENT")
     log_level: str = Field(default="INFO", alias="LOG_LEVEL")
-
-    # --- Search & Scraping APIs ---
-    tavily_api_key: Optional[str] = Field(default=None, alias="TAVILY_API_KEY")
-    exa_api_key: Optional[str] = Field(default=None, alias="EXA_API_KEY")
-    zyte_api_key: Optional[str] = Field(default=None, alias="ZYTE_API_KEY")
-    zyte_enabled: bool = Field(default=False, alias="ZYTE_ENABLED")
 
     # --- Academic & Patent APIs ---
     hf_token: Optional[str] = Field(default=None, alias="HF_TOKEN")
@@ -116,28 +107,20 @@ class AISettings(LLMSettings):
 
         Args:
             raise_on_missing: If True, raises MissingAPIKeyError when no LLM
-                backend at all is configured (neither self-hosted nor a
-                fallback provider) -- the gateway would otherwise silently
-                degrade to the mock provider.
+                self-hosted LLM backend is configured -- the gateway would
+                otherwise degrade to the mock provider.
 
         Returns:
             Dict mapping key name to presence status boolean.
         """
         status = {
             "LLM_BASE_URL": self.has_selfhosted,
-            "GROQ_API_KEY": self.has_groq,
-            "OPENROUTER_API_KEY": self.has_openrouter,
-            "TAVILY_API_KEY": bool(self.tavily_api_key),
-            "EXA_API_KEY": bool(self.exa_api_key),
-            "ZYTE_API_KEY": bool(self.zyte_api_key),
             "SUPABASE_URL": bool(self.supabase_url),
         }
 
-        if raise_on_missing and not any(
-            (status["LLM_BASE_URL"], status["GROQ_API_KEY"], status["OPENROUTER_API_KEY"])
-        ):
+        if raise_on_missing and not status["LLM_BASE_URL"]:
             raise MissingAPIKeyError(
-                key_name="LLM_BASE_URL, GROQ_API_KEY, or OPENROUTER_API_KEY",
+                key_name="LLM_BASE_URL",
                 provider_name="LLM gateway",
             )
 
@@ -145,12 +128,6 @@ class AISettings(LLMSettings):
 
     def setup_environment(self) -> None:
         """Apply AI environment variables to OS process level."""
-        if self.groq_api_key:
-            os.environ["GROQ_API_KEY"] = self.groq_api_key
-        if self.openrouter_api_key:
-            os.environ["OPENROUTER_API_KEY"] = self.openrouter_api_key
-        if self.tavily_api_key:
-            os.environ["TAVILY_API_KEY"] = self.tavily_api_key
         if self.crewai_telemetry_opt_out:
             os.environ["OTEL_SDK_DISABLED"] = "true"
 

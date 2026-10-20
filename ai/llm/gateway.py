@@ -1,10 +1,9 @@
 """Provider-agnostic LLM gateway: the one place that decides which backend
 answers a call and enforces structured output.
 
-Resolution order per call: selfhosted -> fallback (Groq/OpenRouter) -> mock.
-Each stage is skipped if unconfigured; a configured stage that fails after
-its own retries falls through to the next one (logged, never silent in a way
-that would hide a real outage from someone reading logs).
+Resolution order per call: selfhosted -> mock. Mock is only used when the
+caller allows it AND settings.llm_allow_mock is true (LLM_ALLOW_MOCK; prod
+should set false so an outage raises instead of returning placeholders).
 """
 
 from typing import Optional, Type
@@ -13,7 +12,6 @@ from pydantic import BaseModel, ValidationError
 
 from ai.llm.providers.base import BaseLLMProvider, ProviderRequestError, ProviderUnavailableError
 from ai.llm.providers.mock import MockProvider
-from ai.llm.providers.openai_compat import GroqProvider, OpenRouterProvider
 from ai.llm.providers.selfhosted import SelfHostedProvider
 from ai.llm.settings import LLMSettings, get_llm_settings
 from ai.llm.structured import build_repair_prompt, strip_think_blocks
@@ -29,42 +27,15 @@ class LLMGateway:
     def __init__(self, settings: Optional[LLMSettings] = None):
         self.settings = settings or get_llm_settings()
         self._selfhosted = SelfHostedProvider(self.settings)
-        self._groq = GroqProvider(self.settings)
-        self._openrouter = OpenRouterProvider(self.settings)
         self._mock = MockProvider()
 
-    def _fallback_provider(self) -> Optional[BaseLLMProvider]:
-        choice = self.settings.resolve_fallback_backend()
-        if choice == "groq":
-            return self._groq
-        if choice == "openrouter":
-            return self._openrouter
-        return None
-
-    def _model_for(self, provider: BaseLLMProvider, tier: ModelTier) -> str:
-        """Resolve the right model name for whichever backend answers this call.
-
-        This is the fix for the pre-existing inconsistency where idea_validation
-        and market_research agents hardcoded `settings.groq_model_heavy` while
-        research_patent agents hardcoded `settings.openrouter_model_heavy` —
-        whichever provider actually ends up serving the call now gets its own
-        correct model name, regardless of which tier the caller asked for.
-        """
+    def _model_for(self, tier: ModelTier) -> str:
         s = self.settings
-        if provider is self._selfhosted:
-            return s.llm_model_fast if tier == ModelTier.FAST else s.llm_model_heavy
-        if provider is self._groq:
-            return s.groq_model_fast if tier == ModelTier.FAST else s.groq_model_heavy
-        if provider is self._openrouter:
-            return s.openrouter_model_fast if tier == ModelTier.FAST else s.openrouter_model_heavy
-        return "mock"
+        return s.llm_model_fast if tier == ModelTier.FAST else s.llm_model_heavy
 
     def _ordered_providers(self, allow_mock_fallback: bool):
         yield self._selfhosted
-        fallback = self._fallback_provider()
-        if fallback is not None:
-            yield fallback
-        if allow_mock_fallback:
+        if allow_mock_fallback and self.settings.llm_allow_mock:
             yield self._mock
 
     def invoke(
@@ -98,7 +69,7 @@ class LLMGateway:
                 response = provider.complete(
                     system_prompt=system_prompt,
                     user_prompt=user_prompt,
-                    model=self._model_for(provider, tier),
+                    model="mock" if provider is self._mock else self._model_for(tier),
                     tier=tier,
                     temperature=temperature,
                     max_tokens=max_tokens,
@@ -110,9 +81,8 @@ class LLMGateway:
                     ai_logger.info(f"LLM call served by '{provider.name}' (tier={tier.value}, model={response.model})")
                 else:
                     ai_logger.warning(
-                        "LLM call fell through to the mock provider — no self-hosted or "
-                        "fallback backend was configured/reachable. This should not happen "
-                        "outside local dev/CI."
+                        "LLM call fell through to the mock provider — the self-hosted backend "
+                        "was not configured/reachable. Set LLM_ALLOW_MOCK=false in production."
                     )
                 return strip_think_blocks(response.text)
             except ProviderUnavailableError:
@@ -122,7 +92,7 @@ class LLMGateway:
                 continue
 
         raise MissingAPIKeyError(
-            key_name="LLM_BASE_URL, GROQ_API_KEY, or OPENROUTER_API_KEY",
+            key_name="LLM_BASE_URL",
             provider_name=f"LLM gateway (attempted: {attempted or 'none configured'})",
         )
 

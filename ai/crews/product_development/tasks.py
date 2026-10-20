@@ -44,3 +44,22 @@ def recommend_tech_stack_task(project_id: str, category: str = "SaaS") -> TechSt
         hosting="Vercel (Frontend) + Google Cloud Run (Backend API & Workers)",
         ai_ml_tools=["CrewAI", "Groq Llama-3.3-70b", "OpenRouter", "Sentence-Transformers"],
     )
+
+
+def mock_result(project_id: str, idea_text: str, category: str = "SaaS") -> ProductDevelopmentResult:
+    """Offline literal result for the whole crew (mock_mode)."""
+    tech_stack = recommend_tech_stack_task(project_id=project_id, category=category)
+    arch_summary = (
+        f"Architecture overview for '{idea_text}':\n"
+        f"Frontend: {tech_stack.frontend}\n"
+        f"Backend: {tech_stack.backend}\n"
+        f"Database: {tech_stack.database}\n"
+        f"Hosting: {tech_stack.hosting}"
+    )
+    return ProductDevelopmentResult(
+        project_id=project_id,
+        mvp_features=execute_mvp_roadmap_task(project_id=project_id, idea_text=idea_text),
+        tech_stack=tech_stack,
+        architecture_overview=arch_summary,
+        confidence_score=0.88,
+    )

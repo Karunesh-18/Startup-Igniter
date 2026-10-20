@@ -1,18 +1,11 @@
 /* AgentListPage — Directory of all 66 AI Agents */
 
 import { useState } from 'react';
-import {
-  Lightbulb, Globe, FlaskConical, Cpu, Briefcase, Boxes, Scale, Sparkles,
-  Banknote, TrendingUp, Users, FileText, ArrowRight, Bot, Search, ChevronRight,
-} from 'lucide-react';
+import { FileText, ArrowRight, Bot, Search, ChevronRight } from 'lucide-react';
+import { CREW_ICONS } from '@/lib/icons';
 import NeuralBackground from './NeuralBackground';
 import { CREWS, ALL_AGENTS } from '@/data/crews';
 import type { Crew, Agent } from '@/data/crews';
-
-const CREW_ICONS: Record<string, any> = {
-  Lightbulb, Globe, FlaskConical, Cpu, Briefcase, Boxes, Scale, Sparkles,
-  Banknote, TrendingUp, Users, FileText,
-};
 
 interface Props {
   onBack: () => void;
@@ -43,7 +36,7 @@ export default function AgentListPage({ onBack, onSelectAgent, onPhases }: Props
       <div className="absolute inset-0 radial-spotlight" />
       <div className="absolute inset-0 grid-bg opacity-20" />
 
-      <div className="relative z-10 mx-auto max-w-7xl px-6 py-12">
+      <div className="relative z-10 mx-auto max-w-7xl px-4 pb-12 pt-28 sm:px-6">
         {/* Back */}
         <button
           onClick={onBack}

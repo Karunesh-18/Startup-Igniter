@@ -2,13 +2,11 @@
 @tailwind components;
 @tailwind utilities;
 
-@theme {
+:root {
   --font-sans: 'Space Grotesk', system-ui, sans-serif;
   --font-serif: 'Instrument Serif', Georgia, serif;
   --font-mono: 'JetBrains Mono', monospace;
-}
 
-:root {
   --bg-void: #05060f;
   --bg-charcoal: #0a0c1a;
   --bg-midnight: #0c1226;
@@ -30,6 +28,35 @@
 
 html {
   scroll-behavior: smooth;
+}
+
+/* Global focus ring — several components previously removed the default
+   outline (`focus:outline-none`) with no replacement, leaving keyboard
+   users with no visible indication of where focus is. */
+:focus-visible {
+  outline: 2px solid var(--electric);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Respect the OS-level motion preference. Without this, the app runs, all
+   at once and with no opt-out: two full-screen requestAnimationFrame canvas
+   loops, `scroll-behavior: smooth` above, 8+ infinite CSS keyframe
+   animations, and (on Landing) a pipeline visualization that scrolls the
+   page to itself 12 times over ~27s — a real vestibular-trigger and
+   battery-drain problem for anyone who has asked their OS to reduce motion. */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
 }
 
 body {
@@ -237,9 +264,19 @@ body {
 .stagger > *:nth-child(7) { animation-delay: 0.47s; }
 .stagger > *:nth-child(8) { animation-delay: 0.54s; }
 
-/* Reveal on scroll */
-.reveal { opacity: 0; transform: translateY(28px); transition: opacity 0.8s cubic-bezier(0.22,1,0.36,1), transform 0.8s cubic-bezier(0.22,1,0.36,1); }
-.reveal.is-visible { opacity: 1; transform: translateY(0); }
+/* Aceternity-style spotlight sweep (ui/spotlight.tsx) */
+@keyframes spotlight {
+  0% { opacity: 0; transform: translate(-72%, -62%) scale(0.5); }
+  100% { opacity: 1; transform: translate(-50%, -40%) scale(1); }
+}
+.animate-spotlight { animation: spotlight 2s ease 0.75s 1 forwards; }
+
+/* Travelling dash along a pathLength=1 path (ui/background-beams.tsx) */
+@keyframes beam-travel {
+  from { stroke-dashoffset: 1; }
+  to { stroke-dashoffset: -1; }
+}
+.animate-beam-travel { animation: beam-travel 8s linear infinite; }
 
 /* Grid background */
 .grid-bg {

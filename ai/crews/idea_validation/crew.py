@@ -1,8 +1,6 @@
-"""Idea Validation Crew implementation executing 6 real agents sequentially with live Groq LLM reasoning."""
+"""Idea Validation Crew implementation executing 6 real agents sequentially with live self-hosted LLM reasoning."""
 
-import os
 from typing import Any, Dict, List, Optional
-import httpx
 from pydantic import BaseModel
 
 from ai.agents.idea_validation import (
@@ -31,7 +29,6 @@ from ai.agents.idea_validation.startup_idea_analyzer import (
 from ai.agents.idea_validation.value_proposition_analyzer import (
     validate_agent_output as validate_value_output,
 )
-from ai.config import get_ai_settings
 from ai.crews.idea_validation.config import IdeaValidationCrewConfig
 from ai.memory.project_memory import ProjectMemoryManager
 from ai.schemas.customer_identifier import CustomerIdentification
@@ -40,6 +37,7 @@ from ai.schemas.innovation_score import InnovationScoreAnalysis
 from ai.schemas.problem_statement import ProblemStatementAnalysis
 from ai.schemas.startup_category import StartupCategoryClassification
 from ai.schemas.value_proposition import ValuePropositionAnalysis
+from ai.shared.constants import ModelTier
 from ai.shared.logger import ai_logger
 
 
@@ -57,16 +55,16 @@ class IdeaValidationOutput(BaseModel):
     innovation_scoring: Optional[Dict[str, Any]] = None
 
 
-def _call_live_groq_llm(
+def _call_live_llm(
     system_prompt: str,
     user_prompt: str,
-    model_name: str,
+    tier: ModelTier = ModelTier.HEAVY,
     temperature: float = 0.1,
     timeout: float = 45.0,
     max_retries: int = 6,
     schema_class: Optional[type] = None,
 ) -> str:
-    """Execute a live LLM completion via the gateway (selfhosted -> Groq/OpenRouter -> mock).
+    """Execute a live LLM completion via the gateway (selfhosted -> mock).
 
     `schema_class`, when given, lets the self-hosted vLLM path grammar-constrain
     generation to the target Pydantic schema instead of relying solely on the
@@ -76,7 +74,7 @@ def _call_live_groq_llm(
     return call_live_llm(
         system_prompt=system_prompt,
         user_prompt=user_prompt,
-        model_name=model_name,
+        tier=tier,
         temperature=temperature,
         timeout=timeout,
         max_retries=max_retries,
@@ -85,7 +83,7 @@ def _call_live_groq_llm(
 
 
 class IdeaValidationCrew:
-    """Production Crew managing the 6 Idea Validation Agents sequentially with live Groq LLM."""
+    """Production Crew managing the 6 Idea Validation Agents sequentially with the live self-hosted LLM."""
 
     def __init__(
         self,
@@ -131,7 +129,7 @@ class IdeaValidationCrew:
         return getattr(agent, "backstory", "")
 
     def run(self, project_id: str, idea_text: str, mock_mode: Optional[bool] = None) -> IdeaValidationResult:
-        """Execute full 6-agent sequential Idea Validation Crew pipeline against live Groq LLM.
+        """Execute full 6-agent sequential Idea Validation Crew pipeline against the live self-hosted LLM.
 
         Args:
             project_id: Project UUID string identifier.
@@ -141,7 +139,6 @@ class IdeaValidationCrew:
         Returns:
             IdeaValidationResult containing all 6 validated Pydantic models.
         """
-        settings = get_ai_settings()
         is_mock = mock_mode if mock_mode is not None else self.mock_mode
         ai_logger.info(f"Starting live IdeaValidationCrew run for project '{project_id}' (mock_mode={is_mock})")
 
@@ -240,10 +237,10 @@ class IdeaValidationCrew:
             "summary, startup_category, operational_pillars, technical_feasibility_score, "
             "rationale, key_assumptions, strengths, weaknesses."
         )
-        raw_idea_text = _call_live_groq_llm(
+        raw_idea_text = _call_live_llm(
             system_prompt=self._get_backstory(self.idea_agent),
             user_prompt=idea_user_prompt,
-            model_name=settings.groq_model_heavy,
+            tier=ModelTier.HEAVY,
             schema_class=StartupIdeaAnalysis,
         )
         idea_model = validate_idea_output(raw_idea_text)
@@ -272,10 +269,10 @@ class IdeaValidationCrew:
             "problem_statement, affected_users, root_causes, existing_solutions, solution_gaps, "
             "problem_severity, urgency_score, confidence_score."
         )
-        raw_problem_text = _call_live_groq_llm(
+        raw_problem_text = _call_live_llm(
             system_prompt=self._get_backstory(self.problem_agent),
             user_prompt=problem_user_prompt,
-            model_name=settings.groq_model_heavy,
+            tier=ModelTier.HEAVY,
             schema_class=ProblemStatementAnalysis,
         )
         problem_model = validate_problem_output(raw_problem_text)
@@ -299,10 +296,10 @@ class IdeaValidationCrew:
             "demographics, geographic_markets, industries, pain_points, customer_needs, motivations, "
             "adoption_barriers, willingness_to_pay, confidence_score."
         )
-        raw_customer_text = _call_live_groq_llm(
+        raw_customer_text = _call_live_llm(
             system_prompt=self._get_backstory(self.customer_agent),
             user_prompt=customer_user_prompt,
-            model_name=settings.groq_model_heavy,
+            tier=ModelTier.HEAVY,
             schema_class=CustomerIdentification,
         )
         customer_model = validate_customer_output(raw_customer_text)
@@ -325,10 +322,10 @@ class IdeaValidationCrew:
             "core_value_proposition, unique_selling_proposition, functional_benefits, emotional_benefits, "
             "customer_outcomes, differentiators, value_clarity_score, customer_value_score, confidence_score."
         )
-        raw_value_text = _call_live_groq_llm(
+        raw_value_text = _call_live_llm(
             system_prompt=self._get_backstory(self.value_agent),
             user_prompt=value_user_prompt,
-            model_name=settings.groq_model_heavy,
+            tier=ModelTier.HEAVY,
             schema_class=ValuePropositionAnalysis,
         )
         value_model = validate_value_output(raw_value_text)
@@ -350,10 +347,10 @@ class IdeaValidationCrew:
             "primary_category, secondary_categories, industry, technology_domains, business_model, "
             "revenue_model, startup_stage, target_market, confidence_score, reasoning."
         )
-        raw_category_text = _call_live_groq_llm(
+        raw_category_text = _call_live_llm(
             system_prompt=self._get_backstory(self.category_agent),
             user_prompt=category_user_prompt,
-            model_name=settings.groq_model_fast,
+            tier=ModelTier.FAST,
             schema_class=StartupCategoryClassification,
         )
         category_model = validate_category_output(raw_category_text)
@@ -377,10 +374,10 @@ class IdeaValidationCrew:
             "business_model_innovation_score, problem_originality_score, differentiation_score, "
             "strengths, improvement_opportunities, reasoning, confidence_score."
         )
-        raw_innovation_text = _call_live_groq_llm(
+        raw_innovation_text = _call_live_llm(
             system_prompt=self._get_backstory(self.innovation_agent),
             user_prompt=innovation_user_prompt,
-            model_name=settings.groq_model_heavy,
+            tier=ModelTier.HEAVY,
             schema_class=InnovationScoreAnalysis,
         )
         innovation_model = validate_innovation_output(raw_innovation_text)

@@ -1,4 +1,4 @@
-"""Integration test suite for MarketResearchAgent running against live Groq LLM API."""
+"""Integration test suite for MarketResearchAgent running against live self-hosted LLM."""
 
 import json
 import unittest
@@ -108,7 +108,7 @@ def create_sample_validation_result(
 
 
 class TestMarketResearchAgent(unittest.TestCase):
-    """Live integration tests for MarketResearchAgent using real Groq LLM API."""
+    """Live integration tests for MarketResearchAgent using real self-hosted LLM."""
 
     def test_agent_factory_instantiation(self):
         """Test instantiation of MarketResearchAgent factory."""
@@ -136,7 +136,7 @@ class TestMarketResearchAgent(unittest.TestCase):
         analysis = run_market_research_agent(
             context=context,
             memory_manager=memory_mgr,
-            mock_mode=False,  # LIVE GROQ LLM EXECUTION
+            mock_mode=False,  # LIVE LLM EXECUTION
         )
 
         # Context Object Population Verification
@@ -185,7 +185,7 @@ class TestMarketResearchAgent(unittest.TestCase):
         analysis = run_market_research_agent(
             context=context,
             memory_manager=memory_mgr,
-            mock_mode=False,  # LIVE GROQ LLM EXECUTION
+            mock_mode=False,  # LIVE LLM EXECUTION
         )
 
         self.assertIsNotNone(context.market_research)

@@ -105,6 +105,12 @@ async def shutdown(ctx: dict) -> None:
 # ── Job functions ─────────────────────────────────────────────────────────────
 
 
+def _resolve_mock(mock_mode: bool | None) -> bool:
+    """Job mock flag: explicit value wins; default is live, except under pytest."""
+    import os
+    return mock_mode if mock_mode is not None else bool(os.getenv("PYTEST_CURRENT_TEST"))
+
+
 async def run_idea_phase(ctx: dict, project_id: str, db_session: Any = None) -> dict[str, Any]:
     from contextlib import nullcontext
     from db.database import get_session_factory
@@ -266,7 +272,7 @@ async def run_validation_phase(ctx: dict, project_id: str, db_session: Any = Non
             raise
 
 
-async def run_business_phase(ctx: dict, project_id: str) -> dict[str, Any]:
+async def run_business_phase(ctx: dict, project_id: str, mock_mode: bool | None = None) -> dict[str, Any]:
     """
     Background job: generate Lean Canvas from project_memory.
     Integration point for Person C's business_crew.py.
@@ -294,7 +300,7 @@ async def run_business_phase(ctx: dict, project_id: str) -> dict[str, Any]:
         await engine.log_phase_running(pid, "business", str(job_id))
 
         try:
-            business_output = await _execute_business_crew(project)
+            business_output = await _execute_business_crew(project, _resolve_mock(mock_mode))
 
             plan = BusinessPlan(
                 project_id=pid,
@@ -318,7 +324,9 @@ async def run_business_phase(ctx: dict, project_id: str) -> dict[str, Any]:
             raise
 
 
-async def run_patent_phase(ctx: dict, project_id: str, db_session: Any = None) -> dict[str, Any]:
+async def run_patent_phase(
+    ctx: dict, project_id: str, db_session: Any = None, mock_mode: bool | None = None
+) -> dict[str, Any]:
     """Background job: execute Research & Patent Crew prior-art search."""
     from contextlib import nullcontext
     from db.database import get_session_factory
@@ -342,8 +350,9 @@ async def run_patent_phase(ctx: dict, project_id: str, db_session: Any = None) -
         await engine.log_phase_running(pid, "patent", str(job_id))
 
         try:
-            crew = get_research_patent_crew(mock_mode=True)
-            res = crew.run(project_id=str(project.id), idea_text=f"{project.name}: {project.description or ''}", mock_mode=True)
+            mock = _resolve_mock(mock_mode)
+            crew = get_research_patent_crew(mock_mode=mock)
+            res = crew.run(project_id=str(project.id), idea_text=f"{project.name}: {project.description or ''}", mock_mode=mock)
             await _upsert_memory(db, pid, "patent_analysis", res.model_dump(), "patent")
             await db.commit()
             logger.info("job_completed", job="run_patent_phase", project_id=project_id)
@@ -354,7 +363,9 @@ async def run_patent_phase(ctx: dict, project_id: str, db_session: Any = None) -
             raise
 
 
-async def run_legal_phase(ctx: dict, project_id: str, db_session: Any = None) -> dict[str, Any]:
+async def run_legal_phase(
+    ctx: dict, project_id: str, db_session: Any = None, mock_mode: bool | None = None
+) -> dict[str, Any]:
     """Background job: execute Legal & Compliance Crew checklist & contract drafting."""
     from contextlib import nullcontext
     from db.database import get_session_factory
@@ -378,8 +389,9 @@ async def run_legal_phase(ctx: dict, project_id: str, db_session: Any = None) ->
         await engine.log_phase_running(pid, "legal", str(job_id))
 
         try:
-            crew = get_legal_compliance_crew(mock_mode=True)
-            res = crew.run(project_id=str(project.id), idea_text=f"{project.name}: {project.description or ''}", mock_mode=True)
+            mock = _resolve_mock(mock_mode)
+            crew = get_legal_compliance_crew(mock_mode=mock)
+            res = crew.run(project_id=str(project.id), idea_text=f"{project.name}: {project.description or ''}", mock_mode=mock)
             await _upsert_memory(db, pid, "legal_compliance", res.model_dump(), "legal")
             await db.commit()
             logger.info("job_completed", job="run_legal_phase", project_id=project_id)
@@ -390,7 +402,9 @@ async def run_legal_phase(ctx: dict, project_id: str, db_session: Any = None) ->
             raise
 
 
-async def run_product_phase(ctx: dict, project_id: str, db_session: Any = None) -> dict[str, Any]:
+async def run_product_phase(
+    ctx: dict, project_id: str, db_session: Any = None, mock_mode: bool | None = None
+) -> dict[str, Any]:
     """Background job: execute Product Development Crew MVP feature roadmap & tech stack selection."""
     from contextlib import nullcontext
     from db.database import get_session_factory
@@ -414,8 +428,9 @@ async def run_product_phase(ctx: dict, project_id: str, db_session: Any = None) 
         await engine.log_phase_running(pid, "product", str(job_id))
 
         try:
-            crew = get_product_development_crew(mock_mode=True)
-            res = crew.run(project_id=str(project.id), idea_text=f"{project.name}: {project.description or ''}", mock_mode=True)
+            mock = _resolve_mock(mock_mode)
+            crew = get_product_development_crew(mock_mode=mock)
+            res = crew.run(project_id=str(project.id), idea_text=f"{project.name}: {project.description or ''}", mock_mode=mock)
             await _upsert_memory(db, pid, "product_development", res.model_dump(), "product")
             await db.commit()
             logger.info("job_completed", job="run_product_phase", project_id=project_id)
@@ -426,7 +441,9 @@ async def run_product_phase(ctx: dict, project_id: str, db_session: Any = None) 
             raise
 
 
-async def run_branding_phase(ctx: dict, project_id: str, db_session: Any = None) -> dict[str, Any]:
+async def run_branding_phase(
+    ctx: dict, project_id: str, db_session: Any = None, mock_mode: bool | None = None
+) -> dict[str, Any]:
     """Background job: execute Branding & Marketing Crew GTM campaign strategy."""
     from contextlib import nullcontext
     from db.database import get_session_factory
@@ -450,8 +467,9 @@ async def run_branding_phase(ctx: dict, project_id: str, db_session: Any = None)
         await engine.log_phase_running(pid, "branding", str(job_id))
 
         try:
-            crew = get_branding_marketing_crew(mock_mode=True)
-            res = crew.run(project_id=str(project.id), idea_text=f"{project.name}: {project.description or ''}", mock_mode=True)
+            mock = _resolve_mock(mock_mode)
+            crew = get_branding_marketing_crew(mock_mode=mock)
+            res = crew.run(project_id=str(project.id), idea_text=f"{project.name}: {project.description or ''}", mock_mode=mock)
             await _upsert_memory(db, pid, "branding_marketing", res.model_dump(), "branding")
             await db.commit()
             logger.info("job_completed", job="run_branding_phase", project_id=project_id)
@@ -462,7 +480,9 @@ async def run_branding_phase(ctx: dict, project_id: str, db_session: Any = None)
             raise
 
 
-async def run_growth_phase(ctx: dict, project_id: str, db_session: Any = None) -> dict[str, Any]:
+async def run_growth_phase(
+    ctx: dict, project_id: str, db_session: Any = None, mock_mode: bool | None = None
+) -> dict[str, Any]:
     """Background job: execute Growth & Scaling Crew retention & referral playbook."""
     from contextlib import nullcontext
     from db.database import get_session_factory
@@ -486,8 +506,9 @@ async def run_growth_phase(ctx: dict, project_id: str, db_session: Any = None) -
         await engine.log_phase_running(pid, "growth", str(job_id))
 
         try:
-            crew = get_growth_scaling_crew(mock_mode=True)
-            res = crew.run(project_id=str(project.id), idea_text=f"{project.name}: {project.description or ''}", mock_mode=True)
+            mock = _resolve_mock(mock_mode)
+            crew = get_growth_scaling_crew(mock_mode=mock)
+            res = crew.run(project_id=str(project.id), idea_text=f"{project.name}: {project.description or ''}", mock_mode=mock)
             await _upsert_memory(db, pid, "growth_scaling", res.model_dump(), "growth")
             await db.commit()
             logger.info("job_completed", job="run_growth_phase", project_id=project_id)
@@ -498,7 +519,9 @@ async def run_growth_phase(ctx: dict, project_id: str, db_session: Any = None) -
             raise
 
 
-async def run_funding_phase(ctx: dict, project_id: str, db_session: Any = None) -> dict[str, Any]:
+async def run_funding_phase(
+    ctx: dict, project_id: str, db_session: Any = None, mock_mode: bool | None = None
+) -> dict[str, Any]:
     """Background job: execute Funding & Investor Readiness Crew valuation & pitch deck roadmap."""
     from contextlib import nullcontext
     from db.database import get_session_factory
@@ -522,8 +545,9 @@ async def run_funding_phase(ctx: dict, project_id: str, db_session: Any = None) 
         await engine.log_phase_running(pid, "funding", str(job_id))
 
         try:
-            crew = get_funding_crew(mock_mode=True)
-            res = crew.run(project_id=str(project.id), idea_text=f"{project.name}: {project.description or ''}", mock_mode=True)
+            mock = _resolve_mock(mock_mode)
+            crew = get_funding_crew(mock_mode=mock)
+            res = crew.run(project_id=str(project.id), idea_text=f"{project.name}: {project.description or ''}", mock_mode=mock)
             await _upsert_memory(db, pid, "funding_readiness", res.model_dump(), "funding")
             await db.commit()
             logger.info("job_completed", job="run_funding_phase", project_id=project_id)
@@ -612,6 +636,12 @@ async def _execute_idea_analysis_crew(project: Any) -> dict[str, Any]:
         return await _placeholder_idea_analysis(project)
 
 
+def _score(section: Any, field: str, default: float) -> float:
+    """0-100 score from a crew sub-result, or the default when absent/zero."""
+    value = getattr(section, field, None) if section is not None else None
+    return float(value) if value else default
+
+
 async def _execute_validation_crew(project: Any) -> dict[str, Any]:
     """Execute live validation crew reasoning or fallback gracefully to placeholder."""
     try:
@@ -641,12 +671,12 @@ async def _execute_validation_crew(project: Any) -> dict[str, Any]:
             },
             "raw_scores": {
                 "validation": round(float(result.overall_validation_score) * 0.8, 1),
-                "market": 70.0,
-                "technology": float(result.idea_analysis.technical_feasibility_score) if (result.idea_analysis and result.idea_analysis.technical_feasibility_score) else 75.0,
-                "business": 65.0,
-                "financial": 60.0,
-                "patent": 50.0,
-                "legal": 70.0,
+                "market": _score(result.problem_analysis, "urgency_score", 70.0),
+                "technology": _score(result.idea_analysis, "technical_feasibility_score", 75.0),
+                "business": _score(result.innovation_scoring, "business_model_innovation_score", 65.0),
+                "financial": _score(result.value_proposition, "customer_value_score", 60.0),
+                "patent": _score(result.innovation_scoring, "novelty_score", 50.0),
+                "legal": 70.0,  # no legal signal in idea validation; legal crew runs later
                 "overall": float(result.overall_validation_score),
             },
             "rationales": {
@@ -659,13 +689,13 @@ async def _execute_validation_crew(project: Any) -> dict[str, Any]:
         logger.warning("validation_crew_fallback", error=str(e))
         return await _placeholder_validation(project)
 
-async def _execute_business_crew(project: Any) -> dict[str, Any]:
+async def _execute_business_crew(project: Any, mock_mode: bool = False) -> dict[str, Any]:
     """Execute live BusinessPlanningCrew or fallback gracefully to placeholder."""
     try:
         from ai.crews.business_planning.crew import get_business_planning_crew
-        crew = get_business_planning_crew(mock_mode=True)
+        crew = get_business_planning_crew(mock_mode=mock_mode)
         idea_text = f"{project.name}: {project.description or ''}"
-        result = crew.run(project_id=str(project.id), idea_text=idea_text, mock_mode=True)
+        result = crew.run(project_id=str(project.id), idea_text=idea_text, mock_mode=mock_mode)
         return {
             "lean_canvas": result.lean_canvas.model_dump(),
             "revenue_model": result.financial_model.pricing_model,

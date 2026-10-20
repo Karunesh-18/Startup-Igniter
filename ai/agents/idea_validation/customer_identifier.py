@@ -54,7 +54,7 @@ def get_customer_identifier_agent(
     Args:
         model_tier: Execution model tier (default: HEAVY for deep analysis).
         temperature: LLM sampling temperature.
-        api_key: Optional explicit Groq API key.
+        api_key: Optional explicit API key (unused by the self-hosted gateway).
         mock_mode: If True, operates in test mode without live LLM network calls.
         tools: Optional list of tools to attach to agent.
 

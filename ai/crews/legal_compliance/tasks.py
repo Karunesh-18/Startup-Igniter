@@ -54,3 +54,15 @@ def draft_legal_documents_task(project_id: str, idea_text: str) -> LegalDocument
         title="Mutual Non-Disclosure Agreement",
         content=content,
     )
+
+
+def mock_result(project_id: str, idea_text: str, category: str = "SaaS") -> LegalComplianceResult:
+    """Offline literal result for the whole crew (mock_mode)."""
+    checklist = generate_compliance_checklist_task(project_id=project_id, category=category)
+    return LegalComplianceResult(
+        project_id=project_id,
+        compliance_checklist=checklist,
+        draft_nda=draft_legal_documents_task(project_id=project_id, idea_text=idea_text),
+        overall_summary=f"Legal readiness roadmap compiled with {len(checklist)} key compliance items and draft NDA generated.",
+        confidence_score=0.90,
+    )

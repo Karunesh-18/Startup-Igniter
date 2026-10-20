@@ -48,16 +48,15 @@ def call_live_llm(
     schema_class: Optional[Type[BaseModel]] = None,
     tier: Optional[ModelTier] = None,
 ) -> str:
-    """Execute a live LLM completion via the gateway (selfhosted -> fallback -> mock).
+    """Execute a live LLM completion via the gateway (selfhosted -> mock).
 
     Args:
         model_name: Legacy parameter. When `tier` is not given, the tier is
             inferred from this string (e.g. containing "8b"/"instant" -> FAST).
             Prefer passing `tier=` directly in new code.
         schema_class: When given, the self-hosted provider grammar-constrains
-            generation to this Pydantic schema (guided decoding); Groq gets
-            `json_object` mode; OpenRouter and mock ignore it structurally but
-            it still improves the mock provider's placeholder output.
+            generation to this Pydantic schema (guided decoding); the mock
+            provider uses it to produce schema-shaped placeholder output.
         tier: Preferred over `model_name` for selecting FAST vs HEAVY/REASONING.
 
     Returns:

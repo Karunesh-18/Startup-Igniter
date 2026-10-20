@@ -6,11 +6,11 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional, Union
 import httpx
 
-from ai.config import get_ai_settings
 from ai.memory.project_memory import ProjectMemoryManager
 from ai.schemas.context import MarketResearchContext
 from ai.schemas.market_research import TAMSAMSOMAnalysis
 from ai.shared.constants import ModelTier
+from ai.shared.research.prompt_formatting import grounding_prompt_suffix
 from ai.shared.logger import ai_logger
 from ai.shared.output_validator import validate_output
 
@@ -47,21 +47,21 @@ def validate_agent_output(raw_output: str) -> TAMSAMSOMAnalysis:
     return validate_output(raw_output, TAMSAMSOMAnalysis)
 
 
-def _call_live_groq_llm(
+def _call_live_llm(
     system_prompt: str,
     user_prompt: str,
-    model_name: str,
+    tier: ModelTier = ModelTier.HEAVY,
     temperature: float = 0.2,
     timeout: float = 45.0,
     max_retries: int = 8,
     schema_class: Optional[type] = None,
 ) -> str:
-    """Execute a live LLM completion via the gateway (selfhosted -> Groq/OpenRouter -> mock)."""
+    """Execute a live LLM completion via the gateway (selfhosted -> mock)."""
     from ai.shared.llm_provider import call_live_llm
     return call_live_llm(
         system_prompt=system_prompt,
         user_prompt=user_prompt,
-        model_name=model_name,
+        tier=tier,
         temperature=temperature,
         timeout=timeout,
         max_retries=max_retries,
@@ -118,12 +118,7 @@ def run_tam_sam_som_estimator_agent(
     Returns:
         Validated TAMSAMSOMAnalysis object.
     """
-    settings = get_ai_settings()
     memory_mgr = memory_manager or ProjectMemoryManager(use_mock_store=True)
-
-    if context.research_bundle:
-        # Future enhancement: Use verified external research from ResearchManager (Tavily/Exa/Zyte)
-        pass
 
     agent = get_tam_sam_som_estimator_agent(
         model_tier=ModelTier.HEAVY,
@@ -160,6 +155,7 @@ def run_tam_sam_som_estimator_agent(
         f"{context_text}\n\n"
         "Return pure JSON matching the TAMSAMSOMAnalysis schema with tam_description, tam_value, sam_description, sam_value, som_description, som_value, methodology, confidence_score."
     )
+    user_prompt += grounding_prompt_suffix(context.research_bundle)
 
     if mock_mode:
         raw_output = f"""{{
@@ -173,10 +169,10 @@ def run_tam_sam_som_estimator_agent(
             "confidence_score": 0.90
         }}"""
     else:
-        raw_output = _call_live_groq_llm(
+        raw_output = _call_live_llm(
             system_prompt=system_prompt,
             user_prompt=user_prompt,
-            model_name=settings.groq_model_heavy,
+            tier=ModelTier.HEAVY,
             temperature=0.2,
             schema_class=TAMSAMSOMAnalysis,
         )

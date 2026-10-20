@@ -1,4 +1,4 @@
-"""Integration test suite for IndustryAnalysisAgent running against live Groq LLM API."""
+"""Integration test suite for IndustryAnalysisAgent running against live self-hosted LLM."""
 
 import unittest
 
@@ -107,7 +107,7 @@ def create_sample_validation_result(
 
 
 class TestIndustryAnalysisAgent(unittest.TestCase):
-    """Live integration tests for IndustryAnalysisAgent using real Groq LLM API."""
+    """Live integration tests for IndustryAnalysisAgent using real self-hosted LLM."""
 
     def test_agent_factory_instantiation(self):
         """Test instantiation of IndustryAnalysisAgent factory."""
@@ -136,7 +136,7 @@ class TestIndustryAnalysisAgent(unittest.TestCase):
         analysis = run_industry_analysis_agent(
             context=context,
             memory_manager=memory_mgr,
-            mock_mode=False,  # LIVE GROQ LLM EXECUTION
+            mock_mode=False,  # LIVE LLM EXECUTION
         )
 
         # Context Object Population Verification

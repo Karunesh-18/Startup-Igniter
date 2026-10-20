@@ -328,6 +328,125 @@ export interface ResearchPatentResult {
   status?: string;
 }
 
+// ─── Crews 4-12 ──────────────────────────────────────────────
+// Mirrors ai/schemas/{feasibility,business_plan,product_development,
+// legal_compliance,branding_marketing,funding,growth_scaling,community,
+// reporting}.py. Every field is optional on purpose: these crews are new and
+// their schemas are still moving, and the UI renders them through one
+// generic renderer (results/GenericCrew.tsx), so a renamed or missing field
+// degrades to "not shown" instead of a crash.
+
+export interface FeasibilityResult {
+  project_id?: string;
+  technical_feasibility_score?: number; // 0-100
+  operational_feasibility_score?: number; // 0-100
+  financial_feasibility_score?: number; // 0-100
+  key_risks?: string[];
+  mitigation_strategies?: string[];
+  executive_summary?: string;
+  confidence_score?: number; // 0-1
+}
+
+export interface BusinessPlanResult {
+  project_id?: string;
+  lean_canvas?: {
+    problem?: string;
+    solution?: string;
+    unique_value_proposition?: string;
+    unfair_advantage?: string;
+    customer_segments?: string;
+    key_metrics?: string[];
+    channels?: string[];
+    cost_structure?: string[];
+    revenue_streams?: string[];
+  };
+  financial_model?: {
+    pricing_model?: string;
+    price_points?: Record<string, string>;
+    estimated_cac?: string | null;
+    estimated_ltv?: string | null;
+  };
+  executive_summary?: string;
+  confidence_score?: number;
+}
+
+export interface ProductDevelopmentResult {
+  project_id?: string;
+  mvp_features?: { feature_name?: string; description?: string; priority?: string; complexity?: string }[];
+  tech_stack?: { frontend?: string; backend?: string; database?: string; hosting?: string; ai_ml_tools?: string[] };
+  architecture_overview?: string;
+  confidence_score?: number;
+}
+
+export interface LegalDocumentDraft {
+  document_type?: string;
+  title?: string;
+  content?: string;
+  disclaimer?: string;
+}
+
+export interface LegalComplianceResult {
+  project_id?: string;
+  compliance_checklist?: {
+    category?: string;
+    title?: string;
+    description?: string;
+    is_mandatory?: boolean;
+    regulatory_body?: string | null;
+  }[];
+  draft_nda?: LegalDocumentDraft | null;
+  draft_founder_agreement?: LegalDocumentDraft | null;
+  overall_summary?: string;
+  confidence_score?: number;
+}
+
+export interface BrandingMarketingResult {
+  project_id?: string;
+  brand_name_suggestions?: string[];
+  tagline?: string;
+  brand_positioning?: string;
+  copywriting_angles?: string[];
+  launch_channel_strategy?: string[];
+  confidence_score?: number;
+}
+
+export interface FundingResult {
+  project_id?: string;
+  pitch_deck_slides?: string[];
+  estimated_valuation_range?: string;
+  fundraising_target?: string;
+  investor_checklist?: string[];
+  investor_types?: string[];
+  confidence_score?: number;
+}
+
+export interface GrowthScalingResult {
+  project_id?: string;
+  primary_acquisition_channels?: string[];
+  viral_loop_mechanic?: string;
+  retention_playbook?: string[];
+  target_kpis?: string[];
+  confidence_score?: number;
+}
+
+export interface CommunityResult {
+  project_id?: string;
+  peer_review_scorecard?: Record<string, number>;
+  community_feedback_summary?: string;
+  recommended_mentors?: string[];
+  confidence_score?: number;
+}
+
+export interface MasterReportResult {
+  project_id?: string;
+  project_name?: string;
+  executive_summary?: string;
+  overall_readiness_score?: number; // 0-100
+  phase_scores?: Record<string, number>;
+  key_recommendations?: string[];
+  confidence_score?: number;
+}
+
 // ─── Master Combined Result ───────────────────────────────────
 
 export interface AnalysisResult {
@@ -335,22 +454,74 @@ export interface AnalysisResult {
   idea_text: string;
   status: 'success' | 'failed';
   ai_generated: boolean;
+  /** 0-10 from the 3-crew pipeline; may become 0-100 — normalise with toPercent(). */
   overall_readiness_score: number;
   executive_summary?: string;
   strategic_recommendations?: string[];
   idea_validation?: IdeaValidationResult;
   market_research?: MarketResearchResult;
   research_patent?: ResearchPatentResult;
+  feasibility?: FeasibilityResult;
+  business_planning?: BusinessPlanResult;
+  product_development?: ProductDevelopmentResult;
+  legal_compliance?: LegalComplianceResult;
+  branding_marketing?: BrandingMarketingResult;
+  funding?: FundingResult;
+  growth_scaling?: GrowthScalingResult;
+  community?: CommunityResult;
+  reporting?: MasterReportResult;
   error?: string;
 }
 
-// ─── Crew Progress Tracking ───────────────────────────────────
+// ─── Streaming progress (POST /api/v1/analysis/run/stream) ────
+// One JSON object per newline-delimited line — see
+// backend/api/routers/analysis.py::_stream_analysis for the producer.
+// Granularity is per crew: one crew_complete per crew, carrying that crew's
+// result object so the UI can preview it before the final `result` line.
 
-export interface AgentStep {
-  id: number;
-  name: string;
-  crew: number;
-  crewName: string;
-  status: 'pending' | 'running' | 'done';
-  progress: number;
+export type KnownCrewKey =
+  | 'idea_validation'
+  | 'market_research'
+  | 'research_patent'
+  | 'feasibility'
+  | 'business_planning'
+  | 'product_development'
+  | 'legal_compliance'
+  | 'branding_marketing'
+  | 'funding'
+  | 'growth_scaling'
+  | 'community'
+  | 'reporting';
+
+/** Known keys autocomplete; any other string is still accepted (backend keys are provisional). */
+export type StreamCrewKey = KnownCrewKey | (string & {});
+
+export interface StreamStartedEvent {
+  type: 'started';
+  project_id: string;
+  crews: string[];
 }
+
+export interface StreamCrewCompleteEvent {
+  type: 'crew_complete';
+  crew: StreamCrewKey;
+  label: string;
+  result?: unknown;
+}
+
+export interface StreamResultEvent {
+  type: 'result';
+  result: AnalysisResult;
+}
+
+export interface StreamErrorEvent {
+  type: 'error';
+  project_id?: string;
+  error: string;
+}
+
+export type StreamEvent =
+  | StreamStartedEvent
+  | StreamCrewCompleteEvent
+  | StreamResultEvent
+  | StreamErrorEvent;

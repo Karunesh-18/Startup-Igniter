@@ -1,11 +1,8 @@
 """Single source of truth for LLM backend configuration.
 
-Historically ``ai/config.py::AISettings`` and ``backend/core/config.py::Settings``
-each declared their own copy of the LLM env vars (``GROQ_*``, ``OPENROUTER_*``)
-and drifted — OpenRouter was primary in code but missing from
-``backend/.env.example`` and from ``backend/core/config.py`` entirely. This
-module is the one place new LLM settings are declared; both config classes
-import ``LLMSettings`` rather than re-declaring fields.
+The only LLM backend is the self-hosted vLLM server (no paid APIs). This
+module is the one place LLM settings are declared; ``ai/config.py::AISettings``
+and ``backend/core/config.py::Settings`` both inherit ``LLMSettings``.
 """
 
 from pathlib import Path
@@ -33,11 +30,10 @@ def _locate_env_file() -> Optional[str]:
 
 
 class LLMSettings(BaseSettings):
-    """Configuration for the self-hosted-first LLM gateway.
+    """Configuration for the self-hosted LLM gateway.
 
-    Resolution order at call time is ``selfhosted -> fallback -> mock``,
-    each stage skipped if its preconditions are not met (no base_url/key,
-    or the connection fails and a fallback is configured).
+    Resolution order at call time is ``selfhosted -> mock``; mock is only
+    reached when ``llm_allow_mock`` is true (default; prod should disable it).
     """
 
     model_config = SettingsConfigDict(
@@ -49,8 +45,6 @@ class LLMSettings(BaseSettings):
     )
 
     # --- Self-hosted (DGX B200 / vLLM) -------------------------------------
-    # Not reachable yet at time of writing; every call gracefully falls
-    # through to `llm_fallback_backend` when this is unset or unreachable.
     llm_base_url: Optional[str] = Field(
         default=None,
         alias="LLM_BASE_URL",
@@ -93,24 +87,12 @@ class LLMSettings(BaseSettings):
         ),
     )
 
-    # --- Fallback (existing hosted providers) ------------------------------
-    # 'groq' | 'openrouter' | 'none'. Auto-detected from whichever key is
-    # present if left as 'auto'.
-    llm_fallback_backend: str = Field(default="auto", alias="LLM_FALLBACK_BACKEND")
-
-    groq_api_key: Optional[str] = Field(default=None, alias="GROQ_API_KEY")
-    groq_model_heavy: str = Field(default="llama-3.3-70b-versatile", alias="GROQ_MODEL_HEAVY")
-    groq_model_fast: str = Field(default="llama-3.1-8b-instant", alias="GROQ_MODEL_FAST")
-
-    openrouter_api_key: Optional[str] = Field(default=None, alias="OPENROUTER_API_KEY")
-    openrouter_model_heavy: str = Field(
-        default="meta-llama/llama-3.3-70b-instruct", alias="OPENROUTER_MODEL_HEAVY"
-    )
-    openrouter_model_fast: str = Field(
-        default="meta-llama/llama-3.1-8b-instruct", alias="OPENROUTER_MODEL_FAST"
-    )
-
     # --- Behaviour -----------------------------------------------------------
+    llm_allow_mock: bool = Field(
+        default=True,
+        alias="LLM_ALLOW_MOCK",
+        description="Allow falling through to the offline mock provider. Production should set false.",
+    )
     llm_default_timeout_seconds: float = Field(default=60.0, alias="LLM_TIMEOUT_SECONDS")
     llm_max_retries: int = Field(default=4, alias="LLM_MAX_RETRIES")
     llm_repair_attempts: int = Field(
@@ -137,31 +119,6 @@ class LLMSettings(BaseSettings):
         if tier == ModelTier.FAST and self.llm_base_url_fast:
             return self.llm_base_url_fast
         return self.llm_base_url
-
-    @property
-    def has_groq(self) -> bool:
-        return bool(self.groq_api_key and self.groq_api_key not in ("", "your-groq-api-key"))
-
-    @property
-    def has_openrouter(self) -> bool:
-        return bool(self.openrouter_api_key)
-
-    def resolve_fallback_backend(self) -> Optional[str]:
-        """Return 'groq', 'openrouter', or None per `llm_fallback_backend` and configured keys."""
-        choice = (self.llm_fallback_backend or "auto").lower()
-        if choice == "none":
-            return None
-        if choice == "groq":
-            return "groq" if self.has_groq else None
-        if choice == "openrouter":
-            return "openrouter" if self.has_openrouter else None
-        # auto: prefer OpenRouter (matches historical behaviour: it was primary in call_live_llm)
-        if self.has_openrouter:
-            return "openrouter"
-        if self.has_groq:
-            return "groq"
-        return None
-
 
 _llm_settings_instance: Optional[LLMSettings] = None
 

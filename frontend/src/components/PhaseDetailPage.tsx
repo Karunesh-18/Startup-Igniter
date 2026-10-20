@@ -1,19 +1,11 @@
 /* PhaseDetailPage — Deep-dive into a single Phase Crew */
 
 import { useState } from 'react';
-import {
-  Lightbulb, Globe, FlaskConical, Cpu, Briefcase, Boxes, Scale, Sparkles,
-  Banknote, TrendingUp, Users, FileText, ArrowRight, ChevronRight,
-  Activity, CheckCircle2, Clock, Zap, BarChart3, Bot,
-} from 'lucide-react';
+import { ArrowRight, ChevronRight, Zap, Bot } from 'lucide-react';
+import { CREW_ICONS } from '@/lib/icons';
 import NeuralBackground from './NeuralBackground';
 import { CREWS, PIPELINE } from '@/data/crews';
 import type { Crew, Agent } from '@/data/crews';
-
-const CREW_ICONS: Record<string, any> = {
-  Lightbulb, Globe, FlaskConical, Cpu, Briefcase, Boxes, Scale, Sparkles,
-  Banknote, TrendingUp, Users, FileText,
-};
 
 const CREW_DESCRIPTIONS: Record<number, string> = {
   1: 'Validate your core concept against market reality, test foundational assumptions and score originality. Six agents run in parallel to give you a comprehensive idea audit before you invest resources.',
@@ -28,15 +20,6 @@ const CREW_DESCRIPTIONS: Record<number, string> = {
   10: 'Engineer growth loops, design referral mechanics and plan international expansion. Four agents map your scaling playbook.',
   11: 'Cultivate early community, connect with mentors and identify accelerator cohorts. Four agents build your ecosystem network.',
   12: 'Synthesise every crew\'s output into an investor-ready master report with 30-60-90 day action plan. Five agents produce your complete startup deliverable.',
-};
-
-const AGENT_ROLES_DETAIL: Record<string, string> = {
-  'Hypothesis Scanner': 'Tests foundational assumptions against market data',
-  'Problem Decoder': 'Identifies root causes and validates pain point severity',
-  'Market Fit Analyst': 'Calculates TAM/SAM/SOM and product-market fit signals',
-  'Risk Assessor': 'Quantifies technical, market and operational risks',
-  'Trend Mapper': 'Maps macro trends to timing and opportunity windows',
-  'Uniqueness Probe': 'Evaluates differentiation and competitive moat strength',
 };
 
 interface Props {
@@ -71,7 +54,7 @@ export default function PhaseDetailPage({ crewId, onBack, onSelectAgent, onLaunc
       />
       <div className="absolute inset-0 grid-bg opacity-20" />
 
-      <div className="relative z-10 mx-auto max-w-6xl px-6 py-12">
+      <div className="relative z-10 mx-auto max-w-6xl px-4 pb-12 pt-28 sm:px-6">
         {/* Back */}
         <button
           onClick={onBack}

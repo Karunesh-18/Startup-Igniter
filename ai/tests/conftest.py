@@ -12,7 +12,7 @@ failing, and the process ran for 10+ minutes before it was killed).
 
 These modules are skipped by default and only run with
 `RUN_LIVE_LLM_TESTS=1 pytest ai/tests/` — which should also require a real
-LLM_BASE_URL / GROQ_API_KEY / OPENROUTER_API_KEY to be configured, checked
+LLM_BASE_URL to be configured, checked
 per-module below by `ai.llm.settings.get_llm_settings()`.
 """
 

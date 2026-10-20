@@ -1,4 +1,4 @@
-"""Live integration tests for full 6-agent Idea Validation Crew executing real Groq LLM reasoning."""
+"""Live integration tests for full 6-agent Idea Validation Crew executing real self-hosted LLM reasoning."""
 
 import json
 import unittest
@@ -17,7 +17,7 @@ from ai.schemas.idea_validation import IdeaValidationResult
 
 
 class TestIdeaValidationCrewLiveExecution(unittest.TestCase):
-    """Integration test suite executing real Idea Validation Crew workflow live against Groq LLMs."""
+    """Integration test suite executing real Idea Validation Crew workflow live against the self-hosted LLM."""
 
     def test_agent_factory_instantiation(self):
         """Test instantiation of all 6 real agent factory functions."""
@@ -44,7 +44,7 @@ class TestIdeaValidationCrewLiveExecution(unittest.TestCase):
 
 
     def test_live_crew_execution_edtech_proposal(self):
-        """Test full live IdeaValidationCrew run for an EdTech proposal against Groq API."""
+        """Test full live IdeaValidationCrew run for an EdTech proposal against the self-hosted LLM."""
         memory_mgr = ProjectMemoryManager(use_mock_store=True)
         crew = get_idea_validation_crew(mock_mode=False, memory_manager=memory_mgr)
 

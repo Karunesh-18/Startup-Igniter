@@ -1,11 +1,9 @@
-"""Product Development Crew implementation orchestrating MVP roadmap & tech stack selection."""
+"""Product Development Crew: spec-driven LLM call (see ai/crews/spec_runner.py), literal result in mock mode."""
 
 from typing import Optional
 
-from ai.crews.product_development.tasks import (
-    execute_mvp_roadmap_task,
-    recommend_tech_stack_task,
-)
+from ai.crews.product_development.tasks import mock_result
+from ai.crews.spec_runner import run_spec_crew
 from ai.memory.project_memory import ProjectMemoryManager
 from ai.schemas.product_development import ProductDevelopmentResult
 from ai.shared.logger import ai_logger
@@ -18,37 +16,33 @@ class ProductDevelopmentCrew:
         self,
         memory_manager: Optional[ProjectMemoryManager] = None,
         verbose: bool = True,
+        mock_mode: bool = True,
     ):
         self.memory_manager = memory_manager or ProjectMemoryManager(use_mock_store=True)
         self.verbose = verbose
+        self.mock_mode = mock_mode
 
     def run(
         self,
         project_id: str,
         idea_text: str,
         category: str = "SaaS",
-        mock_mode: bool = True,
+        mock_mode: Optional[bool] = None,
+        prior: Optional[dict] = None,
     ) -> ProductDevelopmentResult:
-        """Execute Product Development tasks and persist to project memory."""
-        ai_logger.info(f"=== Starting ProductDevelopmentCrew Execution for Project '{project_id}' ===")
+        """Execute the crew (prior = earlier crews' model_dumps keyed by crew) and save to project memory."""
+        mock = self.mock_mode if mock_mode is None else mock_mode
+        ai_logger.info(f"=== Starting ProductDevelopmentCrew Execution for Project '{project_id}' (mock={mock}) ===")
 
-        mvp_features = execute_mvp_roadmap_task(project_id=project_id, idea_text=idea_text)
-        tech_stack = recommend_tech_stack_task(project_id=project_id, category=category)
-
-        arch_summary = (
-            f"Architecture overview for '{idea_text}':\n"
-            f"Frontend: {tech_stack.frontend}\n"
-            f"Backend: {tech_stack.backend}\n"
-            f"Database: {tech_stack.database}\n"
-            f"Hosting: {tech_stack.hosting}"
-        )
-
-        result = ProductDevelopmentResult(
-            project_id=project_id,
-            mvp_features=mvp_features,
-            tech_stack=tech_stack,
-            architecture_overview=arch_summary,
-            confidence_score=0.88,
+        result = run_spec_crew(
+            "product_development",
+            ProductDevelopmentResult,
+            project_id,
+            idea_text,
+            prior,
+            None,
+            lambda: mock_result(project_id=project_id, idea_text=idea_text, category=category),
+            mock,
         )
 
         self.memory_manager.write_memory(
@@ -67,4 +61,4 @@ def get_product_development_crew(
     memory_manager: Optional[ProjectMemoryManager] = None,
 ) -> ProductDevelopmentCrew:
     """Factory function for ProductDevelopmentCrew."""
-    return ProductDevelopmentCrew(memory_manager=memory_manager, verbose=True)
+    return ProductDevelopmentCrew(memory_manager=memory_manager, verbose=True, mock_mode=mock_mode)

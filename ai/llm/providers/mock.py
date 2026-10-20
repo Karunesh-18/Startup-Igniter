@@ -1,7 +1,8 @@
 """Offline provider: no network calls, deterministic schema-conformant output.
 
-This is the last stage of the resolution chain (selfhosted -> fallback ->
-mock) and also what `LLM_BACKEND=mock` forces directly for CI/tests. Most
+This is the last stage of the resolution chain (selfhosted -> mock), used
+only when the self-hosted server is unset/unreachable and LLM_ALLOW_MOCK is
+true (the default; there is no setting that forces mock directly). Most
 agents already have their own hand-written mock JSON branches that bypass
 the gateway entirely when `mock_mode=True` is passed at the call site (see
 e.g. ai/agents/market_research/market_research_agent.py) — this provider is

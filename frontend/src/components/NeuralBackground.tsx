@@ -31,7 +31,7 @@ export default function NeuralBackground({ density = 0.7 }: { density?: number }
 
     let w = (canvas.width = canvas.offsetWidth * window.devicePixelRatio);
     let h = (canvas.height = canvas.offsetHeight * window.devicePixelRatio);
-    let dpr = window.devicePixelRatio;
+    const dpr = window.devicePixelRatio;
 
     const particles: Particle[] = [];
     const beams: Beam[] = [];

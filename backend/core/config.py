@@ -28,10 +28,8 @@ from ai.llm.settings import LLMSettings  # noqa: E402
 class Settings(LLMSettings):
     """Core application configuration.
 
-    Inherits LLM_*/GROQ_*/OPENROUTER_* fields from ai.llm.settings.LLMSettings
-    rather than re-declaring them -- this class used to keep its own separate
-    GROQ_* copies that had drifted from ai/config.py::AISettings (OPENROUTER_*
-    was the primary provider in code but was never declared here at all).
+    Inherits LLM_* fields from ai.llm.settings.LLMSettings rather than
+    re-declaring them, so this and ai/config.py::AISettings can't drift.
     """
 
     model_config = SettingsConfigDict(
@@ -74,11 +72,6 @@ class Settings(LLMSettings):
     # ── Redis (Upstash) ───────────────────────────────────────────────────
     UPSTASH_REDIS_REST_URL: str = ""
     UPSTASH_REDIS_REST_TOKEN: str = ""
-
-    # ── Search ────────────────────────────────────────────────────────────
-    TAVILY_API_KEY: str = ""
-    EXA_API_KEY: str = ""
-    ZYTE_API_KEY: str = ""
 
     # ── Research APIs ─────────────────────────────────────────────────────
     SEMANTIC_SCHOLAR_API_KEY: str = ""

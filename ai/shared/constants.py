@@ -124,19 +124,11 @@ class RiskSeverity(str, Enum):
 
 
 class ModelTier(str, Enum):
-    """LLM execution tiers for Groq routing."""
+    """LLM execution tiers; mapped to self-hosted models in ai.llm.settings."""
 
-    FAST = "fast"          # llama-3.1-8b-instant (routing, classification, summarization)
-    HEAVY = "heavy"        # llama-3.3-70b-versatile (deep reasoning, SWOT, risk, legal)
-    REASONING = "reasoning" # deepseek-r1-distill-llama-70b (complex patent/research reasoning)
-
-
-# Model mapping for Groq
-DEFAULT_GROQ_MODELS: Dict[ModelTier, str] = {
-    ModelTier.FAST: "groq/llama-3.1-8b-instant",
-    ModelTier.HEAVY: "groq/llama-3.3-70b-versatile",
-    ModelTier.REASONING: "groq/deepseek-r1-distill-llama-70b",
-}
+    FAST = "fast"          # LLM_MODEL_FAST (routing, classification, summarization)
+    HEAVY = "heavy"        # LLM_MODEL_HEAVY (deep reasoning, SWOT, risk, legal)
+    REASONING = "reasoning" # LLM_MODEL_HEAVY (complex patent/research reasoning)
 
 
 # Default embedding settings (spec §2: sentence-transformers/all-MiniLM-L6-v2)

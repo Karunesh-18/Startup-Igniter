@@ -1,19 +1,11 @@
 /* PhaseListPage — Mission Control Grid of all 12 Crew Phases */
 
 import { useState } from 'react';
-import {
-  Lightbulb, Globe, FlaskConical, Cpu, Briefcase, Boxes, Scale, Sparkles,
-  Banknote, TrendingUp, Users, FileText, ArrowRight, ChevronRight, Activity,
-  Zap, Network,
-} from 'lucide-react';
+import { Users, ArrowRight, ChevronRight, Activity, Zap, Network } from 'lucide-react';
+import { CREW_ICONS } from '@/lib/icons';
 import NeuralBackground from './NeuralBackground';
 import { CREWS } from '@/data/crews';
 import type { Crew } from '@/data/crews';
-
-const CREW_ICONS: Record<string, any> = {
-  Lightbulb, Globe, FlaskConical, Cpu, Briefcase, Boxes, Scale, Sparkles,
-  Banknote, TrendingUp, Users, FileText,
-};
 
 const CREW_DESCRIPTIONS: Record<number, string> = {
   1: 'Validate your core concept, test assumptions and score originality.',
@@ -48,7 +40,7 @@ export default function PhaseListPage({ onBack, onSelectPhase, onAgents }: Props
       <div className="absolute inset-0 radial-spotlight" />
       <div className="absolute inset-0 grid-bg opacity-30" />
 
-      <div className="relative z-10 mx-auto max-w-7xl px-6 py-12">
+      <div className="relative z-10 mx-auto max-w-7xl px-4 pb-12 pt-28 sm:px-6">
         {/* Header */}
         <div className="mb-12 animate-fade-up">
           <button

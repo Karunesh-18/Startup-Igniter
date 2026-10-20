@@ -1,11 +1,9 @@
-"""Business Planning Crew implementation orchestrating Lean Canvas and financial modeling."""
+"""Business Planning Crew: spec-driven LLM call (see ai/crews/spec_runner.py), literal result in mock mode."""
 
 from typing import Optional
 
-from ai.crews.business_planning.tasks import (
-    create_financial_model_task,
-    create_lean_canvas_task,
-)
+from ai.crews.business_planning.tasks import mock_result
+from ai.crews.spec_runner import category_of, fetch_research, run_spec_crew
 from ai.memory.project_memory import ProjectMemoryManager
 from ai.schemas.business_plan import BusinessPlanResult
 from ai.shared.logger import ai_logger
@@ -18,35 +16,32 @@ class BusinessPlanningCrew:
         self,
         memory_manager: Optional[ProjectMemoryManager] = None,
         verbose: bool = True,
+        mock_mode: bool = True,
     ):
         self.memory_manager = memory_manager or ProjectMemoryManager(use_mock_store=True)
         self.verbose = verbose
+        self.mock_mode = mock_mode
 
     def run(
         self,
         project_id: str,
         idea_text: str,
-        mock_mode: bool = True,
+        mock_mode: Optional[bool] = None,
+        prior: Optional[dict] = None,
     ) -> BusinessPlanResult:
-        """Execute Business Planning tasks and persist to project memory."""
-        ai_logger.info(f"=== Starting BusinessPlanningCrew Execution for Project '{project_id}' ===")
+        """Execute the crew (prior = earlier crews' model_dumps keyed by crew) and save to project memory."""
+        mock = self.mock_mode if mock_mode is None else mock_mode
+        ai_logger.info(f"=== Starting BusinessPlanningCrew Execution for Project '{project_id}' (mock={mock}) ===")
 
-        lean_canvas = create_lean_canvas_task(project_id=project_id, idea_text=idea_text, mock_mode=mock_mode)
-        financial_model = create_financial_model_task(project_id=project_id, mock_mode=mock_mode)
-
-        summary = (
-            f"Business Plan for '{idea_text}':\n"
-            f"UVP: {lean_canvas.unique_value_proposition}\n"
-            f"Revenue Model: {financial_model.pricing_model}\n"
-            f"Year 1 Projection: {financial_model.year_1_revenue_projection}"
-        )
-
-        result = BusinessPlanResult(
-            project_id=project_id,
-            lean_canvas=lean_canvas,
-            financial_model=financial_model,
-            executive_summary=summary,
-            confidence_score=0.88,
+        result = run_spec_crew(
+            "business_planning",
+            BusinessPlanResult,
+            project_id,
+            idea_text,
+            prior,
+            None if mock else fetch_research("gather_market_research", idea_text, category_of(prior, idea_text)),
+            lambda: mock_result(project_id=project_id, idea_text=idea_text),
+            mock,
         )
 
         self.memory_manager.write_memory(
@@ -65,4 +60,4 @@ def get_business_planning_crew(
     memory_manager: Optional[ProjectMemoryManager] = None,
 ) -> BusinessPlanningCrew:
     """Factory function for BusinessPlanningCrew."""
-    return BusinessPlanningCrew(memory_manager=memory_manager, verbose=True)
+    return BusinessPlanningCrew(memory_manager=memory_manager, verbose=True, mock_mode=mock_mode)

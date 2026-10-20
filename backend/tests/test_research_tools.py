@@ -2,31 +2,12 @@ import pytest
 
 from ai.services.research_service import get_research_service
 from ai.tools import (
-    ExaSearchTool,
     HFEmbeddingsTool,
     OpenAlexTool,
     PatentsViewTool,
     SemanticScholarTool,
-    TavilySearchTool,
     UpstashRedisCache,
-    ZyteScraperTool,
 )
-
-
-@pytest.mark.asyncio
-async def test_tavily_search_mock():
-    tool = TavilySearchTool()
-    res = tool.search("FinTech SaaS startups", mock_mode=True)
-    assert res.query == "FinTech SaaS startups"
-    assert len(res.results) > 0
-
-
-@pytest.mark.asyncio
-async def test_exa_search_mock():
-    tool = ExaSearchTool()
-    res = tool.search("AI diagnostic imaging", mock_mode=True)
-    assert res.query == "AI diagnostic imaging"
-    assert len(res.results) > 0
 
 
 @pytest.mark.asyncio
@@ -56,15 +37,6 @@ async def test_hf_embeddings_mock():
     vec = tool.embed_text("Startup OS project memory embedding", mock_mode=True)
     assert isinstance(vec, list)
     assert len(vec) == 384
-
-
-@pytest.mark.asyncio
-async def test_zyte_scraper_safe_fallback():
-    tool = ZyteScraperTool()
-    # ZYTE_ENABLED is False by default, so it uses httpx safe fallback
-    res = tool.scrape_url("https://example.com")
-    assert res.status_code == 200
-    assert "Example Domain" in res.clean_text or "Content summary" in res.clean_text or "example" in res.clean_text.lower()
 
 
 @pytest.mark.asyncio

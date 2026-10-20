@@ -42,3 +42,22 @@ def create_financial_model_task(
         estimated_ltv="$588 average lifetime revenue",
         year_1_revenue_projection="$150,000 ARR target with 250 paying subscribers",
     )
+
+
+def mock_result(project_id: str, idea_text: str) -> BusinessPlanResult:
+    """Offline literal result for the whole crew (mock_mode)."""
+    lean_canvas = create_lean_canvas_task(project_id=project_id, idea_text=idea_text)
+    financial_model = create_financial_model_task(project_id=project_id)
+    summary = (
+        f"Business Plan for '{idea_text}':\n"
+        f"UVP: {lean_canvas.unique_value_proposition}\n"
+        f"Revenue Model: {financial_model.pricing_model}\n"
+        f"Year 1 Projection: {financial_model.year_1_revenue_projection}"
+    )
+    return BusinessPlanResult(
+        project_id=project_id,
+        lean_canvas=lean_canvas,
+        financial_model=financial_model,
+        executive_summary=summary,
+        confidence_score=0.88,
+    )

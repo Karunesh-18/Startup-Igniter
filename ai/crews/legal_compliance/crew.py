@@ -1,11 +1,9 @@
-"""Legal & Compliance Crew implementation orchestrating compliance checklists & legal document drafting."""
+"""Legal & Compliance Crew: spec-driven LLM call (see ai/crews/spec_runner.py), literal result in mock mode."""
 
 from typing import Optional
 
-from ai.crews.legal_compliance.tasks import (
-    draft_legal_documents_task,
-    generate_compliance_checklist_task,
-)
+from ai.crews.legal_compliance.tasks import mock_result
+from ai.crews.spec_runner import category_of, fetch_research, run_spec_crew
 from ai.memory.project_memory import ProjectMemoryManager
 from ai.schemas.legal_compliance import LegalComplianceResult
 from ai.shared.logger import ai_logger
@@ -18,31 +16,33 @@ class LegalComplianceCrew:
         self,
         memory_manager: Optional[ProjectMemoryManager] = None,
         verbose: bool = True,
+        mock_mode: bool = True,
     ):
         self.memory_manager = memory_manager or ProjectMemoryManager(use_mock_store=True)
         self.verbose = verbose
+        self.mock_mode = mock_mode
 
     def run(
         self,
         project_id: str,
         idea_text: str,
         category: str = "SaaS",
-        mock_mode: bool = True,
+        mock_mode: Optional[bool] = None,
+        prior: Optional[dict] = None,
     ) -> LegalComplianceResult:
-        """Execute legal compliance tasks and save to project memory."""
-        ai_logger.info(f"=== Starting LegalComplianceCrew Execution for Project '{project_id}' ===")
+        """Execute the crew (prior = earlier crews' model_dumps keyed by crew) and save to project memory."""
+        mock = self.mock_mode if mock_mode is None else mock_mode
+        ai_logger.info(f"=== Starting LegalComplianceCrew Execution for Project '{project_id}' (mock={mock}) ===")
 
-        checklist = generate_compliance_checklist_task(project_id=project_id, category=category)
-        nda_draft = draft_legal_documents_task(project_id=project_id, idea_text=idea_text)
-
-        summary = f"Legal readiness roadmap compiled with {len(checklist)} key compliance items and draft NDA generated."
-
-        result = LegalComplianceResult(
-            project_id=project_id,
-            compliance_checklist=checklist,
-            draft_nda=nda_draft,
-            overall_summary=summary,
-            confidence_score=0.90,
+        result = run_spec_crew(
+            "legal_compliance",
+            LegalComplianceResult,
+            project_id,
+            idea_text,
+            prior,
+            None if mock else fetch_research("gather_regulatory_research", category_of(prior, category), "global"),
+            lambda: mock_result(project_id=project_id, idea_text=idea_text, category=category),
+            mock,
         )
 
         self.memory_manager.write_memory(
@@ -61,4 +61,4 @@ def get_legal_compliance_crew(
     memory_manager: Optional[ProjectMemoryManager] = None,
 ) -> LegalComplianceCrew:
     """Factory function for LegalComplianceCrew."""
-    return LegalComplianceCrew(memory_manager=memory_manager, verbose=True)
+    return LegalComplianceCrew(memory_manager=memory_manager, verbose=True, mock_mode=mock_mode)

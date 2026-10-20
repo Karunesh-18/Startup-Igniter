@@ -5,7 +5,6 @@ import time
 from pathlib import Path
 from typing import Any, Dict, Optional, Union
 
-from ai.config import get_ai_settings
 from ai.memory.project_memory import ProjectMemoryManager
 from ai.schemas.context import ResearchPatentContext
 from ai.schemas.idea_validation import IdeaValidationResult
@@ -200,12 +199,12 @@ def run_patent_search_agent(
             "confidence_score": 0.85
         }}"""
     else:
-        ai_logger.info(f"Initializing LLM: model=openrouter/{get_ai_settings().openrouter_model_heavy}, temp=0.2, mock=False")
+        ai_logger.info("Initializing LLM: tier=heavy, temp=0.2, mock=False")
         from ai.shared.llm_provider import call_live_llm
         raw_output = call_live_llm(
             system_prompt=system_prompt,
             user_prompt=user_prompt,
-            model_name=get_ai_settings().openrouter_model_heavy,
+            tier=ModelTier.HEAVY,
             temperature=0.2,
             schema_class=PatentAnalysis,
         )

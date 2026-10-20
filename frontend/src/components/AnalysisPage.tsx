@@ -1,251 +1,241 @@
-import { useState } from 'react';
-import {
-  ArrowLeft, Rocket, Sparkles, Zap, AlertTriangle, Loader2,
-  CheckCircle2, Brain, Network, Lightbulb,
-} from 'lucide-react';
-import NeuralBackground from './NeuralBackground';
-import { useScrollReveal } from '@/hooks/useScrollReveal';
-import { runAnalysis } from '@/lib/api';
-import type { AnalysisResult } from '@/lib/types';
+import { useEffect, useRef, useState } from 'react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { AlertTriangle, ArrowLeft, Check, Loader2, X } from 'lucide-react';
+import { runAnalysisStream } from '@/lib/api';
+import { CREW_KEYS, crewMeta, crewScore, crewSummary, saveResult } from '@/lib/report';
+import type { StreamEvent } from '@/lib/types';
+import { cn } from '@/lib/utils';
+import { Button } from '@/components/ui/button';
+import { BackgroundBeams } from '@/components/ui/background-beams';
 
 const EXAMPLES = [
   'AI-powered legal contract reviewer for small businesses',
   'Carbon credit marketplace for regenerative agriculture',
   'Mental health companion app for Gen Z using voice AI',
   'Decentralized GPU marketplace for indie AI developers',
-  'Autonomous warehouse robots with multi-agent AI for inventory management',
 ];
 
-// Rotating status messages during API call
-const LOADING_MESSAGES = [
-  'Running Idea Validation agents…',
-  'Researching market landscape…',
-  'Mining patent databases…',
-  'Assessing technical feasibility…',
-  'Designing revenue model…',
-  'Scoping the MVP roadmap…',
-  'Auditing legal & compliance…',
-  'Crafting brand identity…',
-  'Matching investors…',
-  'Modelling growth loops…',
-  'Building final report…',
-  'Synthesising all 66 agents…',
-];
+type Phase = 'idle' | 'running' | 'error';
+type RowStatus = 'pending' | 'running' | 'done' | 'error';
 
-type Status = 'idle' | 'running' | 'done' | 'error';
-
-interface Props {
-  onBack: () => void;
-  onComplete: (result: AnalysisResult) => void;
+interface Row {
+  key: string;
+  label: string;
+  done: boolean;
+  result?: unknown;
 }
 
-export default function AnalysisPage({ onBack, onComplete }: Props) {
-  useScrollReveal();
-  const [idea, setIdea] = useState('');
-  const [status, setStatus] = useState<Status>('idle');
+const initialRows = (): Row[] => CREW_KEYS.map((key) => ({ key, label: crewMeta(key).label, done: false }));
+
+const fmtTime = (s: number) => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
+
+export default function AnalysisPage() {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const [idea, setIdea] = useState<string>((location.state as { idea?: string } | null)?.idea ?? '');
+  const [phase, setPhase] = useState<Phase>('idle');
   const [error, setError] = useState<string | null>(null);
-  const [msgIdx, setMsgIdx] = useState(0);
+  const [rows, setRows] = useState<Row[]>(initialRows);
+  const [elapsed, setElapsed] = useState(0);
+  const abortRef = useRef<AbortController | null>(null);
 
-  const launch = async () => {
-    if (!idea.trim()) return;
-    setStatus('running');
-    setError(null);
+  // Elapsed timer while a run is in flight.
+  useEffect(() => {
+    if (phase !== 'running') return;
+    const started = Date.now();
+    const id = setInterval(() => setElapsed(Math.floor((Date.now() - started) / 1000)), 1000);
+    return () => clearInterval(id);
+  }, [phase]);
 
-    // Cycle through status messages
-    const interval = setInterval(() => {
-      setMsgIdx((i) => (i + 1) % LOADING_MESSAGES.length);
-    }, 3500);
+  // Abort an in-flight run if the user navigates away.
+  useEffect(() => {
+    return () => {
+      abortRef.current?.abort();
+    };
+  }, []);
 
-    try {
-      const result = await runAnalysis({ idea_text: idea.trim(), mock_mode: false });
-      clearInterval(interval);
-      setStatus('done');
-      setTimeout(() => onComplete(result), 800);
-    } catch (err: any) {
-      clearInterval(interval);
-      setError(err?.message ?? 'Analysis failed. Please try again.');
-      setStatus('error');
+  const onEvent = (ev: StreamEvent) => {
+    if (ev.type === 'started') {
+      // Order rows by the backend's crew list; labels it adds that we don't know become extra rows.
+      setRows((prev) => {
+        const byLabel = new Map(prev.map((r) => [r.label, r]));
+        const ordered = ev.crews.map((label) => byLabel.get(label) ?? { key: label, label, done: false });
+        return [...ordered, ...prev.filter((r) => !ev.crews.includes(r.label))];
+      });
+    } else if (ev.type === 'crew_complete') {
+      setRows((prev) => {
+        const i = prev.findIndex((r) => r.key === ev.crew || r.label === ev.label);
+        const row = { key: ev.crew, label: ev.label || crewMeta(ev.crew).label, done: true, result: ev.result };
+        return i >= 0 ? prev.map((r, j) => (j === i ? row : r)) : [...prev, row];
+      });
     }
   };
 
+  const launch = async () => {
+    if (!idea.trim()) return;
+    const controller = new AbortController();
+    abortRef.current = controller;
+    setRows(initialRows());
+    setElapsed(0);
+    setError(null);
+    setPhase('running');
+    try {
+      const result = await runAnalysisStream({ idea_text: idea.trim(), mock_mode: false }, onEvent, controller.signal);
+      saveResult(result);
+      navigate(`/results/${encodeURIComponent(result.project_id)}`, { state: { result } });
+    } catch (err) {
+      if (controller.signal.aborted) {
+        setPhase('idle');
+        setError('Analysis cancelled. Crews that already finished are not saved.');
+      } else {
+        setPhase('error');
+        setError(err instanceof Error ? err.message : 'Analysis failed. Check that the backend is running, then try again.');
+      }
+    } finally {
+      abortRef.current = null;
+    }
+  };
+
+  const cancel = () => abortRef.current?.abort();
+
+  // The first unfinished row is the one in flight.
+  const runningIdx = rows.findIndex((r) => !r.done);
+  const statusOf = (i: number): RowStatus =>
+    rows[i].done ? 'done' : i === runningIdx ? (phase === 'running' ? 'running' : phase === 'error' ? 'error' : 'pending') : 'pending';
+  const doneCount = rows.filter((r) => r.done).length;
+  const showTimeline = phase !== 'idle' || doneCount > 0;
+
   return (
-    <div className="relative min-h-screen overflow-hidden bg-void">
-      <div className="absolute inset-0 opacity-40">
-        <NeuralBackground density={0.4} />
-      </div>
-      <div className="absolute inset-0 radial-spotlight" />
+    <div className="relative isolate min-h-screen overflow-hidden bg-void">
+      <BackgroundBeams className="-z-10 opacity-40" />
 
-      <div className="relative z-10 mx-auto max-w-4xl px-6 py-12">
-        <button
-          onClick={onBack}
-          disabled={status === 'running'}
-          className="mb-8 flex items-center gap-2 text-sm text-white/50 transition-colors hover:text-white disabled:pointer-events-none disabled:opacity-30"
+      <div className="mx-auto max-w-3xl px-4 py-8 sm:px-6 sm:py-12">
+        <Link to="/" className="inline-flex items-center gap-2 text-sm text-white/50 transition-colors hover:text-white">
+          <ArrowLeft className="h-4 w-4" aria-hidden="true" />
+          Home
+        </Link>
+
+        <h1 className="mt-10 font-serif text-4xl leading-tight text-white sm:text-6xl">What are you building?</h1>
+        <p className="mt-4 max-w-xl text-white/60">
+          Describe the idea in one to three sentences. Twelve crews will work through it in order; you can watch each one finish.
+        </p>
+
+        <form
+          className="mt-8 rounded-3xl border border-white/[0.12] bg-charcoal/70 p-2 backdrop-blur-xl"
+          onSubmit={(e) => {
+            e.preventDefault();
+            launch();
+          }}
         >
-          <ArrowLeft className="h-4 w-4" />
-          Back
-        </button>
-
-        {/* ── Idle / Error Input ── */}
-        {status !== 'running' && status !== 'done' && (
-          <div>
-            <div className="reveal text-center">
-              <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-1.5">
-                <Sparkles className="h-3.5 w-3.5 text-violet" />
-                <span className="text-xs text-white/60">New Mission · 12 Crews · 66 Agents</span>
-              </div>
-              <h1 className="text-4xl font-light leading-tight text-white sm:text-5xl">
-                What are we <span className="font-serif italic text-gradient">building</span>?
-              </h1>
-              <p className="mx-auto mt-4 max-w-xl text-white/50">
-                Describe your startup idea in 1–3 sentences. Our 66 AI agents across 12 specialized crews will analyse it end-to-end and generate an investor-ready report.
-              </p>
-            </div>
-
-            {/* Input */}
-            <div className="reveal mt-10 gradient-border noise relative overflow-hidden rounded-3xl bg-charcoal/50 p-2 backdrop-blur-xl">
-              <textarea
-                value={idea}
-                onChange={(e) => setIdea(e.target.value)}
-                placeholder="e.g. An AI platform that turns startup ideas into investor-ready companies…"
-                rows={4}
-                className="w-full resize-none rounded-2xl bg-transparent px-5 py-4 text-lg text-white placeholder-white/25 focus:outline-none"
-              />
-              <div className="flex items-center justify-between px-4 pb-3">
-                <div className="flex items-center gap-2 text-xs text-white/30">
-                  <Zap className="h-3.5 w-3.5 text-electric" />
-                  {idea.length} chars · 12 crews · 66 agents
-                </div>
-                <button
-                  onClick={launch}
-                  disabled={!idea.trim()}
-                  className="btn-primary flex items-center gap-2 rounded-full px-6 py-2.5 text-sm font-medium disabled:opacity-40"
-                >
-                  <Rocket className="h-4 w-4" />
-                  Launch Mission
-                </button>
-              </div>
-            </div>
-
-            {/* Examples */}
-            <div className="reveal mt-6">
-              <div className="text-center text-xs uppercase tracking-wider text-white/30">Or try an example</div>
-              <div className="mt-4 flex flex-wrap justify-center gap-2">
-                {EXAMPLES.map((ex) => (
-                  <button
-                    key={ex}
-                    onClick={() => setIdea(ex)}
-                    className="rounded-full border border-white/10 bg-white/[0.03] px-4 py-2 text-xs text-white/60 transition-all hover:border-white/20 hover:text-white"
-                  >
-                    {ex}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Error */}
-            {status === 'error' && error && (
-              <div className="mt-8 flex items-start gap-3 rounded-2xl border border-red-500/20 bg-red-500/10 p-4">
-                <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-red-400" />
-                <div>
-                  <div className="text-sm font-medium text-red-300">Analysis failed</div>
-                  <div className="mt-1 text-xs text-red-400/80">{error}</div>
-                  <button
-                    onClick={launch}
-                    className="mt-3 flex items-center gap-1.5 text-xs text-red-300 hover:text-red-200"
-                  >
-                    <Rocket className="h-3.5 w-3.5" /> Retry
-                  </button>
-                </div>
-              </div>
+          <label htmlFor="idea" className="sr-only">
+            Startup idea
+          </label>
+          <textarea
+            id="idea"
+            value={idea}
+            onChange={(e) => setIdea(e.target.value)}
+            disabled={phase === 'running'}
+            placeholder="e.g. An app that matches home cooks with neighbours who want a weekly meal plan"
+            rows={4}
+            maxLength={5000}
+            className="w-full resize-none rounded-2xl bg-transparent px-4 py-3 text-lg text-white placeholder-white/30 focus:outline-none disabled:opacity-60"
+          />
+          <div className="flex items-center justify-between gap-3 px-3 pb-2">
+            <span className="text-xs text-white/35">{idea.length} / 5000</span>
+            {phase === 'running' ? (
+              <Button type="button" variant="danger" size="md" onClick={cancel}>
+                <X className="h-4 w-4" aria-hidden="true" />
+                Cancel
+              </Button>
+            ) : (
+              <Button type="submit" variant="shine" size="md" disabled={!idea.trim()}>
+                {phase === 'error' ? 'Retry analysis' : 'Start analysis'}
+              </Button>
             )}
           </div>
+        </form>
+
+        {!showTimeline && (
+          <div className="mt-6 flex flex-wrap gap-2">
+            {EXAMPLES.map((ex) => (
+              <button
+                key={ex}
+                onClick={() => setIdea(ex)}
+                className="rounded-full border border-white/10 px-3.5 py-1.5 text-xs text-white/60 transition-colors hover:border-white/25 hover:text-white"
+              >
+                {ex}
+              </button>
+            ))}
+          </div>
         )}
 
-        {/* ── Running ── */}
-        {status === 'running' && (
-          <div className="animate-fade-up flex min-h-[70vh] flex-col items-center justify-center">
-            {/* Orbital animation */}
-            <div className="relative mb-10 flex h-40 w-40 items-center justify-center">
-              {/* Outer ring */}
-              <div className="absolute inset-0 rounded-full border border-electric/20 animate-spin-slow" />
-              <div className="absolute inset-3 rounded-full border border-violet/15 animate-spin-slower" />
-              <div className="absolute inset-6 rounded-full border border-teal/10 animate-spin-slow" />
-              {/* Core */}
-              <div className="relative flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-electric to-violet shadow-[0_0_40px_rgba(45,127,249,0.5)]">
-                <Brain className="h-8 w-8 text-white" />
-              </div>
-              {/* Orbiting dots */}
-              {[0, 60, 120, 180, 240, 300].map((deg) => (
-                <div
-                  key={deg}
-                  className="absolute h-2 w-2 rounded-full bg-electric/70 animate-spin-slow"
-                  style={{
-                    transformOrigin: '70px 70px',
-                    transform: `rotate(${deg}deg) translateX(56px)`,
-                    animationDelay: `${deg / 360}s`,
-                  }}
-                />
-              ))}
-            </div>
+        {error && (
+          <div role="alert" className="mt-6 flex items-start gap-3 rounded-2xl border border-red-500/25 bg-red-500/10 p-4 text-sm">
+            <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-red-400" aria-hidden="true" />
+            <span className="text-red-200">{error}</span>
+          </div>
+        )}
 
-            <div className="text-center">
-              <div className="mb-2 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-1.5">
-                <Loader2 className="h-3.5 w-3.5 animate-spin text-electric" />
-                <span className="text-xs text-white/60">Mission in progress</span>
-              </div>
-
-              <h2 className="mt-4 text-2xl font-light text-white">
-                Analysing <span className="text-gradient font-medium">"{idea.length > 55 ? idea.slice(0, 55) + '…' : idea}"</span>
+        {showTimeline && (
+          <section className="mt-12" aria-label="Crew progress">
+            <div className="flex items-baseline justify-between">
+              <h2 className="text-lg font-medium text-white">
+                {doneCount} of {rows.length} crews done
               </h2>
-
-              <p className="mt-4 text-sm text-white/50 transition-all duration-700 min-h-[1.5rem]">
-                {LOADING_MESSAGES[msgIdx]}
-              </p>
+              <span className="font-mono text-sm tabular-nums text-white/50" aria-label="Elapsed time">
+                {fmtTime(elapsed)}
+              </span>
             </div>
 
-            {/* Phase progress indicators */}
-            <div className="mt-12 grid grid-cols-4 gap-2 sm:grid-cols-6 lg:grid-cols-12">
-              {Array.from({ length: 12 }, (_, i) => (
-                <div
-                  key={i}
-                  className="flex flex-col items-center gap-1"
-                >
-                  <div
-                    className="h-1 w-full rounded-full"
-                    style={{
-                      background: msgIdx > i
-                        ? 'linear-gradient(90deg, #2d7ff9, #8b5cf6)'
-                        : msgIdx === i
-                        ? 'rgba(45,127,249,0.5)'
-                        : 'rgba(255,255,255,0.06)',
-                      boxShadow: msgIdx === i ? '0 0 8px rgba(45,127,249,0.6)' : 'none',
-                      animation: msgIdx === i ? 'shimmer 1.5s infinite' : 'none',
-                      backgroundSize: msgIdx === i ? '200% 100%' : 'auto',
-                    }}
-                  />
-                  <span className="font-mono text-[8px] text-white/20">{String(i + 1).padStart(2, '0')}</span>
-                </div>
-              ))}
-            </div>
-
-            <p className="mt-6 text-xs text-white/25">
-              66 agents · 12 crews · This may take a few minutes
-            </p>
-          </div>
-        )}
-
-        {/* ── Done ── */}
-        {status === 'done' && (
-          <div className="flex min-h-[60vh] items-center justify-center animate-scale-in">
-            <div className="gradient-border noise mx-auto max-w-md rounded-3xl bg-charcoal/50 p-8 text-center backdrop-blur-xl">
-              <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-emerald to-teal shadow-[0_0_30px_rgba(16,185,129,0.4)]">
-                <CheckCircle2 className="h-7 w-7 text-white" />
-              </div>
-              <h3 className="mt-6 text-2xl font-light text-white">Analysis Complete</h3>
-              <p className="mt-2 text-sm text-white/50">Loading your investor report…</p>
-              <Loader2 className="mx-auto mt-4 h-5 w-5 animate-spin text-emerald" />
-            </div>
-          </div>
+            <ol className="mt-6" aria-live="polite">
+              {rows.map((row, i) => {
+                const status = statusOf(i);
+                const meta = crewMeta(row.key, row.label);
+                const score = crewScore(row.result);
+                const summary = crewSummary(row.result);
+                return (
+                  <li key={row.key} className="relative flex gap-4 pb-6 last:pb-0">
+                    {i < rows.length - 1 && (
+                      <span
+                        aria-hidden="true"
+                        className={cn('absolute left-[11px] top-7 h-[calc(100%-1.75rem)] w-px', row.done ? 'bg-teal/50' : 'bg-white/10')}
+                      />
+                    )}
+                    <span
+                      className={cn(
+                        'relative z-10 flex h-6 w-6 shrink-0 items-center justify-center rounded-full border text-[10px]',
+                        status === 'done' && 'border-teal bg-teal text-void',
+                        status === 'running' && 'border-electric text-electric',
+                        status === 'error' && 'border-red-400 text-red-400',
+                        status === 'pending' && 'border-white/15 text-white/30',
+                      )}
+                    >
+                      {status === 'done' ? (
+                        <Check className="h-3.5 w-3.5" aria-hidden="true" />
+                      ) : status === 'running' ? (
+                        <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden="true" />
+                      ) : status === 'error' ? (
+                        <X className="h-3.5 w-3.5" aria-hidden="true" />
+                      ) : (
+                        i + 1
+                      )}
+                    </span>
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-baseline justify-between gap-3">
+                        <span className={cn('text-sm', status === 'pending' ? 'text-white/40' : 'text-white')}>
+                          {meta.label}
+                          <span className="sr-only">: {status}</span>
+                        </span>
+                        {score != null && <span className="font-mono text-xs tabular-nums text-white/50">{Math.round(score)}/100</span>}
+                      </div>
+                      {status === 'running' && <p className="mt-1 text-xs text-electric-300">Working…</p>}
+                      {summary && <p className="mt-1.5 line-clamp-2 text-xs leading-relaxed text-white/50">{summary}</p>}
+                    </div>
+                  </li>
+                );
+              })}
+            </ol>
+          </section>
         )}
       </div>
     </div>

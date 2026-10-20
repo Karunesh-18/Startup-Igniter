@@ -618,7 +618,7 @@ class PatentResearchReport(Base):
     """
     Output from the patent/prior-art research crew.
 
-    Sources: PatentsView (US), Tavily/Exa web search (global),
+    Sources: PatentsView (US), DuckDuckGo web search (global),
              optional user-uploaded PDF comparison.
     """
 

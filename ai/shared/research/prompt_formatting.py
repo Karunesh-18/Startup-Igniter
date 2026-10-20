@@ -58,3 +58,17 @@ def format_research_bundle_for_prompt(bundle: Optional[ResearchBundle]) -> Tuple
     for i, snippet in enumerate(snippets, start=1):
         lines.append(f"[{i}] {snippet['title']} — {snippet['url']}\n    {snippet['content']}")
     return "\n".join(lines), True
+
+
+def grounding_prompt_suffix(bundle: Optional[ResearchBundle], has_citations_field: bool = True) -> str:
+    """Text to append to a user prompt: the source list plus a citation
+    instruction, or '' when there's nothing to ground on."""
+    block, has_grounding = format_research_bundle_for_prompt(bundle)
+    if not has_grounding:
+        return ""
+    cite = (
+        "Cite the source URL for every claim drawn from these sources in the `citations` field."
+        if has_citations_field
+        else "Ground your analysis in these sources where relevant; do not invent others."
+    )
+    return f"\n{block}\n\n{cite}"

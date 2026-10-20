@@ -1,4 +1,4 @@
-"""Integration test suite for CompetitorComparisonAgent running against live Groq LLM API."""
+"""Integration test suite for CompetitorComparisonAgent running against live self-hosted LLM."""
 
 import unittest
 
@@ -137,7 +137,7 @@ def create_sample_competitor_discovery(category: str) -> CompetitorDiscovery:
 
 
 class TestCompetitorComparisonAgent(unittest.TestCase):
-    """Live integration tests for CompetitorComparisonAgent running against real Groq LLM API."""
+    """Live integration tests for CompetitorComparisonAgent running against real self-hosted LLM."""
 
     def test_agent_factory_instantiation(self):
         """Test instantiation of CompetitorComparisonAgent factory."""
@@ -166,7 +166,7 @@ class TestCompetitorComparisonAgent(unittest.TestCase):
         analysis = run_competitor_comparison_agent(
             context=context,
             memory_manager=memory_mgr,
-            mock_mode=False,  # LIVE GROQ LLM EXECUTION
+            mock_mode=False,  # LIVE LLM EXECUTION
         )
 
         # Context Object Population Verification

@@ -11,7 +11,7 @@ class BaseResearchProvider(ABC):
     Architecture Note:
         Version 1: Methods act as clean extension points raising NotImplementedError
                    or returning an empty ResearchBundle without making API calls.
-        Version 2: Subclasses implement real Tavily, Exa, or Zyte network requests.
+        Version 2: WebResearchProvider implements real keyless web search.
     """
 
     def __init__(self, api_key: Optional[str] = None) -> None:

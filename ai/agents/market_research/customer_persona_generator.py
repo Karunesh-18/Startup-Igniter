@@ -6,7 +6,6 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional, Union
 import httpx
 
-from ai.config import get_ai_settings
 from ai.memory.project_memory import ProjectMemoryManager
 from ai.schemas.context import MarketResearchContext
 from ai.schemas.market_research import CustomerPersona
@@ -47,21 +46,21 @@ def validate_agent_output(raw_output: str) -> CustomerPersona:
     return validate_output(raw_output, CustomerPersona)
 
 
-def _call_live_groq_llm(
+def _call_live_llm(
     system_prompt: str,
     user_prompt: str,
-    model_name: str,
+    tier: ModelTier = ModelTier.HEAVY,
     temperature: float = 0.2,
     timeout: float = 45.0,
     max_retries: int = 8,
     schema_class: Optional[type] = None,
 ) -> str:
-    """Execute a live LLM completion via the gateway (selfhosted -> Groq/OpenRouter -> mock)."""
+    """Execute a live LLM completion via the gateway (selfhosted -> mock)."""
     from ai.shared.llm_provider import call_live_llm
     return call_live_llm(
         system_prompt=system_prompt,
         user_prompt=user_prompt,
-        model_name=model_name,
+        tier=tier,
         temperature=temperature,
         timeout=timeout,
         max_retries=max_retries,
@@ -130,7 +129,6 @@ def run_customer_persona_generator_agent(
     Returns:
         Validated CustomerPersona object.
     """
-    settings = get_ai_settings()
     memory_mgr = memory_manager or ProjectMemoryManager(use_mock_store=True)
 
     agent = get_customer_persona_generator_agent(
@@ -262,10 +260,10 @@ def run_customer_persona_generator_agent(
             "confidence_score": 0.95
         }}"""
     else:
-        raw_output = _call_live_groq_llm(
+        raw_output = _call_live_llm(
             system_prompt=system_prompt,
             user_prompt=user_prompt,
-            model_name=settings.groq_model_heavy,
+            tier=ModelTier.HEAVY,
             temperature=0.2,
             schema_class=CustomerPersona,
         )

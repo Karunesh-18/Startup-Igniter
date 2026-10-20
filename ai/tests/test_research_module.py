@@ -4,14 +4,12 @@ import unittest
 from unittest.mock import patch
 
 from ai.schemas.context import MarketResearchContext
-from ai.shared.research.exa_provider import ExaResearchProvider
+from ai.shared.research import web_provider
+from ai.shared.research.prompt_formatting import format_research_bundle_for_prompt
 from ai.shared.research.research_bundle import ResearchBundle
 from ai.shared.research.research_manager import ResearchManager
 from ai.shared.research.research_provider import BaseResearchProvider
-from ai.shared.research.tavily_provider import TavilyResearchProvider
-from ai.tools.exa_search import ExaResultItem, ExaSearchOutput
-from ai.shared.research.zyte_provider import ZyteResearchProvider
-from ai.tools.tavily_search import SearchResultItem, TavilySearchOutput
+from ai.shared.research.web_provider import WebResearchProvider
 
 
 class DummyUnimplementedProvider(BaseResearchProvider):
@@ -70,57 +68,59 @@ class TestResearchModule(unittest.TestCase):
         with self.assertRaises(NotImplementedError):
             dummy.search_competitors("Idea", "Category")
 
-    def test_provider_subclasses_return_research_bundle_instances(self) -> None:
-        """Test that provider subclasses (Tavily, Exa, Zyte) always return a
-        ResearchBundle, whether populated or empty. Network calls are mocked
-        so this stays fast and offline: zyte.search_competitors with no
-        explicit `urls` is empty by design (no network call at all), and
-        tavily/exa are stubbed at their tool layer."""
-        tavily = TavilyResearchProvider()
-        exa = ExaResearchProvider()
-        zyte = ZyteResearchProvider()
-
-        with patch.object(
-            tavily._tool, "search", return_value=TavilySearchOutput(query="test", results=[])
+    def test_web_search_extracts_pages_and_falls_back_to_snippet(self) -> None:
+        """_search fetches each hit; a page that fails extraction keeps its search snippet."""
+        hits = [
+            {"title": "A", "href": "https://a.example", "body": "snippet a"},
+            {"title": "B", "href": "https://b.example", "body": "snippet b"},
+            {"title": "no url", "href": "", "body": "dropped"},
+        ]
+        web_provider._search.cache_clear()
+        with patch.object(web_provider, "DDGS") as ddgs, patch.object(
+            web_provider, "_fetch_text", side_effect=lambda _c, url: "full text a" if "a." in url else ""
         ):
-            self.assertIsInstance(tavily.search_market("test"), ResearchBundle)
-        with patch.object(
-            exa._tool, "search", return_value=ExaSearchOutput(query="test", results=[])
-        ):
-            self.assertIsInstance(exa.search_industry("test"), ResearchBundle)
-        self.assertIsInstance(zyte.search_competitors("test", "cat"), ResearchBundle)
+            ddgs.return_value.text.return_value = hits
+            entries = web_provider._search("q-extract-test")
+        web_provider._search.cache_clear()
 
-    def test_research_manager_merges_real_provider_results(self) -> None:
-        """ResearchManager now actually calls and merges its providers (it used
-        to unconditionally return an empty bundle regardless of what its own
-        provider instances could do). Network calls are mocked so this test
-        is fast, deterministic, and offline."""
+        self.assertEqual([e["content"] for e in entries], ["full text a", "snippet b"])
+
+    def test_research_manager_buckets_and_formats(self) -> None:
+        """Each gather_* lands results in its own bucket, citations are filled,
+        and the prompt formatter picks them up. Network is stubbed."""
+        entry = ({"title": "T", "url": "https://example.com/t", "content": "c", "snippet": "c", "provider": "web"},)
         mgr = ResearchManager()
+        with patch.object(web_provider, "_search", return_value=entry):
+            market = mgr.gather_market_research("AI EdTech platform", category="EdTech")
+            comp = mgr.gather_competitor_research("AI EdTech platform", "EdTech")
+            reg = mgr.gather_regulatory_research("Healthcare AI", region="india")
+            funding = mgr.gather_funding_research("EdTech")
+            trend = mgr.gather_trend_research("EdTech")
+            tech = mgr.gather_tech_research("AI tutor")
+            news = mgr.gather_news_research("EdTech India")
+            patent = mgr.gather_patent_research("adaptive tutoring")
 
-        tavily_output = TavilySearchOutput(
-            query="q", results=[SearchResultItem(title="T", url="https://example.com/t", content="c", score=0.9)]
-        )
-        exa_output = ExaSearchOutput(
-            query="q", results=[ExaResultItem(title="E", url="https://example.com/e", snippet="s", score=0.8)]
-        )
+        self.assertEqual(len(market.market_articles), 1)
+        self.assertEqual(len(comp.competitor_data), 1)
+        self.assertEqual(len(reg.government_sources), 1)
+        self.assertIn("site:.gov.in", reg.metadata["web_query"])
+        self.assertEqual(len(funding.startup_sources), 1)
+        self.assertEqual(len(trend.trend_reports), 1)
+        self.assertEqual(len(tech.research_papers), 1)
+        self.assertEqual(len(news.news_articles), 1)
+        self.assertIn("site:patents.google.com", patent.metadata["web_query"])
+        self.assertEqual(market.citations[0]["url"], "https://example.com/t")
+        block, has_grounding = format_research_bundle_for_prompt(market.merge(comp))
+        self.assertTrue(has_grounding)
+        self.assertIn("https://example.com/t", block)
 
-        with patch.object(mgr.tavily_provider._tool, "search", return_value=tavily_output), patch.object(
-            mgr.exa_provider._tool, "search", return_value=exa_output
-        ):
-            market_bundle = mgr.gather_market_research("AI EdTech platform")
-            comp_bundle = mgr.gather_competitor_research("AI EdTech platform", "EdTech")
-            reg_bundle = mgr.gather_regulatory_research("Healthcare AI")
-
-        self.assertIsInstance(market_bundle, ResearchBundle)
-        self.assertIsInstance(comp_bundle, ResearchBundle)
-        self.assertIsInstance(reg_bundle, ResearchBundle)
-
-        # Tavily + Exa both contributed one entry each to market_research's bucket.
-        self.assertEqual(len(market_bundle.market_articles), 2)
-        # gather_competitor_research relabels into competitor_data, and also
-        # asks Zyte (which is empty here since no explicit competitor `urls`
-        # were supplied -- see ZyteResearchProvider.search_competitors).
-        self.assertEqual(len(comp_bundle.competitor_data), 2)
+    def test_research_manager_never_raises(self) -> None:
+        """A failing search degrades to an empty bundle instead of raising."""
+        mgr = ResearchManager()
+        with patch.object(web_provider, "_search", side_effect=RuntimeError("blocked")):
+            bundle = mgr.gather_news_research("anything")
+        self.assertEqual(bundle.news_articles, [])
+        self.assertIsInstance(WebResearchProvider().search_market("x", mock_mode=True), ResearchBundle)
 
     def test_context_research_bundle_placeholder(self) -> None:
         """Test that MarketResearchContext accepts optional research_bundle defaulting to None."""

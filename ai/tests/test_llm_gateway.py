@@ -31,8 +31,8 @@ def _openai_response(content: str) -> dict:
 
 
 def test_selfhosted_is_tried_first_when_configured(httpx_mock):
-    """With both selfhosted and Groq configured, selfhosted answers the call."""
-    settings = LLMSettings(LLM_BASE_URL="http://dgx-b200:8000/v1", GROQ_API_KEY="gsk_test")
+    """With selfhosted configured, selfhosted answers the call (not mock)."""
+    settings = LLMSettings(LLM_BASE_URL="http://dgx-b200:8000/v1")
     httpx_mock.add_response(
         url="http://dgx-b200:8000/v1/chat/completions",
         json=_openai_response('{"ok": true}'),
@@ -47,27 +47,32 @@ def test_selfhosted_is_tried_first_when_configured(httpx_mock):
     assert requests[0].url.host == "dgx-b200"
 
 
-def test_falls_through_to_groq_when_selfhosted_unreachable(httpx_mock):
-    """A configured-but-unreachable self-hosted endpoint falls through to Groq
-    rather than surfacing a raw connection error to the caller."""
-    settings = LLMSettings(
-        LLM_BASE_URL="http://dgx-b200:8000/v1",
-        GROQ_API_KEY="gsk_test",
-        LLM_MAX_RETRIES=1,
-    )
+def test_falls_through_to_mock_when_selfhosted_unreachable(httpx_mock):
+    """A configured-but-unreachable self-hosted endpoint falls through to mock
+    (LLM_ALLOW_MOCK defaults true) rather than surfacing a raw connection error."""
+    settings = LLMSettings(LLM_BASE_URL="http://dgx-b200:8000/v1", LLM_MAX_RETRIES=1)
     httpx_mock.add_exception(
         httpx.ConnectError("connection refused"),
         url="http://dgx-b200:8000/v1/chat/completions",
-    )
-    httpx_mock.add_response(
-        url="https://api.groq.com/openai/v1/chat/completions",
-        json=_openai_response('{"served_by": "groq"}'),
     )
 
     gw = LLMGateway(settings=settings)
     result = gw.invoke(system_prompt="sys", user_prompt="user", tier=ModelTier.HEAVY, max_retries=1)
 
-    assert result == '{"served_by": "groq"}'
+    assert json.loads(result)["mock"] is True
+
+
+def test_raises_when_selfhosted_unreachable_and_llm_allow_mock_false(httpx_mock):
+    """LLM_ALLOW_MOCK=false (production) turns an outage into a loud error."""
+    settings = LLMSettings(LLM_BASE_URL="http://dgx-b200:8000/v1", LLM_MAX_RETRIES=1, LLM_ALLOW_MOCK=False)
+    httpx_mock.add_exception(
+        httpx.ConnectError("connection refused"),
+        url="http://dgx-b200:8000/v1/chat/completions",
+    )
+
+    gw = LLMGateway(settings=settings)
+    with pytest.raises(MissingAPIKeyError):
+        gw.invoke(system_prompt="sys", user_prompt="user", max_retries=1)
 
 
 def test_fast_tier_uses_separate_base_url_when_configured(httpx_mock):
@@ -111,10 +116,10 @@ def test_401_fails_fast_without_retrying(httpx_mock):
     """A 401 (invalid/revoked key) must not be retried -- retrying can never
     succeed, and doing it anyway wastes ~12s of exponential backoff on every
     single call (found while smoke-testing the training corpus generator
-    against a real, since-revoked Groq key)."""
-    settings = LLMSettings(LLM_BASE_URL=None, GROQ_API_KEY="gsk_invalid", LLM_MAX_RETRIES=4)
+    against a real, since-revoked key)."""
+    settings = LLMSettings(LLM_BASE_URL="http://dgx-b200:8000/v1", LLM_API_KEY="invalid", LLM_MAX_RETRIES=4)
     httpx_mock.add_response(
-        url="https://api.groq.com/openai/v1/chat/completions",
+        url="http://dgx-b200:8000/v1/chat/completions",
         status_code=401,
         json={"error": {"message": "Invalid API Key"}},
     )
@@ -130,10 +135,10 @@ def test_401_fails_fast_without_retrying(httpx_mock):
 def test_429_still_retries_with_backoff(httpx_mock):
     """429 (rate limit) is the case retrying legitimately helps -- must not
     be caught by the same fast-fail path as 401/403/404/422."""
-    settings = LLMSettings(LLM_BASE_URL=None, GROQ_API_KEY="gsk_test", LLM_MAX_RETRIES=2)
-    httpx_mock.add_response(url="https://api.groq.com/openai/v1/chat/completions", status_code=429)
+    settings = LLMSettings(LLM_BASE_URL="http://dgx-b200:8000/v1", LLM_MAX_RETRIES=2)
+    httpx_mock.add_response(url="http://dgx-b200:8000/v1/chat/completions", status_code=429)
     httpx_mock.add_response(
-        url="https://api.groq.com/openai/v1/chat/completions",
+        url="http://dgx-b200:8000/v1/chat/completions",
         json=_openai_response('{"ok": true}'),
     )
 
@@ -145,15 +150,15 @@ def test_429_still_retries_with_backoff(httpx_mock):
 
 
 def test_falls_through_to_mock_when_nothing_configured():
-    """No selfhosted, no fallback keys -> mock provider answers rather than crashing."""
-    settings = LLMSettings(LLM_BASE_URL=None, GROQ_API_KEY=None, OPENROUTER_API_KEY=None)
+    """No selfhosted -> mock provider answers rather than crashing."""
+    settings = LLMSettings(LLM_BASE_URL=None, LLM_ALLOW_MOCK=True)
     gw = LLMGateway(settings=settings)
     result = gw.invoke(system_prompt="sys", user_prompt="user")
     assert result  # non-empty JSON text from MockProvider
 
 
 def test_raises_missing_api_key_when_mock_disabled_and_nothing_configured():
-    settings = LLMSettings(LLM_BASE_URL=None, GROQ_API_KEY=None, OPENROUTER_API_KEY=None)
+    settings = LLMSettings(LLM_BASE_URL=None, LLM_ALLOW_MOCK=True)
     gw = LLMGateway(settings=settings)
     with pytest.raises(MissingAPIKeyError):
         gw.invoke(system_prompt="sys", user_prompt="user", allow_mock_fallback=False)
@@ -176,22 +181,6 @@ def test_schema_class_produces_json_schema_response_format_for_selfhosted(httpx_
     assert sent_payload["response_format"]["type"] == "json_schema"
     assert sent_payload["response_format"]["json_schema"]["name"] == "_DummySchema"
     assert "score" in sent_payload["response_format"]["json_schema"]["schema"]["properties"]
-
-
-def test_groq_uses_json_object_mode_not_json_schema(httpx_mock):
-    """Groq only supports json_object mode, not full json_schema — the gateway
-    must not send a response_format shape Groq will reject."""
-    settings = LLMSettings(LLM_BASE_URL=None, GROQ_API_KEY="gsk_test")
-    httpx_mock.add_response(
-        url="https://api.groq.com/openai/v1/chat/completions",
-        json=_openai_response('{"summary": "ok", "score": 50}'),
-    )
-
-    gw = LLMGateway(settings=settings)
-    gw.invoke(system_prompt="sys", user_prompt="user", schema_class=_DummySchema)
-
-    sent_payload = json.loads(httpx_mock.get_requests()[0].content)
-    assert sent_payload["response_format"] == {"type": "json_object"}
 
 
 def test_invoke_structured_repairs_on_validation_failure(httpx_mock):

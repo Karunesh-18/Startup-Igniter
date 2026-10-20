@@ -29,7 +29,7 @@ class ProviderRequestError(LLMProviderError):
 
 
 class BaseLLMProvider(ABC):
-    """A single LLM backend (self-hosted vLLM, Groq, OpenRouter, mock, ...)."""
+    """A single LLM backend (self-hosted vLLM, mock)."""
 
     name: str = "base"
 
@@ -63,6 +63,6 @@ class BaseLLMProvider(ABC):
             schema_class: When provided and the provider supports guided decoding,
                 the provider SHOULD constrain generation to this Pydantic schema's
                 JSON Schema via response_format. Providers that don't support it
-                (e.g. plain OpenRouter passthrough) silently ignore it — the
+                (e.g. mock) silently ignore it — the
                 gateway's repair loop is what makes that safe.
         """

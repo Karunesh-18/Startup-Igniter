@@ -78,7 +78,7 @@ class MarketResearchContext(BaseModel):
     )
     research_bundle: Optional[ResearchBundle] = Field(
         default=None,
-        description="Optional external research bundle from ResearchManager (Tavily/Exa/Zyte).",
+        description="Optional external research bundle from ResearchManager (web search).",
     )
 
 
@@ -101,7 +101,7 @@ class ResearchPatentContext(BaseModel):
     )
     research_bundle: Optional[ResearchBundle] = Field(
         default=None,
-        description="Optional external research bundle from ResearchManager (Tavily/Exa/Zyte).",
+        description="Optional external research bundle from ResearchManager (web search).",
     )
     patent_analysis: Optional[PatentAnalysis] = Field(
         default=None,
