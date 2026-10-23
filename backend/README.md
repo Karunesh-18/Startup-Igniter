@@ -133,8 +133,8 @@ docker compose exec api alembic upgrade head
 docker compose exec api python -m db.seeds.categories
 ```
 
-API will be live at http://localhost:8000
-Interactive docs at http://localhost:8000/docs
+API will be live at http://localhost:47000
+Interactive docs at http://localhost:47000/docs
 
 ---
 
@@ -165,7 +165,7 @@ alembic upgrade head
 python -m db.seeds.categories
 
 # 6. Start the API server
-uvicorn api.main:app --reload --host 0.0.0.0 --port 8000
+uvicorn api.main:app --reload --host 0.0.0.0 --port 47000
 
 # 7. In a separate terminal — start the worker
 arq workers.tasks.WorkerSettings
@@ -198,7 +198,7 @@ Copy `.env.example` to `.env` and fill in your values. **Never commit `.env`.**
 
 ## API Reference
 
-Full interactive documentation: `http://localhost:8000/docs`
+Full interactive documentation: `http://localhost:47000/docs`
 
 ### Base URL
 ```

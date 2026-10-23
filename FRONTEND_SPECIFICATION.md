@@ -25,7 +25,7 @@ Startup Igniter AI is an enterprise-grade multi-agent AI engine that evaluates s
 The frontend communicates with the backend via REST API or WebSocket/SSE endpoints.
 
 ### API Base URL
-`http://localhost:8000/api/v1` (configured via `VITE_API_BASE_URL` or `NEXT_PUBLIC_API_BASE_URL`).
+`http://localhost:47000/api/v1` (configured via `VITE_API_BASE_URL` or `NEXT_PUBLIC_API_BASE_URL`).
 
 ### Key API Routes
 

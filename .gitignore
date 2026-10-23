@@ -55,3 +55,7 @@ training/data/corpus/
 training/checkpoints/
 training/adapters/
 *.jsonl
+
+# offline DGX transfer bundle (large)
+bundle/
+logs/

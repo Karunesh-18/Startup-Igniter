@@ -1,10 +1,10 @@
 """Synthetic training corpus generator.
 
 Crosses every SeedIdea (training/data/taxonomy.py) with every TrainingTarget
-(training/data/agent_registry.py), calls the LLM gateway's FALLBACK provider
-(never the self-hosted one -- the whole point is generating data to train
-that model, so it can't grade its own homework) to produce a target
-completion, validates it against the real schema, and writes one JSONL row
+(training/data/agent_registry.py), calls the LLM gateway to produce a target
+completion (the teacher is whatever LLM_BASE_URL points at -- on the DGX that is
+the BASE Qwen3-32B before any adapter exists, i.e. self-distillation; the
+schema validation + filter.py + docs/ops/eval.md gates are what keep quality up), validates it against the real schema, and writes one JSONL row
 per example.
 
 Usage:

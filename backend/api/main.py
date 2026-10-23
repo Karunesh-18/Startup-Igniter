@@ -9,10 +9,10 @@ This file wires together:
   - OpenAPI customization
 
 Run locally:
-    uvicorn api.main:app --reload --host 0.0.0.0 --port 8000
+    uvicorn api.main:app --reload --host 0.0.0.0 --port 47000
 
 Run in production (Fly.io / Render):
-    uvicorn api.main:app --host 0.0.0.0 --port 8000 --workers 2
+    uvicorn api.main:app --host 0.0.0.0 --port 47000 --workers 2
 """
 
 import time

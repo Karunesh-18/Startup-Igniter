@@ -241,7 +241,7 @@ CREATE TABLE forum_votes (...);
 ```env
 NEXT_PUBLIC_SUPABASE_URL=
 NEXT_PUBLIC_SUPABASE_ANON_KEY=
-NEXT_PUBLIC_API_BASE_URL=http://localhost:8000
+NEXT_PUBLIC_API_BASE_URL=http://localhost:47000
 ```
 
 ### `backend/.env.example`
