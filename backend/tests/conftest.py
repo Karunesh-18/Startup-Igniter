@@ -7,6 +7,9 @@ TEST_DATABASE_URL in the environment.
 """
 
 import asyncio
+import os
+
+os.environ.setdefault("LLM_ALLOW_MOCK", "true")
 import uuid
 from collections.abc import AsyncGenerator
 from typing import Any
@@ -22,6 +25,7 @@ from core.config import get_settings
 from core.security import create_access_token
 from db.database import Base
 import db.models  # noqa — register models
+import db.product  # noqa — register product models
 
 # ── Test engine (SQLite in-memory) ────────────────────────────────────────────
 

@@ -18,6 +18,9 @@ per-module below by `ai.llm.settings.get_llm_settings()`.
 
 import os
 
+# Mock provider is opt-in (default off); these tests exercise it deliberately.
+os.environ.setdefault("LLM_ALLOW_MOCK", "true")
+
 import pytest
 
 # Derived via `grep -rl "mock_mode=False" ai/tests/` at migration time.

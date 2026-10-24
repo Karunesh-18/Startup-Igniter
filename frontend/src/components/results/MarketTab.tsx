@@ -15,7 +15,7 @@ export default function MarketResearchTab({ result }: { result: AnalysisResult }
   const cp = mr.customer_persona;
   const mra = mr.market_research;
 
-  // Chart only when all three figures parse ("$4.2B", "USD 350 million"…); the text figures always show.
+  // Chart only when all three figures parse ("₹35,000 Cr", "USD 350 million"…); the text figures always show.
   const sizes = ts && [
     { name: 'TAM', value: parseMoney(ts.tam_value), color: '#e8eaf6' },
     { name: 'SAM', value: parseMoney(ts.sam_value), color: '#14b8a6' },

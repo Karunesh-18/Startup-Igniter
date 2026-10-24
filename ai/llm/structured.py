@@ -23,7 +23,9 @@ def strip_think_blocks(text: str) -> str:
     """
     if not text:
         return text
-    return _THINK_BLOCK_RE.sub("", text).strip()
+    text = _THINK_BLOCK_RE.sub("", text)
+    # An unclosed block means generation stopped mid-thought; nothing after it is an answer.
+    return text.split("<think>", 1)[0].strip()
 
 
 def build_repair_prompt(original_user_prompt: str, raw_output: str, errors: List[dict]) -> str:

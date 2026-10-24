@@ -5,7 +5,7 @@ import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import Lenis from 'lenis';
 import 'lenis/dist/lenis.css';
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight, FlaskConical, Link2, ShieldAlert } from 'lucide-react';
 import { CREWS } from '@/data/crews';
 import { CREW_ICONS } from '@/lib/icons';
 import { cn } from '@/lib/utils';
@@ -25,13 +25,19 @@ const STATIC_GRADIENT =
 
 const STEPS = [
   { title: 'Describe the idea', body: 'One to three sentences: who it is for and what it does. No deck, no form.' },
-  { title: 'Twelve crews work through it', body: 'Each crew runs in order and reads what the earlier crews found, from validation and market sizing through patents, legal, and funding.' },
-  { title: 'Read the report', body: 'Scores, market size, competitors, IP position, and a plan, grouped the way an investor would ask for them.' },
+  { title: 'Thirteen crews work through it', body: 'Each crew reads what the earlier ones found, from validation and market sizing through patents, legal and funding. The last one is a skeptic.' },
+  { title: 'Get a verdict you can check', body: 'Go, pivot or no-go, with the risks, the score range, and the source behind every claim it could verify.' },
+];
+
+const EDGE = [
+  { icon: Link2, color: '#10b981', title: 'Every claim is checked', body: 'A verifier looks for the sentence in a real source that states each claim, and only counts a quote that appears word for word. You see what is sourced and what is not.' },
+  { icon: ShieldAlert, color: '#ef4444', title: 'A skeptic argues back', body: 'One crew makes the case against your idea, writes the pre-mortem, and says what evidence would change its verdict. Most tools only tell you what is good.' },
+  { icon: FlaskConical, color: '#8b5cf6', title: 'It keeps working after the report', body: 'Talk the idea through with an AI co-founder, test the risky assumptions as experiments, re-run, and push the plan to GitHub, Slack or Notion.' },
 ];
 
 // Bento layout: the first crew (where every run starts) and the last (where
 // it all lands) get the large cells.
-const SPAN: Record<number, string> = { 1: 'lg:col-span-2 lg:row-span-2', 12: 'lg:col-span-2' };
+const SPAN: Record<number, string> = { 1: 'lg:col-span-2 lg:row-span-2', 13: 'lg:col-span-2' };
 
 /** Lenis smooth scroll + GSAP ScrollTrigger reveals, both skipped under reduced motion. */
 function useScrollMotion(root: React.RefObject<HTMLElement>, enabled: boolean) {
@@ -69,7 +75,7 @@ export default function Landing() {
 
   const start = (e: FormEvent) => {
     e.preventDefault();
-    navigate('/analyze', { state: { idea: idea.trim() } });
+    navigate('/new', { state: { idea: idea.trim() } });
   };
 
   return (
@@ -94,8 +100,8 @@ export default function Landing() {
             An investor-ready report out.
           </h1>
           <p className="mt-6 max-w-xl text-lg leading-relaxed text-white/70">
-            Twelve specialist AI crews validate your startup idea, size the market, search prior art, and draft the plan,
-            each building on what the last one found.
+            Thirteen specialist AI crews validate your idea, size the market, search prior art and draft the plan. Then a skeptic
+            argues against it, and every claim is checked against a source.
           </p>
 
           <form onSubmit={start} className="mt-10 max-w-2xl">
@@ -117,7 +123,7 @@ export default function Landing() {
             </div>
           </form>
           <Link to="/phases" className="mt-5 inline-block text-sm text-white/55 underline-offset-4 hover:text-white hover:underline">
-            Or browse the 12 crews first
+            Or browse the 13 crews first
           </Link>
         </div>
       </section>
@@ -140,11 +146,31 @@ export default function Landing() {
         </div>
       </section>
 
+      {/* ── What makes it different ── */}
+      <section className="relative pb-24 sm:pb-32">
+        <div className="mx-auto max-w-6xl px-4 sm:px-6">
+          <h2 data-reveal className="max-w-2xl font-serif text-4xl leading-tight text-white sm:text-5xl">
+            Not another report generator
+          </h2>
+          <div className="mt-12 grid gap-4 md:grid-cols-3">
+            {EDGE.map((e) => (
+              <div key={e.title} data-reveal className="rounded-2xl border border-white/[0.07] bg-charcoal/60 p-6">
+                <span className="flex h-10 w-10 items-center justify-center rounded-xl" style={{ background: `${e.color}1f`, color: e.color }}>
+                  <e.icon className="h-5 w-5" aria-hidden="true" />
+                </span>
+                <h3 className="mt-5 text-lg font-medium text-white">{e.title}</h3>
+                <p className="mt-2 text-sm leading-relaxed text-white/55">{e.body}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* ── Crews ── */}
       <section id="crews" className="relative pb-24 sm:pb-32">
         <div className="mx-auto max-w-6xl px-4 sm:px-6">
           <div data-reveal className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
-            <h2 className="max-w-2xl font-serif text-4xl leading-tight text-white sm:text-5xl">The twelve crews</h2>
+            <h2 className="max-w-2xl font-serif text-4xl leading-tight text-white sm:text-5xl">The thirteen crews</h2>
             <Link to="/agents" className="text-sm text-white/55 underline-offset-4 hover:text-white hover:underline">
               See all {CREWS.reduce((n, c) => n + c.agents.length, 0)} agents
             </Link>
@@ -198,10 +224,15 @@ export default function Landing() {
         <BackgroundBeams className="-z-10 opacity-70" />
         <div data-reveal className="mx-auto max-w-3xl px-4 text-center sm:px-6">
           <h2 className="font-serif text-4xl leading-tight text-white sm:text-6xl">Start with one sentence.</h2>
-          <p className="mx-auto mt-5 max-w-md text-white/60">A full run takes a few minutes. You can watch each crew finish as it happens.</p>
-          <Link to="/analyze" className={cn(buttonVariants({ variant: 'shine', size: 'lg' }), 'mt-10')}>
-            Analyze an idea
-          </Link>
+          <p className="mx-auto mt-5 max-w-md text-white/60">Your first three analyses are free. Unlock a full report for ₹299, or go Pro for ₹999 a month.</p>
+          <div className="mt-10 flex flex-wrap items-center justify-center gap-3">
+            <Link to="/new" className={cn(buttonVariants({ variant: 'shine', size: 'lg' }))}>
+              Analyze an idea
+            </Link>
+            <Link to="/pricing" className={cn(buttonVariants({ variant: 'outline', size: 'lg' }))}>
+              See pricing
+            </Link>
+          </div>
         </div>
       </section>
 

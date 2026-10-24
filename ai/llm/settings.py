@@ -33,7 +33,8 @@ class LLMSettings(BaseSettings):
     """Configuration for the self-hosted LLM gateway.
 
     Resolution order at call time is ``selfhosted -> mock``; mock is only
-    reached when ``llm_allow_mock`` is true (default; prod should disable it).
+    reached only when ``llm_allow_mock`` is true (default false; tests and
+    offline dev opt in with LLM_ALLOW_MOCK=true).
     """
 
     model_config = SettingsConfigDict(
@@ -89,11 +90,11 @@ class LLMSettings(BaseSettings):
 
     # --- Behaviour -----------------------------------------------------------
     llm_allow_mock: bool = Field(
-        default=True,
+        default=False,
         alias="LLM_ALLOW_MOCK",
-        description="Allow falling through to the offline mock provider. Production should set false.",
+        description="Allow falling through to the offline mock provider. Off by default so an LLM outage is an error, not fake data.",
     )
-    llm_default_timeout_seconds: float = Field(default=60.0, alias="LLM_TIMEOUT_SECONDS")
+    llm_default_timeout_seconds: float = Field(default=240.0, alias="LLM_TIMEOUT_SECONDS")
     llm_max_retries: int = Field(default=4, alias="LLM_MAX_RETRIES")
     llm_repair_attempts: int = Field(
         default=2,

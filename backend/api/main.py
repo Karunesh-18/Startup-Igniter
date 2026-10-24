@@ -24,7 +24,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.trustedhost import TrustedHostMiddleware
 from fastapi.responses import JSONResponse
 
-from api.routers import analysis, auth, export, forum, phases, projects, scores
+from api.routers import auth, billing, chat, export, forum, ideas, integrations, phases, projects, scores
 from core.config import get_settings
 from core.logging import configure_logging, get_logger
 
@@ -67,6 +67,12 @@ async def lifespan(app: FastAPI):
             logger.info("database_connected")
         except Exception as e:
             logger.warning("database_connection_failed", error=str(e))
+        try:
+            from services.runner import recover_interrupted
+
+            await recover_interrupted()
+        except Exception as e:  # noqa: BLE001
+            logger.warning("recover_interrupted_failed", error=str(e))
     else:
         logger.warning("database_url_not_set_running_without_db")
 
@@ -129,6 +135,35 @@ if settings.is_production:
         TrustedHostMiddleware,
         allowed_hosts=["*.fly.dev", "*.render.com", "*.vercel.app", "localhost"],
     )
+
+
+# ── Security headers + per-IP rate limit ──────────────────────────────────────
+
+_RATE_WINDOW_S, _RATE_MAX = 60, 240  # requests per IP per minute across the API
+_hits: dict[str, list[float]] = {}
+
+
+@app.middleware("http")
+async def harden(request: Request, call_next):
+    # ponytail: in-process limiter; use Redis (UPSTASH_*) if the API runs on multiple machines
+    if request.url.path.startswith("/api/") and request.method != "OPTIONS":
+        ip = (request.headers.get("fly-client-ip") or (request.client.host if request.client else "?"))
+        now = time.monotonic()
+        recent = [t for t in _hits.get(ip, []) if now - t < _RATE_WINDOW_S]
+        if len(recent) >= _RATE_MAX:
+            _hits[ip] = recent
+            return JSONResponse({"detail": "Too many requests."}, status_code=429, headers={"Retry-After": "30"})
+        recent.append(now)
+        _hits[ip] = recent
+        if len(_hits) > 10_000:  # bound memory
+            _hits.clear()
+    response = await call_next(request)
+    response.headers.setdefault("X-Content-Type-Options", "nosniff")
+    response.headers.setdefault("X-Frame-Options", "DENY")
+    response.headers.setdefault("Referrer-Policy", "no-referrer")
+    if settings.is_production:
+        response.headers.setdefault("Strict-Transport-Security", "max-age=31536000; includeSubDomains")
+    return response
 
 
 # ── Request ID + timing middleware ────────────────────────────────────────────
@@ -211,7 +246,10 @@ app.include_router(phases.router, prefix=API_PREFIX)
 app.include_router(scores.router, prefix=API_PREFIX)
 app.include_router(forum.router, prefix=API_PREFIX)
 app.include_router(export.router, prefix=API_PREFIX)
-app.include_router(analysis.router, prefix=API_PREFIX)
+app.include_router(ideas.router, prefix=API_PREFIX)
+app.include_router(chat.router, prefix=API_PREFIX)
+app.include_router(billing.router, prefix=API_PREFIX)
+app.include_router(integrations.router, prefix=API_PREFIX)
 
 
 # ── Root redirect ─────────────────────────────────────────────────────────────

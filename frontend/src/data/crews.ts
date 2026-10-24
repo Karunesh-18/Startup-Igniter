@@ -157,6 +157,16 @@ export const CREWS: Crew[] = [
       { id: 66, name: 'Final Report Generator',         role: 'Investor Pack',     crew: 12 },
     ],
   },
+  {
+    id: 13, name: 'Skeptic Review', short: 'SKEP', domain: 'Adversarial',
+    color: '#ef4444', color2: '#fb923c', icon: 'ShieldAlert',
+    agents: [
+      { id: 67, name: 'Bull Advocate',      role: 'Case For',        crew: 13 },
+      { id: 68, name: 'Bear Advocate',      role: 'Case Against',    crew: 13 },
+      { id: 69, name: 'Pre-mortem Analyst', role: 'Failure Story',   crew: 13 },
+      { id: 70, name: 'Verdict Judge',      role: 'Go / Pivot / No-go', crew: 13 },
+    ],
+  },
 ];
 
 export interface PipelineStage {
@@ -171,16 +181,17 @@ export interface PipelineStage {
 
 export const PIPELINE: PipelineStage[] = [
   { id: 1,  name: 'Idea Validation',       short: 'IDEA', crew: 1,  icon: 'Lightbulb',    description: 'Testing core assumptions against market reality.',              metrics: [{ label: 'Hypotheses',  value: '14'    }, { label: 'Validated',  value: '11'   }] },
-  { id: 2,  name: 'Market Research',       short: 'MKT',  crew: 2,  icon: 'Globe',         description: 'Mapping demand, segments, and competitive landscape.',          metrics: [{ label: 'Segments',    value: '6'     }, { label: 'TAM',        value: '$4.2B'}] },
+  { id: 2,  name: 'Market Research',       short: 'MKT',  crew: 2,  icon: 'Globe',         description: 'Mapping demand, segments, and competitive landscape.',          metrics: [{ label: 'Segments',    value: '6'     }, { label: 'TAM',        value: '₹35,000 Cr'}] },
   { id: 3,  name: 'Research & Patent',     short: 'R&D',  crew: 3,  icon: 'FlaskConical',  description: 'Mining prior art and securing intellectual property.',          metrics: [{ label: 'Patents',     value: '3'     }, { label: 'White Space', value: '7'   }] },
   { id: 4,  name: 'Technical Feasibility', short: 'TECH', crew: 4,  icon: 'Cpu',           description: 'Proving the architecture can scale to demand.',                 metrics: [{ label: 'Stack',       value: '8 layers' }, { label: 'Latency', value: '42ms'}] },
   { id: 5,  name: 'Business Planning',     short: 'BIZ',  crew: 5,  icon: 'Briefcase',     description: 'Designing the revenue model and unit economics.',               metrics: [{ label: 'Revenue',     value: 'SaaS'  }, { label: 'Margin',     value: '78%' }] },
   { id: 6,  name: 'Product Development',   short: 'PROD', crew: 6,  icon: 'Boxes',         description: 'Forging the MVP and release roadmap.',                          metrics: [{ label: 'Features',    value: '22'    }, { label: 'MVP',        value: '6 wks'}] },
   { id: 7,  name: 'Legal & Compliance',    short: 'LGL',  crew: 7,  icon: 'Scale',         description: 'Structuring the entity and protecting assets.',                 metrics: [{ label: 'Entity',      value: 'Delaware C' }, { label: 'Trademarks', value: '4'}] },
   { id: 8,  name: 'Branding & Marketing',  short: 'BRND', crew: 8,  icon: 'Sparkles',      description: 'Sculpting the brand narrative and go-to-market strategy.',      metrics: [{ label: 'Assets',      value: '48'    }, { label: 'Channels',   value: '6'   }] },
-  { id: 9,  name: 'Funding Readiness',     short: 'FUND', crew: 9,  icon: 'Banknote',      description: 'Matching with investors and modelling the funding round.',       metrics: [{ label: 'Round',       value: 'Seed'  }, { label: 'Target',     value: '$3M' }] },
-  { id: 10, name: 'Growth & Scaling',      short: 'GROW', crew: 10, icon: 'TrendingUp',    description: 'Engineering growth loops and international expansion.',          metrics: [{ label: 'CAC',         value: '$34'   }, { label: 'LTV',        value: '$1.2k'}] },
+  { id: 9,  name: 'Funding Readiness',     short: 'FUND', crew: 9,  icon: 'Banknote',      description: 'Matching with investors and modelling the funding round.',       metrics: [{ label: 'Round',       value: 'Seed'  }, { label: 'Target',     value: '₹25 Cr' }] },
+  { id: 10, name: 'Growth & Scaling',      short: 'GROW', crew: 10, icon: 'TrendingUp',    description: 'Engineering growth loops and international expansion.',          metrics: [{ label: 'CAC',         value: '₹2,800'   }, { label: 'LTV',        value: '₹1 L'}] },
   { id: 11, name: 'Community & Ecosystem', short: 'COMM', crew: 11, icon: 'Users',         description: 'Cultivating the early community and accelerator pipeline.',     metrics: [{ label: 'Waitlist',    value: '2.4k'  }, { label: 'Accelerators', value: '18'}] },
+  { id: 13, name: 'Skeptic Review',        short: 'SKEP', crew: 13, icon: 'ShieldAlert',   description: 'Arguing against the idea, then judging it: go, pivot or no-go.', metrics: [{ label: 'Verdicts',    value: '3'     }, { label: 'Failure modes', value: '5'  }] },
   { id: 12, name: 'Executive Reporting',   short: 'RPT',  crew: 12, icon: 'FileText',      description: 'Synthesising all phases into an investor-ready master report.', metrics: [{ label: 'Pages',       value: '64'    }, { label: 'Deliverable', value: 'Ready'}] },
 ];
 

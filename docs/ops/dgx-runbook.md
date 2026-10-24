@@ -21,8 +21,9 @@ bash scripts/train_all.sh 8b
 
 Everything below is the detailed reference.
 
-**Status:** Not yet executed — the DGX is not reachable at the time of
-writing. This is the procedure for when it is.
+**Status:** Serving has been run. Qwen3-32B (heavy) and Qwen3-8B (fast) run under vLLM on the shared host
+on ports 47001 and 47002 and are reached from the dev PC through an SSH tunnel (host, ports and tunnel command are in
+the repo's `CLAUDE.md`). Training and the eval baseline have not been run.
 
 ## 1. Capability check (do this FIRST, before anything else)
 

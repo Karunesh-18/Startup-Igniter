@@ -79,6 +79,9 @@ def chat_completion(
         ],
         "temperature": temperature,
     }
+    # Qwen3 would otherwise "think" for thousands of tokens before the JSON (slow, and it can hit
+    # max_tokens mid-thought). These are extraction/synthesis calls, not puzzles.
+    payload["chat_template_kwargs"] = {"enable_thinking": False}
     if max_tokens is not None:
         payload["max_tokens"] = max_tokens
     if response_format is not None:

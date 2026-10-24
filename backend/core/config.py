@@ -77,6 +77,21 @@ class Settings(LLMSettings):
     SEMANTIC_SCHOLAR_API_KEY: str = ""
     OPENALEX_EMAIL: str = ""
 
+    # ── Billing (Razorpay, INR) ───────────────────────────────────────────
+    RAZORPAY_KEY_ID: str = ""
+    RAZORPAY_KEY_SECRET: str = ""
+    RAZORPAY_WEBHOOK_SECRET: str = ""
+    RAZORPAY_PLAN_PRO_ID: str = ""          # created on first use if empty
+    BILLING_DEV_MODE: bool = False          # simulated checkout; refused in production
+    PRICE_REPORT_PAISE: int = 29900         # Rs 299 one-time full report
+    PRICE_PRO_PAISE: int = 99900            # Rs 999 / month
+    FREE_ANALYSES: int = 3                  # free-tier analysis runs (score + verdict only)
+    FRONTEND_URL: str = "http://localhost:5173"
+
+    # ── Integrations ──────────────────────────────────────────────────────
+    GITHUB_TOKEN: str = ""                  # server token for read-only repo search (rate limits)
+    INTEGRATION_KEY: str = ""               # Fernet key for stored tokens; derived from SECRET_KEY if empty
+
     # ── Storage ───────────────────────────────────────────────────────────
     STORAGE_BUCKET: str = "documents"
 

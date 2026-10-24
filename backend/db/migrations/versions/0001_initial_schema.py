@@ -79,7 +79,7 @@ def upgrade() -> None:
         sa.Column("name", sa.String(200), nullable=False),
         sa.Column(
             "role",
-            sa.Enum(
+            postgresql.ENUM(
                 "student", "working_professional", "graduate", "researcher", "faculty",
                 name="user_role", create_type=False,
             ),
@@ -145,7 +145,7 @@ def upgrade() -> None:
         sa.Column("description", sa.Text, nullable=True),
         sa.Column(
             "current_phase",
-            sa.Enum(
+            postgresql.ENUM(
                 "idea", "validation", "business", "legal", "patent", "export",
                 name="project_phase", create_type=False,
             ),
@@ -187,7 +187,7 @@ def upgrade() -> None:
         ),
         sa.Column(
             "role",
-            sa.Enum("owner", "editor", "viewer", name="member_role", create_type=False),
+            postgresql.ENUM("owner", "editor", "viewer", name="member_role", create_type=False),
             nullable=False,
             server_default="viewer",
         ),
@@ -337,7 +337,7 @@ def upgrade() -> None:
         sa.Column("risk_type", sa.String(100), nullable=False),
         sa.Column(
             "severity",
-            sa.Enum(
+            postgresql.ENUM(
                 "low", "medium", "high", "critical",
                 name="risk_severity", create_type=False,
             ),
@@ -395,7 +395,7 @@ def upgrade() -> None:
         ),
         sa.Column("category", sa.String(100), nullable=False),
         sa.Column("checklist_items", postgresql.JSONB, nullable=False),
-        sa.Column("completed_items", postgresql.JSONB, nullable=False, server_default="'{}'"),
+        sa.Column("completed_items", postgresql.JSONB, nullable=False, server_default=sa.text("'{}'::jsonb")),
         sa.Column(
             "created_at",
             sa.DateTime(timezone=True),
@@ -470,7 +470,7 @@ def upgrade() -> None:
         ),
         sa.Column(
             "doc_type",
-            sa.Enum("pdf", "docx", "pptx", name="document_type", create_type=False),
+            postgresql.ENUM("pdf", "docx", "pptx", name="document_type", create_type=False),
             nullable=False,
         ),
         sa.Column("phase", sa.String(50), nullable=True),
@@ -499,7 +499,7 @@ def upgrade() -> None:
         sa.Column("phase", sa.String(50), nullable=False),
         sa.Column(
             "status",
-            sa.Enum(
+            postgresql.ENUM(
                 "pending", "running", "completed", "failed",
                 name="phase_status", create_type=False,
             ),
@@ -607,7 +607,7 @@ def upgrade() -> None:
         ),
         sa.Column(
             "vote_type",
-            sa.Enum("up", "down", name="forum_vote_type", create_type=False),
+            postgresql.ENUM("up", "down", name="forum_vote_type", create_type=False),
             nullable=False,
         ),
         sa.Column(

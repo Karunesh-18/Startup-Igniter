@@ -27,23 +27,15 @@ _bearer = HTTPBearer(auto_error=True)
 
 async def decode_token_jwks_or_local(token: str) -> dict:
     """
-    Attempt token decoding via local secret key first.
-    If that fails, decode using unverified payload claims if sub is present,
-    or via JWKS endpoint if SUPABASE_JWKS_URL is configured.
+    Verify a token: our own SECRET_KEY signature first, then the Supabase JWKS.
+    Never falls back to unverified claims.
     """
-    settings = get_settings()
+    from core.auth import verify_token
+
     try:
-        return decode_access_token(token)
-    except (JWTError, ValueError):
-        # Fallback to decoding unverified payload for user_id sub claim
-        from jose import jwt as jose_jwt
-        try:
-            claims = jose_jwt.get_unverified_claims(token)
-            if claims and "sub" in claims:
-                return claims
-        except Exception:
-            pass
-        raise JWTError("Invalid token signature or payload")
+        return await verify_token(token)
+    except Exception as exc:  # noqa: BLE001
+        raise JWTError("Invalid token signature or payload") from exc
 
 
 async def get_current_user(

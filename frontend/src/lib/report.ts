@@ -2,7 +2,7 @@
 // crew-key ↔ crew metadata, score normalisation, and result persistence.
 
 import { CREWS, type Crew } from '@/data/crews';
-import type { AnalysisResult, KnownCrewKey } from './types';
+import type { KnownCrewKey } from './types';
 
 /** Result key for each crew, in pipeline order (index i ↔ CREWS[i]). Provisional on the backend side. */
 export const CREW_KEYS: KnownCrewKey[] = [
@@ -18,6 +18,7 @@ export const CREW_KEYS: KnownCrewKey[] = [
   'growth_scaling',
   'community',
   'reporting',
+  'skeptic',
 ];
 
 export interface CrewMeta {
@@ -40,12 +41,11 @@ export function crewMeta(key: string, label?: string): CrewMeta {
 export const crewKeyForId = (id: number) => CREW_KEYS[id - 1];
 
 /**
- * Normalise a score to 0-100. The schemas mix scales: confidence is 0-1,
- * crews 1-3 score 0-10, crews 4-12 score 0-100.
- * ponytail: scale is guessed from magnitude; a genuine 0-100 score of ≤10 reads ×10. Send explicit scales from the backend if that bites.
+ * Normalise a score to 0-100. Schemas use 0-100 for scores and 0-1 for confidence
+ * (the backend also sends `crew_scores` already normalised; prefer that).
  */
 export function toPercent(v: number, key = ''): number {
-  const scaled = key.includes('confidence') && v <= 1 ? v * 100 : v <= 10 ? v * 10 : v;
+  const scaled = key.includes('confidence') && v <= 1 ? v * 100 : v;
   return Math.max(0, Math.min(100, scaled));
 }
 
@@ -84,32 +84,14 @@ export function crewSummary(result: unknown): string | null {
   return null;
 }
 
-/** "$4.2B", "USD 350 million", "12.5bn" → number of dollars, or null if unparseable. */
+/** "₹35,000 Cr", "₹4.2 lakh crore", "$4.2B", "12.5bn" → absolute amount (in the figure's own currency), or null. */
 export function parseMoney(s: string | undefined): number | null {
   if (!s) return null;
-  const m = s.replace(/,/g, '').match(/(\d+(?:\.\d+)?)\s*(trillion|billion|million|thousand|tn|bn|mn|[tbmk])?\b/i);
+  const m = s.replace(/,/g, '').match(/(\d+(?:\.\d+)?)\s*(lakh\s*crore|trillion|billion|million|thousand|crores?|lakhs?|tn|bn|mn|cr|[tbmkl])?b/i);
   if (!m) return null;
-  const mult: Record<string, number> = { t: 1e12, tn: 1e12, trillion: 1e12, b: 1e9, bn: 1e9, billion: 1e9, m: 1e6, mn: 1e6, million: 1e6, k: 1e3, thousand: 1e3 };
-  return parseFloat(m[1]) * (m[2] ? mult[m[2].toLowerCase()] : 1);
-}
-
-// ─── Persistence (so /results/:id survives a refresh) ─────────
-
-const storageKey = (id: string) => `si:result:${id}`;
-
-export function saveResult(result: AnalysisResult) {
-  try {
-    sessionStorage.setItem(storageKey(result.project_id), JSON.stringify(result));
-  } catch {
-    // quota exceeded or storage disabled — the route falls back to the server cache
-  }
-}
-
-export function loadResult(id: string): AnalysisResult | null {
-  try {
-    const raw = sessionStorage.getItem(storageKey(id));
-    return raw ? (JSON.parse(raw) as AnalysisResult) : null;
-  } catch {
-    return null;
-  }
+  const mult: Record<string, number> = {
+    t: 1e12, tn: 1e12, trillion: 1e12, b: 1e9, bn: 1e9, billion: 1e9, m: 1e6, mn: 1e6, million: 1e6, k: 1e3, thousand: 1e3,
+    cr: 1e7, crore: 1e7, crores: 1e7, l: 1e5, lakh: 1e5, lakhs: 1e5, 'lakh crore': 1e12,
+  };
+  return parseFloat(m[1]) * (m[2] ? mult[m[2].toLowerCase().replace(/\s+/g, ' ')] ?? 1 : 1);
 }

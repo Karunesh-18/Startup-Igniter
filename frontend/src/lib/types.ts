@@ -447,15 +447,92 @@ export interface MasterReportResult {
   confidence_score?: number;
 }
 
+// ─── Skeptic crew ─────────────────────────────────────────────
+
+export interface SkepticRisk {
+  risk: string;
+  likelihood: number; // 0-100
+  impact: number; // 0-100
+  mitigation: string;
+}
+
+export interface SkepticResult {
+  bull_case?: string[];
+  bear_case?: string[];
+  top_risks?: SkepticRisk[];
+  pre_mortem?: string;
+  testable_hypotheses?: { hypothesis: string; metric: string }[];
+  verdict?: 'go' | 'pivot' | 'no-go';
+  verdict_rationale?: string;
+  would_change_my_mind?: string[];
+  pivot_suggestions?: string[];
+  overall_survival_score?: number;
+  confidence_score?: number;
+}
+
+// ─── Evidence ─────────────────────────────────────────────────
+
+export interface LedgerEntry {
+  crew: string;
+  claim: string;
+  status: 'supported' | 'unsupported' | 'contradicted';
+  quote: string;
+  source: { url: string; title: string } | null;
+}
+
+export interface SourceRef {
+  id: number;
+  url: string;
+  title: string;
+  kind: 'web' | 'github' | 'hackernews';
+}
+
+export interface GithubRepoSignal {
+  full_name: string;
+  url: string;
+  description: string;
+  stars: number;
+  open_issues: number;
+  language: string | null;
+  pushed_at: string | null;
+  archived: boolean;
+}
+
+export interface HackerNewsSignal {
+  query: string;
+  total: number;
+  stories: { title: string; points: number; comments: number; url: string; date: string }[];
+}
+
 // ─── Master Combined Result ───────────────────────────────────
+
+export type Verdict = 'go' | 'pivot' | 'no-go';
 
 export interface AnalysisResult {
   project_id: string;
   idea_text: string;
   status: 'success' | 'failed';
   ai_generated: boolean;
-  /** 0-10 from the 3-crew pipeline; may become 0-100 — normalise with toPercent(). */
+  /** Live run or offline placeholder data. 'mock' results must be flagged in the UI. */
+  mode?: 'live' | 'mock';
+  /** Crews that errored; the rest of the report is still valid. */
+  failed_crews?: string[];
+  /** 0-100. */
   overall_readiness_score: number;
+  score_range?: { low: number; high: number };
+  /** 0-100, blends crew confidence with how many claims the sources support. */
+  confidence?: number;
+  verdict?: { label: Verdict | null; rationale?: string; would_change_my_mind?: string[]; pivot_suggestions?: string[] } | null;
+  grounding?: { score: number | null; claims: number; contradicted: number; sources: number };
+  ledger?: LedgerEntry[];
+  sources?: SourceRef[];
+  signals?: { github?: GithubRepoSignal[]; hacker_news?: HackerNewsSignal };
+  /** Headline 0-100 score per crew, computed server-side. */
+  crew_scores?: Record<string, number | null>;
+  hypotheses?: { hypothesis: string; metric: string }[];
+  /** Free-tier preview: only the headline fields above are present. */
+  locked?: boolean;
+  locked_note?: string;
   executive_summary?: string;
   strategic_recommendations?: string[];
   idea_validation?: IdeaValidationResult;
@@ -469,15 +546,10 @@ export interface AnalysisResult {
   funding?: FundingResult;
   growth_scaling?: GrowthScalingResult;
   community?: CommunityResult;
+  skeptic?: SkepticResult;
   reporting?: MasterReportResult;
   error?: string;
 }
-
-// ─── Streaming progress (POST /api/v1/analysis/run/stream) ────
-// One JSON object per newline-delimited line — see
-// backend/api/routers/analysis.py::_stream_analysis for the producer.
-// Granularity is per crew: one crew_complete per crew, carrying that crew's
-// result object so the UI can preview it before the final `result` line.
 
 export type KnownCrewKey =
   | 'idea_validation'
@@ -491,37 +563,123 @@ export type KnownCrewKey =
   | 'funding'
   | 'growth_scaling'
   | 'community'
+  | 'skeptic'
   | 'reporting';
 
-/** Known keys autocomplete; any other string is still accepted (backend keys are provisional). */
+/** Known keys autocomplete; any other string is still accepted. */
 export type StreamCrewKey = KnownCrewKey | (string & {});
 
-export interface StreamStartedEvent {
-  type: 'started';
-  project_id: string;
-  crews: string[];
+// ─── Ideas, analyses, billing, chat ───────────────────────────
+
+export interface AnalysisSummary {
+  id: string;
+  idea_id: string;
+  version: number;
+  status: 'running' | 'complete' | 'failed' | 'cancelled';
+  mode: 'live' | 'mock';
+  overall_score: number | null;
+  verdict: Verdict | null;
+  grounding_score: number | null;
+  unlocked: boolean;
+  error: string | null;
+  created_at: string;
+  completed_at: string | null;
 }
 
-export interface StreamCrewCompleteEvent {
-  type: 'crew_complete';
-  crew: StreamCrewKey;
-  label: string;
-  result?: unknown;
+export interface Idea {
+  id: string;
+  title: string;
+  idea_text: string;
+  archived: boolean;
+  github_repo: string | null;
+  created_at: string;
+  updated_at: string;
 }
 
-export interface StreamResultEvent {
-  type: 'result';
-  result: AnalysisResult;
+export interface IdeaListItem extends Idea {
+  versions: number;
+  latest: AnalysisSummary | null;
+  running: string | null;
 }
 
-export interface StreamErrorEvent {
-  type: 'error';
-  project_id?: string;
-  error: string;
+export interface IdeaDetail extends Idea {
+  analyses: AnalysisSummary[];
+  /** The idea text changed since the latest completed analysis. */
+  stale: boolean;
 }
+
+export interface AnalysisDetail extends AnalysisSummary {
+  idea_text: string;
+  result: AnalysisResult | null;
+}
+
+export interface Experiment {
+  id: string;
+  idea_id: string;
+  hypothesis: string;
+  metric: string | null;
+  status: 'open' | 'running' | 'validated' | 'invalidated';
+  notes: string | null;
+}
+
+export interface ChatMessage {
+  id: string;
+  role: 'user' | 'assistant';
+  content: string;
+  proposal: { title: string; idea_text: string; changes: string[] } | null;
+  proposal_status: 'pending' | 'accepted' | 'dismissed' | null;
+  created_at: string;
+}
+
+export interface BillingMe {
+  plan: 'free' | 'pro';
+  pro_until: string | null;
+  cancelling: boolean;
+  analyses_used: number;
+  free_limit: number;
+  prices: { report_paise: number; pro_paise: number; currency: 'INR' };
+  razorpay_key_id: string | null;
+  payments_enabled: boolean;
+  dev_mode: boolean;
+}
+
+export interface Payment {
+  id: string;
+  kind: 'report' | 'pro';
+  amount_paise: number;
+  currency: string;
+  status: 'created' | 'paid' | 'failed';
+  analysis_id: string | null;
+  created_at: string;
+  paid_at: string | null;
+}
+
+export type IntegrationProvider = 'github' | 'slack' | 'webhook' | 'notion';
+
+export interface IntegrationInfo {
+  provider: IntegrationProvider;
+  label: string | null;
+  config: Record<string, string> | null;
+}
+
+export interface PushedIssue {
+  title: string;
+  body: string;
+  labels: string[];
+}
+
+// ─── Analysis progress stream (GET /analyses/{id}/events, NDJSON) ─
 
 export type StreamEvent =
-  | StreamStartedEvent
-  | StreamCrewCompleteEvent
-  | StreamResultEvent
-  | StreamErrorEvent;
+  | { type: 'queued' }
+  | { type: 'started'; analysis_id: string; crews: string[]; keys: string[] }
+  | { type: 'crew_start'; crew: StreamCrewKey; label: string }
+  | { type: 'agent'; crew: StreamCrewKey | null; agent: string; status: 'start' | 'done' }
+  | { type: 'crew_complete'; crew: StreamCrewKey; label: string; result?: unknown }
+  | { type: 'crew_failed'; crew: StreamCrewKey; label: string; error: string }
+  | { type: 'stage'; stage: 'sources' | 'verify'; label: string }
+  | { type: 'sources'; count: number; signals: string[] }
+  | { type: 'complete'; analysis_id: string }
+  | { type: 'cancelled' }
+  | { type: 'gone' }
+  | { type: 'error'; error: string };

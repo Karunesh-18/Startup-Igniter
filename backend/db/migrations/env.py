@@ -22,6 +22,7 @@ sys.path.insert(0, str(backend_dir))
 from core.config import get_settings  # noqa: E402
 from db.database import Base  # noqa: E402
 import db.models  # noqa: E402, F401  — must import to register models on Base
+import db.product  # noqa: E402, F401
 
 settings = get_settings()
 
@@ -35,8 +36,8 @@ if config.config_file_name is not None:
 # Inject the sync DSN so Alembic can create a sync engine
 config.set_main_option(
     "sqlalchemy.url",
-    settings.DATABASE_URL_SYNC
-    or "postgresql+psycopg2://postgres:password@localhost:5432/postgres",
+    # configparser treats "%" as interpolation; percent-encoded passwords need "%%"
+    (settings.DATABASE_URL_SYNC or "postgresql+psycopg2://postgres:password@localhost:5432/postgres").replace("%", "%%"),
 )
 
 target_metadata = Base.metadata

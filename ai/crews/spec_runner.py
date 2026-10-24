@@ -5,19 +5,21 @@ prompt; prior crew results + optional research become the user prompt; the
 gateway returns a validated instance of the crew's result schema.
 """
 
-import json
 from functools import lru_cache
 from pathlib import Path
 from typing import Any, Callable, Optional, Type, TypeVar
 
 from pydantic import BaseModel
 
+from ai.shared.digest import digest_all
 from ai.shared.logger import ai_logger
+from ai.shared.progress import current_run
 
 T = TypeVar("T", bound=BaseModel)
 
 _DOCS = Path(__file__).resolve().parents[2] / "docs"
-_PRIOR_MAX_CHARS = 6000
+
+SPEC_MAX_TOKENS = 12000
 
 # crew_key -> docs/phases/<NN>-*.md prefix
 CREW_PHASE = {
@@ -75,18 +77,16 @@ def fetch_research(method: str, *args: Any) -> Optional[str]:
 
 
 def build_user_prompt(project_id: str, idea_text: str, prior: Optional[dict], research_text: Optional[str]) -> str:
-    # Even per-crew budget so later crews (e.g. reporting) still see every earlier crew.
-    budget = _PRIOR_MAX_CHARS // max(len(prior or {}), 1)
-    prior_text = "\n".join(
-        f"{key}: {json.dumps(value, default=str, separators=(',', ':'))[:budget]}" for key, value in (prior or {}).items()
-    )
     parts = [
         f"project_id: {project_id}  (set the `project_id` field to exactly this value)",
         f"Startup idea:\n{idea_text}",
-        f"Prior crew results (JSON per crew, may be truncated):\n{prior_text or 'none'}",
+        f"Prior crew results (per-crew digest: headline score, summary, key fields):\n{digest_all(prior) or 'none'}",
     ]
     if research_text:
         parts.append(research_text)
+    run = current_run()
+    if run and run.sources:
+        parts.append(run.sources.prompt_block())
     return "\n\n".join(parts)
 
 
@@ -100,6 +100,7 @@ def run_spec_crew(
     research_text: Optional[str],
     mock_result: Callable[[], T],
     mock_mode: bool,
+    system_prompt: Optional[str] = None,
 ) -> T:
     if mock_mode:
         return mock_result()
@@ -108,10 +109,11 @@ def run_spec_crew(
     from ai.shared.constants import ModelTier
 
     result = get_gateway().invoke_structured(
-        system_prompt=build_system_prompt(crew_key),
+        system_prompt=system_prompt or build_system_prompt(crew_key),
         user_prompt=build_user_prompt(project_id, idea_text, prior, research_text),
         schema_class=schema_cls,
         tier=ModelTier.HEAVY,
+        max_tokens=SPEC_MAX_TOKENS,  # legal drafts etc. overflow the 4096 default and truncate the JSON
     )
     result.project_id = project_id
     return result

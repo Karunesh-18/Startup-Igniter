@@ -41,7 +41,7 @@ launch() {  # name gpus tp model_path served_name port lora_rank adapter_subdir
   done
   if [ ${#mods[@]} -gt 0 ]; then lora=(--enable-lora --max-lora-rank "$rank" --lora-modules "${mods[@]}"); fi
   local cmd=(python -m vllm.entrypoints.openai.api_server --model "$mpath" --served-model-name "$served"
-    --tensor-parallel-size "$tp" --dtype bfloat16 --max-model-len 8192 --gpu-memory-utilization "${GPU_UTIL:-0.90}"
+    --tensor-parallel-size "$tp" --dtype bfloat16 --max-model-len "${MAX_LEN:-32768}" --gpu-memory-utilization "${GPU_UTIL:-0.90}"
     "${GUIDED[@]}" "${lora[@]}" --host "${VLLM_HOST:-127.0.0.1}" --port "$port")
   echo "[$name] GPUs=$gpus port=$port adapters=${#mods[@]}"
   if [ "${DRY_RUN:-0}" = 1 ]; then echo "  CUDA_VISIBLE_DEVICES=$gpus ${cmd[*]}"; return; fi
