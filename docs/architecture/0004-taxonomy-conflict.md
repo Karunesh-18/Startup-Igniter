@@ -2,6 +2,8 @@
 
 **Status:** Documented, partially reconciled · **Date:** 2026-09-24
 
+> Update 2026-10-24: crews 4-12 are now implemented (crew-level calls, see [ADR 0006](0006-evidence-ledger-and-skeptic.md)), so "SPECIFIED, not built" below describes the state at the time of writing.
+
 ## Context
 
 This repository accumulated five different, mutually inconsistent

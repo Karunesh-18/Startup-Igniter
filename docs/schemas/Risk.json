@@ -1,0 +1,36 @@
+{
+  "properties": {
+    "risk": {
+      "description": "A specific way this startup could fail.",
+      "title": "Risk",
+      "type": "string"
+    },
+    "likelihood": {
+      "description": "Likelihood this happens, 0-100.",
+      "maximum": 100,
+      "minimum": 0,
+      "title": "Likelihood",
+      "type": "integer"
+    },
+    "impact": {
+      "description": "Damage if it happens, 0-100.",
+      "maximum": 100,
+      "minimum": 0,
+      "title": "Impact",
+      "type": "integer"
+    },
+    "mitigation": {
+      "description": "Cheapest credible mitigation.",
+      "title": "Mitigation",
+      "type": "string"
+    }
+  },
+  "required": [
+    "risk",
+    "likelihood",
+    "impact",
+    "mitigation"
+  ],
+  "title": "Risk",
+  "type": "object"
+}

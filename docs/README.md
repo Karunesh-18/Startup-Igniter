@@ -13,7 +13,7 @@ context, not as a live source of truth.
 
 ## Canonical taxonomy
 
-**12 crews, 66 agents**, per `frontend/src/data/crews.ts` — the newest
+**12 crews, 66 agents** (plus the skeptic crew), per `frontend/src/data/crews.ts` — the newest
 taxonomy and the one the shipped UI actually shows. Four *other*,
 inconsistent descriptions exist elsewhere in this repo; see
 [ADR 0004](architecture/0004-taxonomy-conflict.md) for why this one was
@@ -23,16 +23,22 @@ separate system).
 
 ### Implementation status
 
-Only **3 of 12 crews (20 of 66 agents, plus 1 unlisted 7th agent — see
-[docs/agents/67-existing-solution-analyzer.md](agents/67-existing-solution-analyzer.md))**
-are actually implemented. The other 9 crews return hardcoded literals from
-`ai/crews/<name>/tasks.py` with no LLM call at all. Every doc under
-`docs/agents/` and `docs/phases/` is explicitly badged:
+All **12 crews are implemented**, plus a 13th **skeptic** crew
+([ADR 0006](architecture/0006-evidence-ledger-and-skeptic.md)). Crews 1-3
+(20 of 66 agents, plus 1 unlisted 7th agent, see
+[docs/agents/67-existing-solution-analyzer.md](agents/67-existing-solution-analyzer.md))
+make one schema-validated LLM call per agent. Crews 4-12 run as **one
+structured call per crew** through `ai/crews/spec_runner.py`, using the phase
+and agent docs in this folder as the system prompt, so those docs are code
+inputs: keep their header format. Claims in the output are verified against a
+shared source pool by the evidence ledger. Badges on the docs under
+`docs/agents/` and `docs/phases/`:
 
-- 🟢 **IMPLEMENTED** — makes a real, schema-validated LLM call today.
-- ⚪ **SPECIFIED** — documented design intent for something not built yet.
-  These documents exist so building the remaining 9 crews means implementing
-  against a spec, not inventing one at build time.
+- 🟢 **IMPLEMENTED** - one real, schema-validated LLM call per agent.
+- 🟢 **IMPLEMENTED (crew-level)** - the agent is a role inside a crew's single call.
+
+The pipeline entry is `ai/pipeline.py::run_pipeline`. The product around it
+(accounts, billing, chat, integrations) is in [product.md](product.md).
 
 ## Phases
 
@@ -41,15 +47,15 @@ are actually implemented. The other 9 crews return hardcoded literals from
 | 01 | [Idea Validation](phases/01-idea-validation.md) | 🟢 IMPLEMENTED | 6 |
 | 02 | [Market Research](phases/02-market-research.md) | 🟢 IMPLEMENTED | 7 |
 | 03 | [Research & Patent](phases/03-research-and-patent.md) | 🟢 IMPLEMENTED | 6 (+1 unlisted) |
-| 04 | [Technical Feasibility](phases/04-technical-feasibility.md) | ⚪ SPECIFIED | 6 |
-| 05 | [Business Planning](phases/05-business-planning.md) | ⚪ SPECIFIED | 6 |
-| 06 | [Product Development](phases/06-product-development.md) | ⚪ SPECIFIED | 6 |
-| 07 | [Legal & Compliance](phases/07-legal-and-compliance.md) | ⚪ SPECIFIED | 6 |
-| 08 | [Branding & Marketing](phases/08-branding-and-marketing.md) | ⚪ SPECIFIED | 5 |
-| 09 | [Funding Readiness](phases/09-funding-readiness.md) | ⚪ SPECIFIED | 5 |
-| 10 | [Growth & Scaling](phases/10-growth-and-scaling.md) | ⚪ SPECIFIED | 4 |
-| 11 | [Community & Ecosystem](phases/11-community-and-ecosystem.md) | ⚪ SPECIFIED | 4 |
-| 12 | [Executive Reporting](phases/12-executive-reporting.md) | ⚪ SPECIFIED | 5 |
+| 04 | [Technical Feasibility](phases/04-technical-feasibility.md) | 🟢 IMPLEMENTED (crew-level) | 6 |
+| 05 | [Business Planning](phases/05-business-planning.md) | 🟢 IMPLEMENTED (crew-level) | 6 |
+| 06 | [Product Development](phases/06-product-development.md) | 🟢 IMPLEMENTED (crew-level) | 6 |
+| 07 | [Legal & Compliance](phases/07-legal-and-compliance.md) | 🟢 IMPLEMENTED (crew-level) | 6 |
+| 08 | [Branding & Marketing](phases/08-branding-and-marketing.md) | 🟢 IMPLEMENTED (crew-level) | 5 |
+| 09 | [Funding Readiness](phases/09-funding-readiness.md) | 🟢 IMPLEMENTED (crew-level) | 5 |
+| 10 | [Growth & Scaling](phases/10-growth-and-scaling.md) | 🟢 IMPLEMENTED (crew-level) | 4 |
+| 11 | [Community & Ecosystem](phases/11-community-and-ecosystem.md) | 🟢 IMPLEMENTED (crew-level) | 4 |
+| 12 | [Executive Reporting](phases/12-executive-reporting.md) | 🟢 IMPLEMENTED (crew-level) | 5 |
 
 Each phase doc covers: purpose, inputs, agent roster & task DAG, output
 schema, acceptance criteria, and failure modes.
@@ -68,8 +74,8 @@ python docs/generate_docs.py
 
 ## Schemas
 
-Every real Pydantic output schema (33 for the 3 implemented crews' agents,
-plus the crew-level result schemas for the 9 specified crews) is exported as
+Every real Pydantic output schema (the per-agent schemas for crews 1-3,
+plus the crew-level result schemas for crews 4-12 and the skeptic) is exported as
 JSON Schema under [`docs/schemas/`](schemas/), also via the generator above —
 these are never hand-written, so they can't drift from the actual code.
 
@@ -82,11 +88,13 @@ these are never hand-written, so they can't drift from the actual code.
 | [0003](architecture/0003-qwen3-base-models.md) | Qwen3-32B / Qwen3-8B as the self-hosted base models |
 | [0004](architecture/0004-taxonomy-conflict.md) | Five phase/agent taxonomies, one declared canonical |
 | [0005](architecture/0005-grounding-layer.md) | Grounding via Zyte/Tavily/Exa before the model swap |
+| [0006](architecture/0006-evidence-ledger-and-skeptic.md) | 13-crew pipeline, evidence ledger, skeptic crew, scoring |
 
 ## Operations
 
 | Doc | Covers |
 |---|---|
+| [ops/local-dev.md](ops/local-dev.md) | `dev.cmd`: tunnel, backend, frontend and health checks |
 | [ops/dgx-runbook.md](ops/dgx-runbook.md) | Bringing up the DGX B200, capability checks, first boot |
 | [ops/serving.md](ops/serving.md) | vLLM serving topology, LoRA adapter registry |
 | [ops/training.md](ops/training.md) | Synthetic data generation, LoRA/QLoRA/full-SFT configs |

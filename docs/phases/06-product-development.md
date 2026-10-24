@@ -1,11 +1,10 @@
 # Phase 06: Product Development
 
-**Status:** ⚪ SPECIFIED (not built) · **Crew ID:** 6 · **Domain:** Build · **Agents:** 6 (frontend) / 0 backend
+**Status:** 🟢 IMPLEMENTED (crew-level) · **Crew ID:** 6 · **Domain:** Build · **Agents:** 6 (frontend) / 1 crew-level call
 
 ## Current behavior
 
-`ai/crews/product_development/tasks.py` returns a hardcoded
-`ProductDevelopmentResult`.
+Runs as one structured LLM call through `ai/crews/spec_runner.py::run_spec_crew` (heavy tier, 12000 max tokens). This phase doc plus the agent docs listed for the crew are the system prompt; the user prompt carries a digest of the prior crews' results and the shared numbered source pool. The reply is validated against the crew's result schema (`ai/schemas/`). The "agents" are roles the one call reasons through in turn, not separate calls. If the call fails the run continues and the report marks this crew unavailable. Claims from this crew's output are checked by the [evidence ledger](../architecture/0006-evidence-ledger-and-skeptic.md).
 
 ## Intended purpose
 

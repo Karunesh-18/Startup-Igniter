@@ -12,6 +12,8 @@ Shared host: other users occupy ports 8000-8002, so we use our own range. Key au
   `LLM_BASE_URL=http://localhost:47001/v1 LLM_BASE_URL_FAST=http://localhost:47002/v1 LLM_ALLOW_MOCK=false ALLOWED_ORIGINS=http://localhost:5173 python -m uvicorn api.main:app --host 127.0.0.1 --port 47000`
 - Open the frontend as `localhost:5173`, not `127.0.0.1` (CORS).
 
+- Autorun: `dev.cmd` (repo root) starts tunnel + backend + frontend if their ports are free, then curls health on 47001/47002/47000/5173. It does not start vLLM on the DGX.
+
 ## Conventions
 - All prices in rupees (INR, paise in the DB); never use `$`.
 

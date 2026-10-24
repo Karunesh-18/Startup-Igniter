@@ -1,19 +1,15 @@
 # Funding Readiness Agent
 
-**Crew:** [Funding Readiness](../phases/09-funding-readiness.md) (FUND) · **Role:** Pitch Deck · **Status:** ⚪ SPECIFIED
+**Crew:** [Funding Readiness](../phases/09-funding-readiness.md) (FUND) · **Role:** Pitch Deck · **Status:** 🟢 IMPLEMENTED (crew-level)
 
 ## Implementation
 
-**Not built.** `ai/crews/funding/tasks.py` returns a hardcoded literal
-result for the whole Funding Readiness crew — no LLM call, no per-agent
-reasoning. This document describes the *intended* behavior so it can be
-implemented against a real spec rather than invented at build time.
-
-Building this agent means: a Pydantic output schema in `ai/schemas/`, a
-system prompt in `ai/prompts/funding/`, and a `get_*_agent()` /
-`run_*_agent()` pair following the pattern in
-`ai/agents/idea_validation/startup_idea_analyzer.py` (the reference
-implementation — see [Phase 09](../phases/09-funding-readiness.md)).
+This agent is a role inside the **Funding Readiness** crew, which runs as one
+structured LLM call (`ai/crews/spec_runner.py::run_spec_crew`) validated
+against the crew's result schema in `ai/schemas/`. The agent is not a
+separate call; this document and the
+[Phase 09](../phases/09-funding-readiness.md) doc are part of the
+crew's system prompt. Crew code: `ai/crews/funding/`.
 
 ## Where this fits
 

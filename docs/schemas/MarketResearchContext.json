@@ -94,7 +94,7 @@
           "type": "number"
         },
         "citations": {
-          "description": "Source URLs backing the claims above, when external research (Tavily/Exa/Zyte) was supplied in the prompt. Optional and defaults empty so this schema stays backward compatible with LLM-only reasoning when no research bundle is available.",
+          "description": "Source URLs backing the claims above, when external web research was supplied in the prompt. Optional and defaults empty so this schema stays backward compatible with LLM-only reasoning when no research bundle is available.",
           "items": {
             "type": "string"
           },
@@ -194,7 +194,7 @@
           "type": "number"
         },
         "citations": {
-          "description": "Source URLs backing the claims above, when external research (Tavily/Exa/Zyte) was supplied in the prompt. Optional and defaults empty so this schema stays backward compatible with LLM-only reasoning when no research bundle is available.",
+          "description": "Source URLs backing the claims above, when external web research was supplied in the prompt. Optional and defaults empty so this schema stays backward compatible with LLM-only reasoning when no research bundle is available.",
           "items": {
             "type": "string"
           },
@@ -402,7 +402,7 @@
           "type": "number"
         },
         "citations": {
-          "description": "Source URLs backing the claims above, when external research (Tavily/Exa/Zyte) was supplied in the prompt. Optional and defaults empty so this schema stays backward compatible with LLM-only reasoning when no research bundle is available.",
+          "description": "Source URLs backing the claims above, when external web research was supplied in the prompt. Optional and defaults empty so this schema stays backward compatible with LLM-only reasoning when no research bundle is available.",
           "items": {
             "type": "string"
           },
@@ -565,7 +565,7 @@
           "type": "number"
         },
         "citations": {
-          "description": "Source URLs backing the claims above, when external research (Tavily/Exa/Zyte) was supplied in the prompt. Optional and defaults empty so this schema stays backward compatible with LLM-only reasoning when no research bundle is available.",
+          "description": "Source URLs backing the claims above, when external web research was supplied in the prompt. Optional and defaults empty so this schema stays backward compatible with LLM-only reasoning when no research bundle is available.",
           "items": {
             "type": "string"
           },
@@ -773,7 +773,7 @@
           "type": "number"
         },
         "citations": {
-          "description": "Source URLs backing the claims above, when external research (Tavily/Exa/Zyte) was supplied in the prompt. Optional and defaults empty so this schema stays backward compatible with LLM-only reasoning when no research bundle is available.",
+          "description": "Source URLs backing the claims above, when external web research was supplied in the prompt. Optional and defaults empty so this schema stays backward compatible with LLM-only reasoning when no research bundle is available.",
           "items": {
             "type": "string"
           },
@@ -1069,7 +1069,7 @@
       "type": "object"
     },
     "ResearchBundle": {
-      "description": "Reusable data container holding external research data retrieved across providers.\n\nArchitecture Note:\n    Version 1: Default instance with empty collections (LLM-only reasoning).\n    Version 2: Populated by ResearchManager using Tavily, Exa, and Zyte APIs.",
+      "description": "Reusable data container holding external research data retrieved across providers.\n\nArchitecture Note:\n    Version 1: Default instance with empty collections (LLM-only reasoning).\n    Version 2: Populated by ResearchManager via keyless web search (web_provider.py).",
       "properties": {
         "market_articles": {
           "description": "Market research articles, reports, and industry overview snippets.",
@@ -1144,7 +1144,7 @@
           "type": "array"
         },
         "scraped_pages": {
-          "description": "Raw structured content scraped from web pages via Zyte.",
+          "description": "Raw structured content scraped from web pages.",
           "items": {
             "additionalProperties": true,
             "type": "object"
@@ -1377,7 +1377,7 @@
           "type": "number"
         },
         "citations": {
-          "description": "Source URLs backing the claims above, when external research (Tavily/Exa/Zyte) was supplied in the prompt. Optional and defaults empty so this schema stays backward compatible with LLM-only reasoning when no research bundle is available.",
+          "description": "Source URLs backing the claims above, when external web research was supplied in the prompt. Optional and defaults empty so this schema stays backward compatible with LLM-only reasoning when no research bundle is available.",
           "items": {
             "type": "string"
           },
@@ -1509,7 +1509,7 @@
           "type": "number"
         },
         "citations": {
-          "description": "Source URLs backing the claims above, when external research (Tavily/Exa/Zyte) was supplied in the prompt. Optional and defaults empty so this schema stays backward compatible with LLM-only reasoning when no research bundle is available.",
+          "description": "Source URLs backing the claims above, when external web research was supplied in the prompt. Optional and defaults empty so this schema stays backward compatible with LLM-only reasoning when no research bundle is available.",
           "items": {
             "type": "string"
           },
@@ -1724,7 +1724,7 @@
         }
       ],
       "default": null,
-      "description": "Optional external research bundle from ResearchManager (Tavily/Exa/Zyte)."
+      "description": "Optional external research bundle from ResearchManager (web search)."
     }
   },
   "required": [

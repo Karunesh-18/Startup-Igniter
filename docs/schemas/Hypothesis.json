@@ -1,0 +1,20 @@
+{
+  "properties": {
+    "hypothesis": {
+      "description": "A falsifiable assumption the idea depends on.",
+      "title": "Hypothesis",
+      "type": "string"
+    },
+    "metric": {
+      "description": "What to measure and the threshold that would validate it.",
+      "title": "Metric",
+      "type": "string"
+    }
+  },
+  "required": [
+    "hypothesis",
+    "metric"
+  ],
+  "title": "Hypothesis",
+  "type": "object"
+}

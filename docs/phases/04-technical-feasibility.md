@@ -1,13 +1,10 @@
 # Phase 04: Technical Feasibility
 
-**Status:** ⚪ SPECIFIED (not built) · **Crew ID:** 4 · **Domain:** Engineering · **Agents:** 6 (frontend) / 0 backend
+**Status:** 🟢 IMPLEMENTED (crew-level) · **Crew ID:** 4 · **Domain:** Engineering · **Agents:** 6 (frontend) / 1 crew-level call
 
 ## Current behavior
 
-`ai/crews/feasibility/tasks.py::execute_feasibility_task()` returns a
-hardcoded `FeasibilityResult` — no LLM call, no per-agent reasoning. The
-schema already exists (`ai/schemas/feasibility.py`); nothing populates it
-dynamically.
+Runs as one structured LLM call through `ai/crews/spec_runner.py::run_spec_crew` (heavy tier, 12000 max tokens). This phase doc plus the agent docs listed for the crew are the system prompt; the user prompt carries a digest of the prior crews' results and the shared numbered source pool. The reply is validated against the crew's result schema (`ai/schemas/`). The "agents" are roles the one call reasons through in turn, not separate calls. If the call fails the run continues and the report marks this crew unavailable. Claims from this crew's output are checked by the [evidence ledger](../architecture/0006-evidence-ledger-and-skeptic.md).
 
 ## Intended purpose
 

@@ -1,0 +1,176 @@
+{
+  "$defs": {
+    "Hypothesis": {
+      "properties": {
+        "hypothesis": {
+          "description": "A falsifiable assumption the idea depends on.",
+          "title": "Hypothesis",
+          "type": "string"
+        },
+        "metric": {
+          "description": "What to measure and the threshold that would validate it.",
+          "title": "Metric",
+          "type": "string"
+        }
+      },
+      "required": [
+        "hypothesis",
+        "metric"
+      ],
+      "title": "Hypothesis",
+      "type": "object"
+    },
+    "Risk": {
+      "properties": {
+        "risk": {
+          "description": "A specific way this startup could fail.",
+          "title": "Risk",
+          "type": "string"
+        },
+        "likelihood": {
+          "description": "Likelihood this happens, 0-100.",
+          "maximum": 100,
+          "minimum": 0,
+          "title": "Likelihood",
+          "type": "integer"
+        },
+        "impact": {
+          "description": "Damage if it happens, 0-100.",
+          "maximum": 100,
+          "minimum": 0,
+          "title": "Impact",
+          "type": "integer"
+        },
+        "mitigation": {
+          "description": "Cheapest credible mitigation.",
+          "title": "Mitigation",
+          "type": "string"
+        }
+      },
+      "required": [
+        "risk",
+        "likelihood",
+        "impact",
+        "mitigation"
+      ],
+      "title": "Risk",
+      "type": "object"
+    }
+  },
+  "description": "Adversarial review of everything the earlier crews concluded.",
+  "properties": {
+    "project_id": {
+      "description": "Project id, copied from the prompt.",
+      "title": "Project Id",
+      "type": "string"
+    },
+    "bull_case": {
+      "description": "3-5 strongest arguments FOR the idea, each citing a prior-crew finding.",
+      "items": {
+        "type": "string"
+      },
+      "title": "Bull Case",
+      "type": "array"
+    },
+    "bear_case": {
+      "description": "3-5 strongest arguments AGAINST the idea, each citing a prior-crew finding.",
+      "items": {
+        "type": "string"
+      },
+      "title": "Bear Case",
+      "type": "array"
+    },
+    "top_risks": {
+      "description": "3-6 highest-severity risks.",
+      "items": {
+        "$ref": "#/$defs/Risk"
+      },
+      "title": "Top Risks",
+      "type": "array"
+    },
+    "pre_mortem": {
+      "description": "Three years from now the startup failed. 4-6 sentences on why, in past tense.",
+      "title": "Pre Mortem",
+      "type": "string"
+    },
+    "testable_hypotheses": {
+      "description": "3-5 assumptions to test first, cheapest first.",
+      "items": {
+        "$ref": "#/$defs/Hypothesis"
+      },
+      "title": "Testable Hypotheses",
+      "type": "array"
+    },
+    "verdict": {
+      "description": "go: build it. pivot: promising core, change the plan. no-go: do not pursue as described.",
+      "enum": [
+        "go",
+        "pivot",
+        "no-go"
+      ],
+      "title": "Verdict",
+      "type": "string"
+    },
+    "verdict_rationale": {
+      "description": "2-4 sentences justifying the verdict from the evidence.",
+      "title": "Verdict Rationale",
+      "type": "string"
+    },
+    "would_change_my_mind": {
+      "description": "2-4 concrete pieces of evidence that would flip the verdict.",
+      "items": {
+        "type": "string"
+      },
+      "title": "Would Change My Mind",
+      "type": "array"
+    },
+    "pivot_suggestions": {
+      "description": "0-3 alternative directions if verdict is pivot or no-go.",
+      "items": {
+        "type": "string"
+      },
+      "title": "Pivot Suggestions",
+      "type": "array"
+    },
+    "overall_survival_score": {
+      "description": "Probability-like score (0-100) that the idea survives its top risks.",
+      "maximum": 100,
+      "minimum": 0,
+      "title": "Overall Survival Score",
+      "type": "number"
+    },
+    "score_low": {
+      "description": "Pessimistic readiness estimate, 0-100.",
+      "maximum": 100,
+      "minimum": 0,
+      "title": "Score Low",
+      "type": "number"
+    },
+    "score_high": {
+      "description": "Optimistic readiness estimate, 0-100.",
+      "maximum": 100,
+      "minimum": 0,
+      "title": "Score High",
+      "type": "number"
+    },
+    "confidence_score": {
+      "description": "Confidence in this verdict, 0.0-1.0; lower it when evidence is thin.",
+      "maximum": 1,
+      "minimum": 0,
+      "title": "Confidence Score",
+      "type": "number"
+    }
+  },
+  "required": [
+    "project_id",
+    "pre_mortem",
+    "verdict",
+    "verdict_rationale",
+    "overall_survival_score",
+    "score_low",
+    "score_high",
+    "confidence_score"
+  ],
+  "title": "SkepticResult",
+  "type": "object"
+}

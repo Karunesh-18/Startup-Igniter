@@ -32,6 +32,8 @@ docs/       phase and agent specs, ADRs, ops runbooks
    `LLM_BASE_URL=http://localhost:47001/v1 LLM_BASE_URL_FAST=http://localhost:47002/v1 uvicorn api.main:app --port 47000`
 3. Frontend (`frontend/`): `.env.local` needs `VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY` and optionally `VITE_API_BASE_URL`; then `npm install && npm run dev`.
 
+**One-shot (Windows):** run `dev.cmd` from the repo root. It starts the DGX tunnel, backend and frontend in separate windows (skipping any already listening on 47001/47000/5173), then health-checks the vLLM servers (47001/47002), backend and frontend. It does not start vLLM on the DGX (`training/serve/vllm_up.sh`). Open `http://localhost:5173`, not `127.0.0.1`.
+
 Without an LLM server a development run produces clearly labelled placeholder data (`mode: "mock"`); production never does (`LLM_ALLOW_MOCK=false` is the default and mock runs are refused when `ENVIRONMENT=production`).
 
 ## Billing
