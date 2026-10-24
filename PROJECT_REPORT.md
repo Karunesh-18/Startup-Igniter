@@ -723,7 +723,7 @@ alembic upgrade head
 #### 3. Launch Development Backend Server
 ```bash
 # Start FastAPI application with live reload
-uvicorn api.main:app --host 0.0.0.0 --port 8000 --reload
+uvicorn api.main:app --host 0.0.0.0 --port 47000 --reload
 ```
 
 #### 4. Launch Development Frontend Server
@@ -772,7 +772,7 @@ UPSTASH_REDIS_REST_TOKEN=your-upstash-token
 
 # --- LLM Gateway Configuration ---
 # 1. Self-Hosted Provider (NVIDIA DGX B200 / vLLM)
-SELFHOSTED_BASE_URL=http://your-dgx-ip:8000/v1
+SELFHOSTED_BASE_URL=http://your-dgx-ip:47001/v1
 SELFHOSTED_API_KEY=vllm-local-token
 MODEL_HEAVY=Qwen/Qwen2.5-32B-Instruct
 MODEL_FAST=Qwen/Qwen2.5-7B-Instruct

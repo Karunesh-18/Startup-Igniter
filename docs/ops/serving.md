@@ -7,8 +7,8 @@ there is no way to multiplex Qwen3-32B and Qwen3-8B behind one process):
 
 | Server | Model | GPUs | TP | Port | Purpose |
 |---|---|---|---|---|---|
-| `vllm-heavy` | Qwen3-32B | 0-1 | 2 | 8001 | `ModelTier.HEAVY` + `ModelTier.REASONING` |
-| `vllm-fast` | Qwen3-8B | 2 | 1 | 8002 | `ModelTier.FAST` |
+| `vllm-heavy` | Qwen3-32B | 0-1 | 2 | 47001 | `ModelTier.HEAVY` + `ModelTier.REASONING` |
+| `vllm-fast` | Qwen3-8B | 2 | 1 | 47002 | `ModelTier.FAST` |
 
 GPUs 3-7 (5 of 8) stay free for training jobs (see [training.md](training.md))
 and/or additional inference replicas once load-testing shows a real need.

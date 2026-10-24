@@ -34,11 +34,17 @@ dependencies = [
 
 [project.optional-dependencies]
 serve = [
-    "vllm>=0.6.0",   # pinned precisely in docs/ops/dgx-runbook.md once B200 driver/CUDA versions are confirmed
+    "vllm",   # offline install on the DGX: scripts/fetch_wheels.py bundles a cu128-consistent torch+vllm set; pin the tested versions in docs/ops/dgx-runbook.md after first run
+]
+train = [
+    "axolotl",   # launcher used by training/configs/*.yaml and scripts/train_all.sh
 ]
 eval = [
     "pytest>=8.2.0",
 ]
+
+[tool.setuptools]
+packages = []   # scripts/configs only; flat layout has several top-level dirs, so skip auto-discovery
 
 [tool.ruff]
 line-length = 100

@@ -5,7 +5,7 @@
 
 import type { AnalysisResult, StreamEvent } from './types';
 
-const BASE_URL = (import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:8000').replace(/\/$/, '');
+const BASE_URL = (import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:47000').replace(/\/$/, '');
 
 // ─── Core fetch wrapper ───────────────────────────────────────
 

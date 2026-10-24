@@ -11,7 +11,7 @@ services:
       dockerfile: backend/Dockerfile
       target: app
     ports:
-      - "8000:8000"
+      - "47000:8000"
     environment:
       DATABASE_URL: postgresql+asyncpg://postgres:postgres@postgres:5432/startup_os
       DATABASE_URL_SYNC: postgresql+psycopg2://postgres:postgres@postgres:5432/startup_os

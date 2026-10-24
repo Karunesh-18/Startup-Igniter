@@ -48,7 +48,7 @@ class LLMSettings(BaseSettings):
     llm_base_url: Optional[str] = Field(
         default=None,
         alias="LLM_BASE_URL",
-        description="OpenAI-compatible base URL for the self-hosted vLLM server, e.g. http://dgx-b200:8000/v1",
+        description="OpenAI-compatible base URL for the self-hosted vLLM server, e.g. http://dgx-b200:47001/v1",
     )
     llm_api_key: Optional[str] = Field(
         default=None,
@@ -109,8 +109,8 @@ class LLMSettings(BaseSettings):
         """Resolve which self-hosted server answers a given tier.
 
         FAST uses `llm_base_url_fast` when set (Qwen3-8B's own vLLM server —
-        see training/serve/vllm_up.sh, port 8002); everything else uses
-        `llm_base_url` (Qwen3-32B, port 8001). Falls back to `llm_base_url`
+        see training/serve/vllm_up.sh, port 47002); everything else uses
+        `llm_base_url` (Qwen3-32B, port 47001). Falls back to `llm_base_url`
         for FAST too when no separate URL is configured, so a single
         one-server setup keeps working unchanged.
         """

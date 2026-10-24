@@ -1,5 +1,26 @@
 # DGX B200 Runbook
 
+## Quickstart
+
+Weights are pre-downloaded on a PC (`python scripts/fetch_models.py` -> `bundle/`), so the DGX only
+needs internet for pip.
+
+```bash
+rsync -avP --partial ./ user@dgx:~/Startup-Igniter/   # repo + bundle/ (resumable)
+# BACKUP: skip bundle/ in the rsync and instead run, after dgx_setup.sh: bash scripts/dgx_fetch_models.sh
+cd ~/Startup-Igniter
+bash scripts/dgx_setup.sh            # uv + Python 3.12 venv + vllm/axolotl/backend deps
+. .venv/bin/activate
+bash scripts/dgx_preflight.sh        # B200 + CUDA>=12.8 + models + checksums; STOP if it fails
+bash training/serve/vllm_up.sh       # 32B on :47001 (GPUs 0-1), 8B on :47002 (GPU 2); adapters attach only if trained
+cp backend/.env.example backend/.env # fill Supabase/Upstash/SECRET_KEY; set LLM_ALLOW_MOCK=false
+bash scripts/dgx_smoke.sh            # real text on both tiers + structured output
+# Optional, later: corpus + LoRA training for crews 1-3, teacher = base 32B
+bash scripts/train_all.sh 8b
+```
+
+Everything below is the detailed reference.
+
 **Status:** Not yet executed — the DGX is not reachable at the time of
 writing. This is the procedure for when it is.
 
@@ -58,8 +79,8 @@ Once step 1 passes and a real corpus exists (see [training.md](training.md)):
 
 Set on the backend (`backend/.env`, see `backend/.env.example`):
 ```
-LLM_BASE_URL=http://<dgx-host>:8001/v1
-LLM_BASE_URL_FAST=http://<dgx-host>:8002/v1   # only if FAST runs as a separate server
+LLM_BASE_URL=http://<dgx-host>:47001/v1
+LLM_BASE_URL_FAST=http://<dgx-host>:47002/v1   # only if FAST runs as a separate server
 ```
 Verify with:
 ```bash
